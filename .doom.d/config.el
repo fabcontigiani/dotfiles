@@ -104,8 +104,14 @@
 
 ;; Org-ref
 (setq bibtex-completion-bibliography "~/org/biblio/references.bib"
+      citar-bibliography '("~/org/biblio/references.bib")
       bibtex-completion-library-path "~/org/biblio/"
+      citar-library-paths '("~/org/biblio/")
       bibtex-completion-notes-path "~/org/noter/"
+      citar-notes-paths '("~/org/noter/")
       bibtex-completion-pdf-open-function 'org-open-file
       org-latex-pdf-process (list "latexmk -shell-escape -bibtex -f -pdf %f")
       reftex-default-bibliography "~/org/biblio/references.bib")
+
+(setq langtool-language-tool-jar "/home/fab/LanguageTool-5.8/languagetool-commandline.jar"
+      langtool-default-language nil)
