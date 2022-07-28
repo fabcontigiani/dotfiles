@@ -40,9 +40,7 @@
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/org/")
-;; Org-noter directory
-(setq org-noter-notes-search-path '("~/org/noter/"))
+;; (setq org-directory "~/org/")
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
@@ -82,9 +80,6 @@
 (add-hook 'org-mode-hook 'turn-on-org-cdlatex)
 (add-hook 'org-mode-hook 'org-fragtog-mode)
 
-;; Make Org-roam dailies be saved outside the roam folder
-(setq org-roam-dailies-directory "../daily/")
-
 ;; Multiple language setup
 (after! ispell
   ;; Configure `LANG`, otherwise ispell.el cannot find a 'default
@@ -102,19 +97,25 @@
   ;; the locale.
   (setq ispell-personal-dictionary "~/.hunspell_personal"))
 
-;; Org-ref
-(setq bibtex-completion-bibliography "~/org/biblio/references.bib"
-      citar-bibliography '("~/org/biblio/references.bib")
-      bibtex-completion-library-path "~/org/biblio/"
-      citar-library-paths '("~/org/biblio/")
-      bibtex-completion-notes-path "~/org/noter/"
-      citar-notes-paths '("~/org/noter/")
-      bibtex-completion-pdf-open-function 'org-open-file
-      org-latex-pdf-process (list "latexmk -shell-escape -bibtex -f -pdf %f")
-      reftex-default-bibliography "~/org/biblio/references.bib")
-
+;; Grammar package config
 (setq langtool-language-tool-jar "/home/fab/LanguageTool-5.8/languagetool-commandline.jar"
-      langtool-default-language nil)
+      langtool-default-language nil) ;; let it detect language
 
+;; org-sticky-header
 (setq org-sticky-header-full-path 'full)
 (add-hook 'org-mode-hook 'org-sticky-header-mode)
+
+;; Logseq compatibility
+;; taken from https://coredumped.dev/2021/05/26/taking-org-roam-everywhere-with-logseq/
+(setq org-directory "/home/fab/note-box/"
+      org-roam-directory "/home/fab/note-box/pages/"
+      org-roam-dailies-directory "/home/fab/note-box/journals/"
+      org-attach-id-dir "/home/fab/note-box/assets/"
+      org-roam-capture-templates
+      '(("d" "default" plain
+         "%?" :target
+         (file+head "${slug}.org" "#+title: ${title}\n")
+         :unnarrowed t)))
+
+;; Org-noter directory
+(setq org-noter-notes-search-path '("/home/fab/note-box/notes/"))
