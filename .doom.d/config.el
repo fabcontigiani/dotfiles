@@ -115,3 +115,6 @@
 
 (setq langtool-language-tool-jar "/home/fab/LanguageTool-5.8/languagetool-commandline.jar"
       langtool-default-language nil)
+
+(setq org-sticky-header-full-path 'full)
+(add-hook 'org-mode-hook 'org-sticky-header-mode)

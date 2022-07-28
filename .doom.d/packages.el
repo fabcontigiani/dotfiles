@@ -50,3 +50,4 @@
 ;(unpin! t)
 
 (package! org-fragtog)
+(package! org-sticky-header)
