@@ -1,9 +1,9 @@
 regolith.look.path: /usr/share/regolith-look/gruvbox
 gtk.theme_name: Gruvbox-Dark-BL
-gnome.terminal.font: Iosevka 12
+gnome.terminal.font: Iosevka Term 12
 gtk.document_font_name: Iosevka Etoile 12
 gtk.font_name: Iosevka Aile 12
-gtk.monospace_font_name: Iosevka 12
+gtk.monospace_font_name: Iosevka Term 12
 i3xrocks.value.font: Iosevka Nerd Font 12
 i3-wm.program.1: /usr/bin/xmodmap ~/.Xmodmap
 i3-wm.workspace.01.name:	1:<span> </span><span font_desc='Iosevka Nerd Font 12'>1 </span><span foreground='#458588'></span><span> </span>
