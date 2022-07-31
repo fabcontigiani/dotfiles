@@ -121,3 +121,7 @@
 
 ;; Org-noter directory
 (setq org-noter-notes-search-path '("/home/fab/note-box/notes/"))
+
+;; Latex packages
+(setq org-latex-packages-alist '())
+(add-to-list 'org-latex-packages-alist '("version=4" "mhchem" t))
