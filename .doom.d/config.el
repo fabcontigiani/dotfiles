@@ -90,11 +90,11 @@
   (setenv "LANG" "en_US.UTF-8")
   (setq ispell-program-name "hunspell")
   ;; Configure English and Spanish.
-  (setq ispell-dictionary "en_US,es_US")
+  (setq ispell-dictionary "en_US,es_AR")
   ;; ispell-set-spellchecker-params has to be called
   ;; before ispell-hunspell-add-multi-dic will work
   (ispell-set-spellchecker-params)
-  (ispell-hunspell-add-multi-dic "en_US,es_US")
+  (ispell-hunspell-add-multi-dic "en_US,es_AR")
   ;; For saving words to the personal dictionary, don't infer it from
   ;; the locale.
   (setq ispell-personal-dictionary "~/.hunspell_personal"))
