@@ -1,4 +1,6 @@
 regolith.look.path: /usr/share/regolith-look/gruvbox
+gtk.icon_theme_name: gruvbox-dark-icons-gtk
+gtk.theme_name:	gruvbox-dark-gtk
 gnome.terminal.font: Iosevka Term 12
 gtk.document_font_name: Iosevka Etoile 12
 gtk.font_name: Iosevka Aile 12
