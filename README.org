@@ -1,0 +1,9 @@
++ *OS:* Ubuntu 22.04
++ *DE:* [[https://regolith-desktop.com/][Regolith]] (gruvbox look)
++ *WM:* i3
++ *Terminal:* Kitty
++ *GTK Theme:* [[https://github.com/jmattheis/gruvbox-dark-gtk][gruvbox-dark-gtk]]
++ *Icons:* [[https://github.com/jmattheis/gruvbox-dark-icons-gtk][gruvbox-dark-icons-gtk]]
++ *Kvantum Theme:* [[https://github.com/sourav2k/Gruvbox-Kvantum][Gruvbox-Kvantum]]
+
+[[https://i.imgur.com/Q4Wei8i.png]]
