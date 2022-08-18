@@ -26,4 +26,5 @@ i3-wm.workspace.16.name:	16:<span> </span><span font_desc='Iosevka Nerd Font 12'
 i3-wm.workspace.17.name:	17:<span> </span><span font_desc='Iosevka Nerd Font 12'>17 </span><span foreground='#b16286'></span><span> </span>
 i3-wm.workspace.18.name:	18:<span> </span><span font_desc='Iosevka Nerd Font 12'>18 </span><span foreground='#bdae93'></span><span> </span>
 i3-wm.workspace.19.name:	19:<span> </span><span font_desc='Iosevka Nerd Font 12'>19 </span><span foreground='#458588'></span><span> </span>
-
+regolith.wallpaper.file: /home/fab/Pictures/aq01hbiw8wh91.png
+regolith.lockscreen.wallpaper.file: /home/fab/Pictures/aq01hbiw8wh91.png
