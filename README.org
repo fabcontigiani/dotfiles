@@ -6,4 +6,4 @@
 + *Icons:* [[https://github.com/jmattheis/gruvbox-dark-icons-gtk][gruvbox-dark-icons-gtk]]
 + *Kvantum Theme:* [[https://github.com/sourav2k/Gruvbox-Kvantum][Gruvbox-Kvantum]]
 
-[[https://i.imgur.com/Q4Wei8i.png]]
+[[https://i.imgur.com/im37HPw.png]]
