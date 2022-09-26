@@ -7,6 +7,8 @@ gtk.font_name: Iosevka Aile 12
 gtk.monospace_font_name: Iosevka Term 12
 i3xrocks.value.font: Iosevka Nerd Font 12
 i3-wm.program.1: /usr/bin/xmodmap ~/.Xmodmap
+# https://github.com/nwg-piotr/autotiling
+i3-wm.program.2: --no-startup-id autotiling 
 i3-wm.workspace.01.name:	1:<span> </span><span font_desc='Iosevka Nerd Font 12'>1 </span><span foreground='#458588'></span><span> </span>
 i3-wm.workspace.02.name:	2:<span> </span><span font_desc='Iosevka Nerd Font 12'>2 </span><span foreground='#689d6a'></span><span> </span>
 i3-wm.workspace.03.name:	3:<span> </span><span font_desc='Iosevka Nerd Font 12'>3 </span><span foreground='#98971a'></span><span> </span>

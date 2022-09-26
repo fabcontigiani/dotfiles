@@ -79,6 +79,7 @@
 ;; Set up LaTeX snippet preview and input aid
 (setq org-startup-with-latex-preview t)
 (setq org-preview-latex-default-process 'dvisvgm)
+(setq org-pretty-entities-include-sub-superscripts 'nil)
 (add-hook 'org-mode-hook 'turn-on-org-cdlatex)
 (add-hook 'org-mode-hook 'org-fragtog-mode)
 
