@@ -79,7 +79,6 @@
 ;; Set up LaTeX snippet preview and input aid
 (setq org-startup-with-latex-preview t)
 (setq org-preview-latex-default-process 'dvisvgm)
-(setq org-pretty-entities-include-sub-superscripts 'nil)
 (add-hook 'org-mode-hook 'turn-on-org-cdlatex)
 (add-hook 'org-mode-hook 'org-fragtog-mode)
 
@@ -129,3 +128,7 @@
 ;; Latex packages
 (setq org-latex-packages-alist '())
 (add-to-list 'org-latex-packages-alist '("version=4" "mhchem" t))
+
+;; Don't fontify subscripts and superscripts
+(setq org-pretty-entities-include-sub-superscripts 'nil)
+(setq font-latex-fontify-script 'nil)
