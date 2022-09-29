@@ -6,7 +6,7 @@ gtk.document_font_name: Iosevka Etoile 12
 gtk.font_name: Iosevka Aile 12
 gtk.monospace_font_name: Iosevka Term 12
 i3xrocks.value.font: Iosevka Nerd Font 12
-i3xrocks.value.color: #d5c4a1
+i3xrocks.value.color: #beac8c
 i3-wm.program.1: /usr/bin/xmodmap ~/.Xmodmap
 i3-wm.program.2: --no-startup-id autotiling 
 i3-wm.workspace.01.name:	1:<span> </span><span font_desc='Iosevka Nerd Font 12'>1 </span><span foreground='#458588'></span><span> </span>
