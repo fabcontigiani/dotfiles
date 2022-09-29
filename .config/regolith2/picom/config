@@ -216,7 +216,7 @@ wintypes:
         # focus: Whether to always consider windows of this type focused.
         focus = true;
     };
-    dock = { shadow = true; }
+    dock = { shadow = false; }
     dnd = { shadow = false; }
     popup_menu = {
         opacity = 1.0;
