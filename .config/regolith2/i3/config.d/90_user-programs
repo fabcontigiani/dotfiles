@@ -1,6 +1,7 @@
 # Most of the custom i3 stuff will go here, not limited to startup programs.
 
 # Startup programs
+exec --no-startup-id emacs --daemon
 exec --no-startup-id /usr/bin/xmodmap ~/.Xmodmap
 exec --no-startup-id autotiling
 exec --no-startup-id flameshot
