@@ -27,8 +27,6 @@ if [ -d "$HOME/.local/bin" ] ; then
 fi
 
 export QT_QPA_PLATFORMTHEME=qt5ct
-# Ubuntu make installation of Ubuntu Make binary symlink
-PATH=/home/fab/.local/share/umake/bin:$PATH
 
 # Added by Toolbox App
 export PATH="$PATH:/home/fab/.local/share/JetBrains/Toolbox/scripts"
