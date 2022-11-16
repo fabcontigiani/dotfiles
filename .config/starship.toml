@@ -1,5 +1,8 @@
 # ~/.config/starship.toml
 
+# Disable the blank line at the start of the prompt
+add_newline = false
+
 # Make prompt a single line instead of two lines
 [line_break]
 disabled=true
