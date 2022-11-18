@@ -117,6 +117,5 @@ if ! shopt -oq posix; then
 fi
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.emacs.d/bin:$PATH"
-export PATH="$HOME/anaconda3/bin:$PATH"
 
 eval "$(starship init bash)"
