@@ -1,5 +1,9 @@
-+ *OS:* Ubuntu 22.04
-+ *DE:* [[https://regolith-desktop.com/][Regolith]] (gruvbox look)
+* Dotfiles
+
++ *OS:* Ubuntu 22.04 LTS
++ *Shell:* Bash
++ *Prompt:* [[https://starship.rs/][Starship]]
++ *DE:* [[https://regolith-desktop.com/][Regolith]]
 + *WM:* i3
 + *Terminal:* Kitty
 + *GTK Theme:* [[https://github.com/jmattheis/gruvbox-dark-gtk][gruvbox-dark-gtk]]
