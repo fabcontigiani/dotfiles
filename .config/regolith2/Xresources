@@ -7,24 +7,24 @@ gtk.font_name: Iosevka Aile 12
 gtk.monospace_font_name: Iosevka Term 12
 i3xrocks.value.font: Iosevka Nerd Font 12
 i3xrocks.value.color: #beac8c
-i3-wm.workspace.01.name:	1:<span> </span><span font_desc='Iosevka Nerd Font 12'>1 </span><span font_desc='Iosevka Nerd Font 12' foreground='#458588'></span><span> </span>
-i3-wm.workspace.02.name:	2:<span> </span><span font_desc='Iosevka Nerd Font 12'>2 </span><span font_desc='Iosevka Nerd Font 12' foreground='#689d6a'></span><span> </span>
-i3-wm.workspace.03.name:	3:<span> </span><span font_desc='Iosevka Nerd Font 12'>3 </span><span font_desc='Iosevka Nerd Font 12' foreground='#98971a'></span><span> </span>
-i3-wm.workspace.04.name:	4:<span> </span><span font_desc='Iosevka Nerd Font 12'>4 </span><span font_desc='Iosevka Nerd Font 12' foreground='#d79921'></span><span> </span>
-i3-wm.workspace.05.name:	5:<span> </span><span font_desc='Iosevka Nerd Font 12'>5 </span><span font_desc='Iosevka Nerd Font 12' foreground='#d65d0e'></span><span> </span>
-i3-wm.workspace.06.name:	6:<span> </span><span font_desc='Iosevka Nerd Font 12'>6 </span><span font_desc='Iosevka Nerd Font 12' foreground='#cc241d'></span><span> </span>
-i3-wm.workspace.07.name:	7:<span> </span><span font_desc='Iosevka Nerd Font 12'>7 </span><span font_desc='Iosevka Nerd Font 12' foreground='#d3869b'></span><span> </span>
-i3-wm.workspace.08.name:	8:<span> </span><span font_desc='Iosevka Nerd Font 12'>8 </span><span font_desc='Iosevka Nerd Font 12' foreground='#b16286'></span><span> </span>
-i3-wm.workspace.09.name:	9:<span> </span><span font_desc='Iosevka Nerd Font 12'>9 </span><span font_desc='Iosevka Nerd Font 12' foreground='#bdae93'></span><span> </span>
-i3-wm.workspace.10.name:	10:<span> </span><span font_desc='Iosevka Nerd Font 12'>10 </span><span font_desc='Iosevka Nerd Font 12' foreground='#458588'></span><span> </span>
-i3-wm.workspace.11.name:	11:<span> </span><span font_desc='Iosevka Nerd Font 12'>11 </span><span font_desc='Iosevka Nerd Font 12' foreground='#689d6a'></span><span> </span>
-i3-wm.workspace.12.name:	12:<span> </span><span font_desc='Iosevka Nerd Font 12'>12 </span><span font_desc='Iosevka Nerd Font 12' foreground='#98971a'></span><span> </span>
-i3-wm.workspace.13.name:	13:<span> </span><span font_desc='Iosevka Nerd Font 12'>13 </span><span font_desc='Iosevka Nerd Font 12' foreground='#d79921'></span><span> </span>
-i3-wm.workspace.14.name:	14:<span> </span><span font_desc='Iosevka Nerd Font 12'>14 </span><span font_desc='Iosevka Nerd Font 12' foreground='#d65d0e'></span><span> </span>
-i3-wm.workspace.15.name:	15:<span> </span><span font_desc='Iosevka Nerd Font 12'>15 </span><span font_desc='Iosevka Nerd Font 12' foreground='#cc241d'></span><span> </span>
-i3-wm.workspace.16.name:	16:<span> </span><span font_desc='Iosevka Nerd Font 12'>16 </span><span font_desc='Iosevka Nerd Font 12' foreground='#d3869b'></span><span> </span>
-i3-wm.workspace.17.name:	17:<span> </span><span font_desc='Iosevka Nerd Font 12'>17 </span><span font_desc='Iosevka Nerd Font 12' foreground='#b16286'></span><span> </span>
-i3-wm.workspace.18.name:	18:<span> </span><span font_desc='Iosevka Nerd Font 12'>18 </span><span font_desc='Iosevka Nerd Font 12' foreground='#bdae93'></span><span> </span>
-i3-wm.workspace.19.name:	19:<span> </span><span font_desc='Iosevka Nerd Font 12'>19 </span><span font_desc='Iosevka Nerd Font 12' foreground='#458588'></span><span> </span>
+i3-wm.workspace.01.name:	1:<span> </span><span font_desc='Iosevka Nerd Font 12'>1 </span><span font_desc='Iosevka Nerd Font 10' foreground='#458588'></span><span> </span>
+i3-wm.workspace.02.name:	2:<span> </span><span font_desc='Iosevka Nerd Font 12'>2 </span><span font_desc='Iosevka Nerd Font 10' foreground='#689d6a'></span><span> </span>
+i3-wm.workspace.03.name:	3:<span> </span><span font_desc='Iosevka Nerd Font 12'>3 </span><span font_desc='Iosevka Nerd Font 10' foreground='#98971a'></span><span> </span>
+i3-wm.workspace.04.name:	4:<span> </span><span font_desc='Iosevka Nerd Font 12'>4 </span><span font_desc='Iosevka Nerd Font 10' foreground='#d79921'></span><span> </span>
+i3-wm.workspace.05.name:	5:<span> </span><span font_desc='Iosevka Nerd Font 12'>5 </span><span font_desc='Iosevka Nerd Font 10' foreground='#d65d0e'></span><span> </span>
+i3-wm.workspace.06.name:	6:<span> </span><span font_desc='Iosevka Nerd Font 12'>6 </span><span font_desc='Iosevka Nerd Font 10' foreground='#cc241d'></span><span> </span>
+i3-wm.workspace.07.name:	7:<span> </span><span font_desc='Iosevka Nerd Font 12'>7 </span><span font_desc='Iosevka Nerd Font 10' foreground='#d3869b'></span><span> </span>
+i3-wm.workspace.08.name:	8:<span> </span><span font_desc='Iosevka Nerd Font 12'>8 </span><span font_desc='Iosevka Nerd Font 10' foreground='#b16286'></span><span> </span>
+i3-wm.workspace.09.name:	9:<span> </span><span font_desc='Iosevka Nerd Font 12'>9 </span><span font_desc='Iosevka Nerd Font 10' foreground='#bdae93'></span><span> </span>
+i3-wm.workspace.10.name:	10:<span> </span><span font_desc='Iosevka Nerd Font 12'>10 </span><span font_desc='Iosevka Nerd Font 10' foreground='#458588'></span><span> </span>
+i3-wm.workspace.11.name:	11:<span> </span><span font_desc='Iosevka Nerd Font 12'>11 </span><span font_desc='Iosevka Nerd Font 10' foreground='#689d6a'></span><span> </span>
+i3-wm.workspace.12.name:	12:<span> </span><span font_desc='Iosevka Nerd Font 12'>12 </span><span font_desc='Iosevka Nerd Font 10' foreground='#98971a'></span><span> </span>
+i3-wm.workspace.13.name:	13:<span> </span><span font_desc='Iosevka Nerd Font 12'>13 </span><span font_desc='Iosevka Nerd Font 10' foreground='#d79921'></span><span> </span>
+i3-wm.workspace.14.name:	14:<span> </span><span font_desc='Iosevka Nerd Font 12'>14 </span><span font_desc='Iosevka Nerd Font 10' foreground='#d65d0e'></span><span> </span>
+i3-wm.workspace.15.name:	15:<span> </span><span font_desc='Iosevka Nerd Font 12'>15 </span><span font_desc='Iosevka Nerd Font 10' foreground='#cc241d'></span><span> </span>
+i3-wm.workspace.16.name:	16:<span> </span><span font_desc='Iosevka Nerd Font 12'>16 </span><span font_desc='Iosevka Nerd Font 10' foreground='#d3869b'></span><span> </span>
+i3-wm.workspace.17.name:	17:<span> </span><span font_desc='Iosevka Nerd Font 12'>17 </span><span font_desc='Iosevka Nerd Font 10' foreground='#b16286'></span><span> </span>
+i3-wm.workspace.18.name:	18:<span> </span><span font_desc='Iosevka Nerd Font 12'>18 </span><span font_desc='Iosevka Nerd Font 10' foreground='#bdae93'></span><span> </span>
+i3-wm.workspace.19.name:	19:<span> </span><span font_desc='Iosevka Nerd Font 12'>19 </span><span font_desc='Iosevka Nerd Font 10' foreground='#458588'></span><span> </span>
 regolith.wallpaper.file: /home/fab/Pictures/aq01hbiw8wh91.png
 regolith.lockscreen.wallpaper.file: /home/fab/Pictures/aq01hbiw8wh91.png
