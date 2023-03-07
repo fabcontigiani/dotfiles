@@ -1,0 +1,57 @@
+icons_format = "{icon}"
+
+[theme]
+theme = "semi-native"
+[theme.overrides]
+separator = " "
+idle_fg = "#bdae93"
+info_fg = "#bdae93"
+good_fg = "#bdae93"
+warning_fg = "#d77921"
+critical_fg = "#cc241d"
+
+[icons]
+icons = "awesome4"
+
+[[block]]
+block = "net"
+
+[[block]]
+block = "cpu"
+
+[[block]]
+block = "temperature"
+format = " $icon $max "
+interval = 5
+chip = "*-isa-*"
+
+[[block]]
+block = "memory"
+format = " $icon $mem_used "
+
+[[block]]
+block = "sound"
+max_vol = 100
+
+[[block]]
+block = "sound"
+device_kind = "source"
+max_vol = 100
+
+[[block]]
+block = "backlight"
+device = "intel_backlight"
+
+[[block]]
+block = "battery"
+format = " $icon  $percentage "
+full_format = " $icon  $percentage "
+empty_format = " $icon  $percentage "
+not_charging_format = " $icon  $percentage "
+missing_format = ""
+
+[[block]]
+block = "time"
+interval = 5
+format = " $timestamp.datetime(f:'%a %d/%m %R') "
+

@@ -96,11 +96,7 @@
   (ispell-hunspell-add-multi-dic "en_US,es_AR")
   ;; For saving words to the personal dictionary, don't infer it from
   ;; the locale.
-  (setq ispell-personal-dictionary "~/.hunspell_personal"))
-
-;; Grammar package config
-(setq langtool-language-tool-jar "/home/fab/LanguageTool-6.0/languagetool-commandline.jar"
-      langtool-default-language nil) ;; let it detect language
+  (setq ispell-personal-dictionary "~/note-box/.hunspell_personal"))
 
 ;; org-sticky-header
 (setq org-sticky-header-full-path 'full)
