@@ -80,9 +80,13 @@ bindsym $mod+Shift+n exec thunar
 # run emacs client
 bindsym $mod+e exec emacsclient -c
 
+# run btop (floating mode)
+for_window [class="btop"] floating enable, resize set 65ppt 65ppt, move position center
+bindsym $mod+Shift+question exec alacritty --class btop -e btop
+
 # run pulsemixer (floating mode)
-for_window [title="pulsemixer"] floating enable
-bindsym $mod+m exec alacritty -e pulsemixer
+for_window [class="pulsemixer"] floating enable, resize set 35ppt 35ppt, move position center
+bindsym $mod+m exec alacritty --class pulsemixer -e pulsemixer
 
 # screenshot keybinds
 bindsym --release Print exec "maim | xclip -selection clipboard -t image/png && notify-send 'Screenshot copied to clipboard'"
