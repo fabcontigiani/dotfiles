@@ -18,16 +18,13 @@ block = "net"
 
 [[block]]
 block = "cpu"
+interval = 2
 
 [[block]]
 block = "temperature"
 format = " $icon $max "
 interval = 5
 chip = "*-isa-*"
-
-[[block]]
-block = "memory"
-format = " $icon $mem_used "
 
 [[block]]
 block = "sound"
@@ -37,10 +34,6 @@ max_vol = 100
 block = "sound"
 device_kind = "source"
 max_vol = 100
-
-[[block]]
-block = "backlight"
-device = "intel_backlight"
 
 [[block]]
 block = "battery"

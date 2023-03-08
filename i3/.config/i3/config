@@ -11,7 +11,7 @@
 set $mod Mod4
 
 # font
-font pango:Iosevka Nerd Font 12
+font pango:JetBrains Mono Nerd Font 12
 
 # Start XDG autostart .desktop files using dex. See also
 # https://wiki.archlinux.org/index.php/XDG_Autostart
@@ -22,10 +22,12 @@ exec --no-startup-id dunst
 exec --no-startup-id picom
 exec --no-startup-id i3-swap-focus
 exec --no-startup-id unclutter
+exec --no-startup-id thunar --daemon
+exec --no-startup-id emacs --daemon
 exec_always --no-startup-id autotiling --limit 2
 
 # wallpaper
-exec --no-startup-id feh --bg-scale /home/fab/.wallpaper.png
+exec --no-startup-id feh --bg-scale /home/fab/.config/wallpaper.png
 
 # xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
 # screen before suspend. Use loginctl lock-session to lock your screen.
@@ -48,8 +50,8 @@ bindsym XF86AudioNext exec "playerctl next -p spotify,%any"
 bindsym XF86AudioPrev exec "playerctl previous -p spotify,%any"
 
 # Screen brightness controls
-bindsym XF86MonBrightnessUp exec xbacklight -inc 10
-bindsym XF86MonBrightnessDown exec xbacklight -dec 10
+bindsym XF86MonBrightnessUp exec xbacklight -inc 5 && notify-send "Brightness Level: $(xbacklight --get)"
+bindsym XF86MonBrightnessDown exec xbacklight -dec 5 && notify-send "Brightness Level: $(xbacklight --get)"
 
 # Dunst keybindings
 bindsym --release Control+space exec dunstctl close-all
@@ -72,9 +74,20 @@ bindsym $mod+Shift+Return exec firefox
 # run ranger
 bindsym $mod+n exec alacritty -e ranger
 
+# run thunar
+bindsym $mod+Shift+n exec thunar
+
+# run emacs client
+bindsym $mod+e exec emacsclient -c
+
 # run pulsemixer (floating mode)
 for_window [title="pulsemixer"] floating enable
 bindsym $mod+m exec alacritty -e pulsemixer
+
+# screenshot keybinds
+bindsym --release Print exec "maim | xclip -selection clipboard -t image/png && notify-send 'Screenshot copied to clipboard'"
+bindsym --release Shift+Print exec "maim -s | xclip -selection clipboard -t image/png && notify-send 'Screenshot copied to clipboard'"
+bindsym --release Control+Print exec "maim -i $(xdotool getactivewindow) | xclip -selection clipboard -t image/png && notify-send 'Screenshot copied to clipboard'"
 
 # kill focused window
 bindsym $mod+Shift+q kill
@@ -272,7 +285,6 @@ client.unfocused        $darkgray $darkgray $lightgray $purple $darkgray
 client.urgent           $red $red $lightgray $red $red
 
 bar {
-    font pango:Iosevka Nerd Font, FontAwesome 12
     position top
     status_command i3status-rs
     tray_output primary
