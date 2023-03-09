@@ -1,1 +1,2 @@
 *.json
+qtile/.config/qtile/__pycache__/*

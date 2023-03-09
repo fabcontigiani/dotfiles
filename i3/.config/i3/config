@@ -16,15 +16,16 @@ font pango:JetBrains Mono Nerd Font 12
 # Start XDG autostart .desktop files using dex. See also
 # https://wiki.archlinux.org/index.php/XDG_Autostart
 #exec --no-startup-id dex --autostart --environment i3
+exec --no-startup-id /home/fab/.config/autostart.sh
 exec_always --no-startup-id autorandr -c
-exec --no-startup-id lxsession
-exec --no-startup-id dunst
-exec --no-startup-id picom
-exec --no-startup-id i3-swap-focus
-exec --no-startup-id unclutter
-exec --no-startup-id thunar --daemon
-exec --no-startup-id emacs --daemon
-exec --no-startup-id transmission-daemon
+# exec --no-startup-id lxsession
+# exec --no-startup-id dunst
+# exec --no-startup-id picom
+# exec --no-startup-id i3-swap-focus
+# exec --no-startup-id unclutter
+# exec --no-startup-id thunar --daemon
+# exec --no-startup-id emacs --daemon
+# exec --no-startup-id transmission-daemon
 exec_always --no-startup-id autotiling --limit 2
 
 # wallpaper
