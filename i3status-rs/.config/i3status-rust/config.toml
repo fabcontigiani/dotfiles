@@ -36,6 +36,9 @@ device_kind = "source"
 max_vol = 100
 
 [[block]]
+block = "backlight"
+
+[[block]]
 block = "battery"
 format = " $icon  $percentage "
 full_format = " $icon  $percentage "

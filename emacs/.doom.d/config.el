@@ -123,13 +123,3 @@
 ;; Don't fontify subscripts and superscripts
 (setq org-pretty-entities-include-sub-superscripts 'nil)
 (setq font-latex-fontify-script 'nil)
-
-;; org-transclusion config
-(use-package! org-transclusion
-  :after org
-  :init
-  (map!
-   :map global-map "<f12>" #'org-transclusion-add
-   :leader
-   :prefix "n"
-   :desc "Org Transclusion Mode" "t" #'org-transclusion-mode))

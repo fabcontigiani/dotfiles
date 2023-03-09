@@ -24,14 +24,15 @@ exec --no-startup-id i3-swap-focus
 exec --no-startup-id unclutter
 exec --no-startup-id thunar --daemon
 exec --no-startup-id emacs --daemon
+exec --no-startup-id transmission-daemon
 exec_always --no-startup-id autotiling --limit 2
 
 # wallpaper
-exec --no-startup-id feh --bg-scale /home/fab/.config/wallpaper.png
+exec --no-startup-id ~/.fehbg
 
 # xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
 # screen before suspend. Use loginctl lock-session to lock your screen.
-exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork -i /home/fab/.config/wallpaper.png
+exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork -i /home/fab/.wallpaper.png
 
 # NetworkManager is the most popular way to manage wireless networks on Linux,
 # and nm-applet is a desktop environment-independent system tray GUI for it.
@@ -50,8 +51,8 @@ bindsym XF86AudioNext exec "playerctl next -p spotify,%any"
 bindsym XF86AudioPrev exec "playerctl previous -p spotify,%any"
 
 # Screen brightness controls
-bindsym XF86MonBrightnessUp exec xbacklight -inc 5 && notify-send "Brightness Level: $(xbacklight --get)"
-bindsym XF86MonBrightnessDown exec xbacklight -dec 5 && notify-send "Brightness Level: $(xbacklight --get)"
+bindsym XF86MonBrightnessUp exec xbacklight -inc 5
+bindsym XF86MonBrightnessDown exec xbacklight -dec 5
 
 # Dunst keybindings
 bindsym --release Control+space exec dunstctl close-all
