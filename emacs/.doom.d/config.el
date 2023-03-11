@@ -117,7 +117,7 @@
 ;; Org-noter directory
 (setq org-noter-notes-search-path '("/home/fab/note-box/notes/"))
 
-(setq! citar-bibliography '("/home/fab/note-box/biblio/references.bib")
+(setq citar-bibliography '("/home/fab/note-box/biblio/references.bib")
        citar-notes-paths '("/home/fab/note-box/biblio/"))
 
 ;; Don't fontify subscripts and superscripts

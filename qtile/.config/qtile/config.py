@@ -102,6 +102,16 @@ keys = [
     # Key([mod, "shift"], "Return", lazy.layout.toggle_split(),
     #    desc="Toggle between split and unsplit sides of stack"),
 
+    Key([mod], "Tab", lazy.screen.next_group(),
+        desc="Move to next group"),
+    Key([mod, "shift"], "Tab", lazy.screen.prev_group(),
+        desc="Move to previous group"),
+
+    Key([mod], "f", lazy.window.toggle_fullscreen(),
+        desc="Toggle fullscren"),
+    Key([mod, "shift"], "f", lazy.window.toggle_floating(),
+        desc="Toggle floating"),
+
     Key([mod, "shift"], "Return", lazy.spawn("firefox"),
         desc="Launch browser"),
     Key([mod], "Return", lazy.spawn("kitty"),
@@ -121,11 +131,11 @@ keys = [
         desc="Open btop"),
 
     # Screenshot keybindings
-    Key([], "Print", lazy.spawn("scrot '/tmp/%F_%T_$wx$h.png' -e 'xclip -selection clipboard -target image/png -i $f' && notify-send 'Screnshot copies to clipboard'", shell=True),
+    Key([], "Print", lazy.spawn("scrot '/tmp/%F_%T_$wx$h.png' -e 'xclip -selection clipboard -target image/png -i $f' && notify-send 'Screnshot copied to clipboard'", shell=True),
         desc="Screenshot and copy to clipboard"),
-    Key(["shift"], "Print", lazy.spawn("scrot -bs -l mode=edge '/tmp/%F_%T_$wx$h.png' -e 'xclip -selection clipboard -target image/png -i $f' && notify-send 'Screnshot copies to clipboard'", shell=True),
+    Key(["shift"], "Print", lazy.spawn("scrot -bs -l mode=edge '/tmp/%F_%T_$wx$h.png' -e 'xclip -selection clipboard -target image/png -i $f' && notify-send 'Screnshot copied to clipboard'", shell=True),
         desc="Screenshot area and copy to clipboard"),
-    Key(["control"], "Print", lazy.spawn("scrot -bu '/tmp/%F_%T_$wx$h.png' -e 'xclip -selection clipboard -target image/png -i $f' && notify-send 'Screnshot copies to clipboard'", shell=True),
+    Key(["control"], "Print", lazy.spawn("scrot -bu '/tmp/%F_%T_$wx$h.png' -e 'xclip -selection clipboard -target image/png -i $f' && notify-send 'Screnshot copied to clipboard'", shell=True),
         desc="Screenshot active window and copy to clipboard"),
 
     # Media control
@@ -162,8 +172,6 @@ keys = [
     Key(['control', 'shift'], "grave", lazy.spawn("dunstctl context"),
         desc="Open notification context"),
 
-    Key([mod], "Tab", lazy.next_layout(),
-        desc="Toggle between layouts"),
     Key([mod, "shift"], "q", lazy.window.kill(),
         desc="Kill focused window"),
     Key([mod, "control"], "r", lazy.reload_config(),
@@ -294,9 +302,12 @@ floating_layout = layout.Floating(
         Match(wm_class="ssh-askpass"),  # ssh-askpass
         Match(title="branchdialog"),  # gitk
         Match(title="pinentry"),  # GPG key password entry
-    ]
+    ],
+    border_width=4,
+    border_focus=colors["fg2"],
+    border_normal=colors["bg2"],
 )
-auto_fullscreen = True
+auto_fullscreen = False
 focus_on_window_activation = "smart"
 reconfigure_screens = True
 
