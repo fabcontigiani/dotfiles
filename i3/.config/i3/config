@@ -68,13 +68,13 @@ floating_modifier $mod
 tiling_drag modifier
 
 # start a terminal
-bindsym $mod+Return exec alacritty
+bindsym $mod+Return exec kitty
 
 # run browser
 bindsym $mod+Shift+Return exec firefox
 
 # run ranger
-bindsym $mod+n exec alacritty -e ranger
+bindsym $mod+n exec kitty -e ranger
 
 # run thunar
 bindsym $mod+Shift+n exec thunar
@@ -84,11 +84,11 @@ bindsym $mod+e exec emacsclient -c
 
 # run btop (floating mode)
 for_window [class="btop"] floating enable, resize set 65ppt 65ppt, move position center
-bindsym $mod+Shift+question exec alacritty --class btop -e btop
+bindsym $mod+Shift+question exec kitty --class btop -e btop
 
 # run pulsemixer (floating mode)
 for_window [class="pulsemixer"] floating enable, resize set 35ppt 35ppt, move position center
-bindsym $mod+m exec alacritty --class pulsemixer -e pulsemixer
+bindsym $mod+m exec kitty --class pulsemixer -e pulsemixer
 
 # screenshot keybinds
 bindsym --release Print exec "maim | xclip -selection clipboard -t image/png && notify-send 'Screenshot copied to clipboard'"

@@ -1,10 +1,12 @@
 #!/bin/sh
 
 autorandr -c &
+. ~/.fehbg &
+picom &
 lxsession &
 dunst &
-picom &
+xss-lock --transfer-sleep-lock -- i3lock -i /home/fab/.config/wallpaper.png &
 unclutter &
 thunar --daemon &
-emacs --daemon &
-transmission-daemon
+transmission-daemon &
+emacs --daemon
