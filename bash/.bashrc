@@ -12,7 +12,6 @@ alias ls='exa -aF --icons  --group-directories-first'
 alias ll='exa -lahF --icons --group-directories-first'
 alias cat='bat --theme=gruvbox-dark'
 alias vim='nvim'
-alias pk='pikaur'
 alias icat="kitty +kitten icat"
 alias kdiff='git difftool --no-symlinks --dir-diff'
 

@@ -6,6 +6,7 @@ return {
   config = true,
   opts = {
     user_default_options = {
+      RGB = false,
       names = false,
     },
   },

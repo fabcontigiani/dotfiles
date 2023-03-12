@@ -24,10 +24,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import os
 import subprocess
-from libqtile import bar, hook, layout, widget
+from libqtile import bar, hook, layout
 from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
+from qtile_extras import widget
 
 mod = "mod4"
 colors = {
@@ -58,11 +60,61 @@ colors = {
         "orange_fg": "#fe8019",
         }
 
-keys = [
-    # A list of available commands that can be bound to keys can be found
-    # at https://docs.qtile.org/en/latest/manual/config/lazy.html
+previous_focused = []
 
-    # Switch between windows
+
+@hook.subscribe.client_focus
+def client_focused(window):
+    global previous_focused
+    if len(previous_focused) < 2:
+        previous_focused.append(window)
+    elif previous_focused[1] != window:
+        previous_focused[0] = previous_focused[1]
+        previous_focused[1] = window
+    # logger.info(f"FOCUSED {window}, {previous_focused}")
+
+
+@lazy.function
+def focus_previous_window(qtile):
+    global previous_focused
+    if len(previous_focused) == 2:
+        group = previous_focused[0].group
+        qtile.current_screen.set_group(group)
+        # logger.info(f"FOCUS PREVIOUS {previous_focused[0]}")
+        group.focus(previous_focused[0])
+
+
+@lazy.function
+def go_to_empty_group(qtile):
+    for group in qtile.groups:
+        if not group.windows:
+            qtile.current_screen.set_group(group)
+            break
+
+
+@lazy.function
+def send_to_empty_group(qtile, switch_group: bool = False):
+    for group in qtile.groups:
+        if not group.windows:
+            qtile.current_window.togroup(group.name)
+            if switch_group:
+                qtile.current_screen.set_group(group)
+            break
+
+
+@hook.subscribe.client_focus
+def bring_floating_to_front(window):
+    if window.floating:
+        window.cmd_bring_to_front()
+
+
+@hook.subscribe.startup_once
+def autostart():
+    home = os.path.expanduser('~/.config/autostart.sh')
+    subprocess.Popen([home])
+
+
+keys = [
     Key([mod], "h", lazy.layout.left(),
         desc="Move focus to left"),
     Key([mod], "l", lazy.layout.right(),
@@ -71,9 +123,6 @@ keys = [
         desc="Move focus down"),
     Key([mod], "k", lazy.layout.up(),
         desc="Move focus up"),
-
-    # Move windows between left/right columns or move up/down in current stack.
-    # Moving out of range in Columns layout will create new column.
     Key([mod, "shift"], "h", lazy.layout.shuffle_left(),
         desc="Move window to the left"),
     Key([mod, "shift"], "l", lazy.layout.shuffle_right(),
@@ -82,9 +131,6 @@ keys = [
         desc="Move window down"),
     Key([mod, "shift"], "k", lazy.layout.shuffle_up(),
         desc="Move window up"),
-
-    # Grow windows. If current window is on the edge of screen and direction
-    # will be to screen edge - window would shrink.
     Key([mod, "control"], "h", lazy.layout.grow_left(),
         desc="Grow window to the left"),
     Key([mod, "control"], "l", lazy.layout.grow_right(),
@@ -93,25 +139,30 @@ keys = [
         desc="Grow window down"),
     Key([mod, "control"], "k", lazy.layout.grow_up(),
         desc="Grow window up"),
-    Key([mod], "n", lazy.layout.normalize(),
+    Key([mod], "equal", lazy.layout.normalize(),
         desc="Reset all window sizes"),
-    # Toggle between split and unsplit sides of stack.
-    # Split = all windows displayed
-    # Unsplit = 1 window displayed, like Max layout, but still with
-    # multiple stack panes
-    # Key([mod, "shift"], "Return", lazy.layout.toggle_split(),
-    #    desc="Toggle between split and unsplit sides of stack"),
-
-    Key([mod], "Tab", lazy.screen.next_group(),
-        desc="Move to next group"),
-    Key([mod, "shift"], "Tab", lazy.screen.prev_group(),
-        desc="Move to previous group"),
-
+    Key([mod], "BackSpace", lazy.layout.toggle_split(),
+        desc="Toggle between split and unsplit sides of stack"),
+    Key([mod], "Tab", lazy.group.next_window(),
+        desc="Move to next window"),
+    Key([mod, "shift"], "Tab", lazy.group.prev_window(),
+        desc="Move to previous window"),
+    Key([mod], "comma", lazy.prev_screen(),
+        desc="Move to previous screen"),
+    Key([mod], "period", focus_previous_window(),
+        desc="Move to last focused window"),
+    Key([mod], "grave", go_to_empty_group(),
+        desc="Go to empty group"),
+    Key([mod, "shift"], "grave", send_to_empty_group(),
+        desc="Send current window to empty group"),
+    Key([mod, "control"], "grave", send_to_empty_group(switch_group=True),
+        desc="Go to empty group carrying current window"),
     Key([mod], "f", lazy.window.toggle_fullscreen(),
         desc="Toggle fullscren"),
     Key([mod, "shift"], "f", lazy.window.toggle_floating(),
         desc="Toggle floating"),
 
+    # Application keybindings
     Key([mod, "shift"], "Return", lazy.spawn("firefox"),
         desc="Launch browser"),
     Key([mod], "Return", lazy.spawn("kitty"),
@@ -121,9 +172,9 @@ keys = [
         desc="Open application with rofi"),
     Key([mod, "control"], "space", lazy.spawn("rofi -show window -show-icons"),
         desc="Switch window with rofi"),
-    Key([mod], "e", lazy.spawn("kitty --class ranger -e ranger"),
+    Key([mod], "n", lazy.spawn("kitty --class ranger -e ranger"),
         desc="Open ranger"),
-    Key([mod, "shift"], "e", lazy.spawn("thunar"),
+    Key([mod, "shift"], "n", lazy.spawn("thunar"),
         desc="Open thunar"),
     Key([mod], "m", lazy.spawn("kitty --class pulsemixer -e pulsemixer"),
         desc="Open pulsemixer"),
@@ -155,7 +206,7 @@ keys = [
         desc="Play/pause media"),
     Key([], "XF86AudioNext", lazy.spawn("playerctl next -p spotify,%any"),
         desc="Next media"),
-    Key([], "XF86AudioPrev", lazy.spawn("playerctl next -p spotify,%any"),
+    Key([], "XF86AudioPrev", lazy.spawn("playerctl previous -p spotify,%any"),
         desc="Previous media"),
 
     # Screen brightness control
@@ -185,52 +236,31 @@ groups = [Group(i) for i in "123456789"]
 for i in groups:
     keys.extend(
         [
-            # mod1 + letter of group = switch to group
-            Key(
-                [mod],
-                i.name,
+            Key([mod], i.name,
                 lazy.group[i.name].toscreen(),
-                desc="Switch to group {}".format(i.name),
-            ),
-            # mod1 + shift + letter of group = switch to & move focused window
-            # to group
-            Key(
-                [mod, "shift"],
-                i.name,
+                desc=f"Switch to group {i.name}"),
+            Key([mod, "shift"], i.name,
+                lazy.window.togroup(i.name),
+                desc=f"Move focused window to group {i.name}"),
+            Key([mod, "control"], i.name,
                 lazy.window.togroup(i.name, switch_group=True),
-                desc=f"Switch to & move focused window to group {i.name}",
-            ),
-            # Or, use below if you prefer not to switch to that group.
-            # # mod1 + shift + letter of group = move focused window to group
-            # Key([mod, "shift"], i.name, lazy.window.togroup(i.name),
-            #     desc="move focused window to group {}".format(i.name)),
+                desc=f"Switch to & move focused window to group {i.name}"),
         ]
     )
 
 layouts = [
     layout.Columns(border_focus=colors["fg2"],
-                   border_focus_stack=colors["fg2"],
+                   border_focus_stack=colors["yellow"],
                    border_normal=colors["bg2"],
                    border_normal_stack=colors["bg2"],
                    border_width=4),
-    # layout.Max(),
-    # layout.Stack(num_stacks=2),
-    # layout.Bsp(),
-    # layout.Matrix(),
-    # layout.MonadTall(),
-    # layout.MonadWide(),
-    # layout.RatioTile(),
-    # layout.Tile(),
-    # layout.TreeTab(),
-    # layout.VerticalTile(),
-    # layout.Zoomy(),
 ]
 
-widget_defaults = dict(
-    font="JetBrains Mono Nerd Font",
-    fontsize=15,
-    padding=10,
-)
+widget_defaults = {
+    "font": "JetBrains Mono Nerd Font",
+    "fontsize": 15,
+    "padding": 10,
+}
 extension_defaults = widget_defaults.copy()
 
 screens = [
@@ -243,8 +273,8 @@ screens = [
                 widget.Spacer(),
                 widget.GroupBox(highlight_method="line",
                                 active=colors["fg"],
-                                this_screen_border=colors["yellow"],
-                                this_current_screen_border=colors["yellow"],
+                                this_screen_border=colors["purple"],
+                                this_current_screen_border=colors["purple"],
                                 other_screen_border=colors["gray"],
                                 other_current_screen_border=colors["gray"],
                                 padding=8),
@@ -260,21 +290,34 @@ screens = [
                 widget.PulseVolume(foreground=colors["fg"],
                                    fmt='󰕾 {}',
                                    step=5),
-                # widget.PulseVolume(foreground=colors["fg"],
-                #                    cardid=260,
-                #                    fmt=' {}',
-                #                    step=5),
                 widget.Backlight(backlight_name='intel_backlight',
                                  foreground=colors["fg"],
                                  fmt='󰛨 {}',
                                  step=5),
+                widget.UPowerWidget(foreground=colors["fg"],
+                                    border_charge_colour=colors["green_fg"],
+                                    border_colour=colors["fg"],
+                                    border_critical_colour=colors["red_fg"],
+                                    fill_charge=colors["fg"],
+                                    fill_critical=colors["red_fg"],
+                                    fill_low=colors["orange_fg"],
+                                    fill_normal=colors["fg"],
+                                    percentage_low=0.3,
+                                    margin=4),
                 widget.Battery(foreground=colors["fg"],
-                               format='  {percent:2.0%}'),
+                               low_foreground=colors["red_fg"],
+                               format='{char}{percent:2.0%}',
+                               padding=4,
+                               unknown_char="",
+                               notify_below=10,
+                               notification_timeout=0),
             ],
-            28,
+            26,
             background=colors["bg"],
         ),
+        wallpaper=os.path.expanduser('~/.config/wallpaper.png')
     ),
+    Screen(wallpaper=os.path.expanduser('~/.config/wallpaper.png')),
 ]
 
 # Drag floating layouts.
@@ -304,7 +347,7 @@ floating_layout = layout.Floating(
         Match(title="pinentry"),  # GPG key password entry
     ],
     border_width=4,
-    border_focus=colors["fg2"],
+    border_focus=colors["purple"],
     border_normal=colors["bg2"],
 )
 auto_fullscreen = False
@@ -327,8 +370,3 @@ wl_input_rules = None
 # We choose LG3D to maximize irony: it is a 3D non-reparenting WM written in
 # java that happens to be on java's whitelist.
 wmname = "LG3D"
-
-
-@hook.subscribe.startup_once
-def autostart_once():
-    subprocess.run('/home/fab/.config/autostart.sh')

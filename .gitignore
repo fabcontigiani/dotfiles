@@ -1,2 +1,3 @@
 *.json
 qtile/.config/qtile/__pycache__/*
+qutebrowser/.config/qutebrowser/autoconfig.yml

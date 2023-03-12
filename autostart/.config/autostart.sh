@@ -1,7 +1,6 @@
 #!/bin/sh
 
 autorandr -c &
-. ~/.fehbg &
 picom &
 lxsession &
 dunst &
