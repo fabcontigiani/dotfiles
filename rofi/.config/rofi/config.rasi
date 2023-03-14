@@ -1,6 +1,6 @@
 configuration {
 /*	modes: "window,drun,run,ssh";*/
-	font: "JetBrains Mono Nerd Font 14";
+	font: "Iosevka Term Nerd Font 14";
 /*	location: 0;*/
 /*	yoffset: 0;*/
 /*	xoffset: 0;*/
