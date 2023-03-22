@@ -21,10 +21,10 @@
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
 ;;
-(setq doom-font (font-spec :family "Iosevka Term Nerd Font" :size 16))
-      ;;doom-variable-pitch-font (font-spec :family "Iosevka Aile" :size 16)
-      ;;doom-serif-font (font-spec :family "Iosevka Etoile" :size 16)
-      ;;doom-unicode-font (font-spec :family "Iosevka Nerd Font" :size 16))
+(setq doom-font (font-spec :family "Iosevka" :size 16)
+      doom-variable-pitch-font (font-spec :family "Iosevka Aile" :size 16)
+      doom-serif-font (font-spec :family "Iosevka Etoile" :size 16)
+      doom-unicode-font (font-spec :family "Iosevka Nerd Font" :size 16))
 ;;
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
@@ -114,15 +114,25 @@
          (file+head "${slug}.org" "#+title: ${title}\n")
          :unnarrowed t)))
 
-;; Org-noter directory
-(setq org-noter-notes-search-path '("/home/fab/note-box/notes/"))
-
 (setq citar-bibliography '("/home/fab/note-box/biblio/references.bib")
-      citar-notes-paths '("/home/fab/note-box/biblio/"))
+      citar-notes-paths '("/home/fab/note-box/pages/"))
 
 ;; Don't fontify subscripts and superscripts
 (setq org-pretty-entities-include-sub-superscripts 'nil)
 (setq font-latex-fontify-script 'nil)
 
+;; disable hl-line mode when in rainbow-mode
 (add-hook! 'rainbow-mode-hook
   (hl-line-mode (if rainbow-mode -1 +1)))
+
+;; fix scrot borders for org-download-screenshot
+(after! org-download
+  (setq org-download-screenshot-method '"scrot -s -l mode=edge %s"))
+
+;; org-modern
+(add-hook 'org-mode-hook #'org-modern-mode)
+(add-hook 'org-agenda-finalize-hook #'org-modern-agenda)
+(setq org-modern-label-border 'nil)
+
+;; (after! tex
+;;   (setq TeX-view-program-selection '((output-pdf "Sioyek"))))

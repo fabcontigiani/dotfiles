@@ -126,7 +126,7 @@ font:
     #   - (macOS) Menlo
     #   - (Linux/BSD) monospace
     #   - (Windows) Consolas
-    family: JetBrains Mono Nerd Font
+    family: Iosevka Term Nerd Font
 
     # The `style` can be specified to pick a specific face.
     #style: Regular
@@ -213,9 +213,9 @@ colors:
   #
   # Allowed values are CellForeground/CellBackground, which reference the
   # affected cell, or hexadecimal colors like #ff00ff.
-  #cursor:
-  #  text: CellBackground
-  #  cursor: CellForeground
+  cursor:
+    text: '#665c54'
+    cursor: '#bdae93'
 
   # Vi mode cursor colors
   #
