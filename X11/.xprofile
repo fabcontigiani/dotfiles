@@ -16,9 +16,10 @@ export EDITOR=nvim
 export QT_QPA_PLATFORMTHEME=qt6ct
 
 export PATH="${PATH}:$HOME/.local/bin"
-export PATH="${PATH}:$HOME/.emacs.d/bin"
+export PATH="${PATH}:$HOME/doom-emacs/bin"
 export PATH="${PATH}:$HOME/.cargo/env"
 export PATH="${PATH}:$HOME/MATLAB/R2022a/bin"
 
 xinput set-prop "Synaptics TM3053-003" "libinput Tapping Enabled" 1 &
-xinput set-prop "Synaptics TM3053-003" "libinput Natural Scrolling Enabled" 1
+xinput set-prop "Synaptics TM3053-003" "libinput Natural Scrolling Enabled" 1 &
+xcape -e "Control_L=Escape"

@@ -51,4 +51,5 @@
 
 (package! org-fragtog)
 (package! org-sticky-header)
-(package! org-modern)
+;(package! djvu)
+(unpin! org-noter)

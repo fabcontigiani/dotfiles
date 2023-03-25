@@ -1,3 +1,6 @@
 clear lock
-keycode 66 = Escape
+clear control
+keycode 66 = Control_L
+add control = Control_L
+add Lock = Control_R
 keycode 108 = Multi_key Alt_R Meta_R Alt_R Meta_R
