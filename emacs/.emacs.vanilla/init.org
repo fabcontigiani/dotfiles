@@ -1,6 +1,15 @@
-;; NOTE: init.el is now generated from init.org
-;;       Please edit that file in Emacs and init.el will be generated automatically!
+#+title: Emacs Configuration
+#+property: header-args :tangle ./init.el
+#+auto_tangle: t
 
+* Emacs Configuration
+#+begin_src emacs-lisp
+    ;; NOTE: init.el is now generated from init.org
+    ;;       Please edit that file in Emacs and init.el will be generated automatically!
+#+end_src
+** Package System Configuration
+*** straight.el
+#+begin_src emacs-lisp
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -13,14 +22,24 @@
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
+#+end_src
 
+*** use-package
+#+begin_src emacs-lisp
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
+#+end_src
 
+** Custom File
+#+begin_src emacs-lisp
 ;; Move customization variables to a separate file and load it
 (setq custom-file (locate-user-emacs-file "custom-file.el"))
 (load custom-file 'noerror 'nomessage)
+#+end_src
 
+** UI
+*** Basic UI Configuration
+#+begin_src emacs-lisp
 (setq inhibit-startup-message t)
 
 (scroll-bar-mode -1)  ; Disable visible scrollbar
@@ -37,11 +56,16 @@
 
 ;; Highlight current line.
 (global-hl-line-mode t)
-
+#+end_src
+*** Font Configuration
+#+begin_src emacs-lisp
 (set-face-attribute 'default nil :font "Iosevka" :height 120)
 (set-face-attribute 'fixed-pitch nil :font "Iosevka" :height 120)
 (set-face-attribute 'variable-pitch nil :font "Iosevka Aile" :height 120)
+#+end_src
 
+*** Line Numbers
+#+begin_src emacs-lisp
 ;; Enable line numbers for some modes
 (dolist (mode '(text-mode-hook
                 prog-mode-hook
@@ -51,7 +75,10 @@
 (dolist (mode '(org-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 (setq display-line-numbers-type 'relative)
+#+end_src
 
+*** Color Theme
+#+begin_src emacs-lisp
 (use-package doom-themes
   :config
   ;; Global settings (defaults)
@@ -68,14 +95,24 @@
   (doom-themes-treemacs-config)
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
+#+end_src
 
+*** Modeline
+#+begin_src emacs-lisp
 (use-package all-the-icons)
 (use-package doom-modeline)
   :init (doom-modeline-mode 1)
+#+end_src
 
+*** Rainbow Delimiters
+#+begin_src emacs-lisp
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
 
+** Keybindings
+*** Evil
+#+begin_src emacs-lisp
 ;;; Vim Bindings
 (use-package evil
   :demand t
@@ -94,13 +131,19 @@
     (define-key evil-motion-state-map (kbd "RET") nil)
     (define-key evil-motion-state-map (kbd "TAB") nil))
 (use-package undo-fu) ;; needed for undo functionality
+#+end_src
 
+**** evil-collection
+#+begin_src emacs-lisp
 ;;; Vim Bindings Everywhere else
 (use-package evil-collection
   :after evil
   :config
   (evil-collection-init))
+#+end_src
 
+**** evil-googles
+#+begin_src emacs-lisp
 (use-package evil-goggles
   :after evil
   :config
@@ -111,14 +154,19 @@
   ;; some red color (as defined by the color theme)
   ;; other faces such as `diff-added` will be used for other actions
   (evil-goggles-use-diff-faces))
+#+end_src
 
+**** evil-org
+#+begin_src emacs-lisp
 (use-package evil-org
   :after org
   :hook (org-mode . evil-org-mode)
   :config
   (require 'evil-org-agenda)
   (evil-org-agenda-set-keys))
-
+#+end_src
+*** General
+#+begin_src emacs-lisp
 (use-package general
   :config
   (general-evil-setup t)
@@ -133,13 +181,20 @@
   "tt" '(load-theme :which-key "choose theme")
   ":"  '(execute-extended-command :which-key "execute command")
   "."  '(find-file :which-key "find file"))
+#+end_src
 
+*** Which-key
+#+begin_src emacs-lisp
 (use-package which-key
   :init (which-key-mode)
   :diminish wich-key-mode
   :config
   (setq which-key-delay 0.3))
+#+end_src
 
+** Completion
+*** Vertico
+#+begin_src emacs-lisp
 (use-package vertico
   :straight (:files (:defaults "extensions/*")
                      :includes (vertico-buffer
@@ -167,7 +222,9 @@
   :bind (:map vertico-map
               ("C-j" . vertico-next)
               ("C-k" . vertico-previous)))
-
+#+End_src
+**** vertico-directory
+#+begin_src emacs-lisp
 ;; Configure directory extension.
 (use-package vertico-directory
   :straight nil
@@ -179,26 +236,36 @@
 	      ("M-DEL" . vertico-directory-delete-word))
   ;; Tidy shadowed file names
   :hook (rfn-eshadow-update-overlay . vertico-directory-tidy))
-
+#+end_src
+**** vertico-mouse
+#+begin_src emacs-lisp
 (use-package vertico-mouse
   :straight nil
   :after vertico
   :config (vertico-mouse-mode))
+#+end_src
 
+*** savehist
+#+begin_src emacs-lisp
 ;; Persist history over Emacs restarts. Vertico sorts by history position.
 (use-package savehist
   :init
   (savehist-mode))
 (recentf-mode 1)
 (save-place-mode 1)
-
+#+end_src
+*** Corfu
+#+begin_src emacs-lisp
 ;; Corfu
 (use-package corfu
   :custom
   (corfu-auto t)
   :init
   (global-corfu-mode))
+#+end_src
 
+*** Cape
+#+begin_src emacs-lisp
 (use-package cape
   ;; Bind dedicated completion commands
   ;; Alternative prefix keys: C-c p, M-p, M-+, ...
@@ -233,7 +300,10 @@
   ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
   ;;(add-to-list 'completion-at-point-functions #'cape-line)
 )
+#+end_src
 
+*** Orderless
+#+begin_src emacs-lisp
 (use-package orderless
   :init
   ;; Configure a custom style dispatcher (see the Consult wiki)
@@ -242,7 +312,10 @@
   (setq completion-styles '(orderless basic)
         completion-category-defaults nil
         completion-category-overrides '((file (styles partial-completion)))))
+#+end_src
 
+*** Marginalia
+#+begin_src emacs-lisp
 ;; Enable rich annotations using the Marginalia package
 (use-package marginalia
   ;; Either bind `marginalia-cycle' globally or only in the minibuffer
@@ -256,7 +329,10 @@
   ;; Must be in the :init section of use-package such that the mode gets
   ;; enabled right away. Note that this forces loading the package.
   (marginalia-mode))
+#+end_src
 
+*** Embark
+#+begin_src emacs-lisp
 (use-package embark
   :bind
   (("C-;" . embark-act)         ;; pick some comfortable binding
@@ -280,7 +356,10 @@
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
                  nil
                  (window-parameters (mode-line-format . none)))))
+#+end_src
 
+*** Consult
+#+begin_src emacs-lisp
 (use-package consult
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings (mode-specific-map)
@@ -398,11 +477,16 @@
   ;;;; 5. No project support
   ;; (setq consult-project-function nil)
   )
+#+end_src
 
+*** Embark-consult
+#+begin_src emacs-lisp
 (use-package embark-consult
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
-
+#+end_src
+** Misc
+#+begin_src emacs-lisp
 (use-package emacs
   :straight (:type built-in)
   :init
@@ -445,7 +529,11 @@
 
 ;; Enable recursive minibuffers
 (setq enable-recursive-minibuffers t)
+#+end_src
 
+** Org Mode
+
+#+begin_src emacs-lisp
 (defun fab/org-mode-setup ()
   (org-indent-mode)
   (variable-pitch-mode 1)
@@ -502,7 +590,11 @@
  'org-babel-load-languages
  '((emacs-lisp . t)
    (python . t)))
+#+end_src
 
+*** Visual-fill-column
+
+#+begin_src emacs-lisp
 (defun fab/org-mode-visual-fill ()
   (setq visual-fill-column-width 100
         visual-fill-column-center-text t)
@@ -510,7 +602,11 @@
 
 (use-package visual-fill-column
   :hook (org-mode . fab/org-mode-visual-fill))
+#+end_src
 
+*** Org-modern
+
+#+begin_src emacs-lisp
 ;; (use-package org-modern
 ;;   :after org
 ;;   :config
@@ -519,32 +615,53 @@
 ;;   :init
 ;;   (add-hook 'org-mode-hook #'org-modern-mode)
 ;;   (add-hook 'org-agenda-finalize-hook #'org-modern-agenda))
+#+end_src
 
+*** Org-fragtog
+
+#+begin_src emacs-lisp
 (use-package org-fragtog
   :after org
   :init
   (add-hook 'org-mode-hook #'org-fragtog-mode))
+#+end_src
 
+*** Org-appear
+#+begin_src emacs-lisp
 (use-package org-appear
   :after org
   :hook (org-mode . org-appear-mode))
+#+end_src
 
+*** Org-auto-tangle
+
+#+begin_src emacs-lisp
 (use-package org-auto-tangle
   :after org
   :defer t
   :hook (org-mode . org-auto-tangle-mode))
+  #+end_src
 
+*** Org-sticky-header
+
+#+begin_src emacs-lisp
 (use-package org-sticky-header
   :after org
   :defer t
   :hook (org-mode . org-sticky-header-mode))
+#+end_src
 
+*** Org-download
+#+begin_src emacs-lisp
 (use-package org-download
    :after org
    :custom
    (org-download-method 'attach)
    (org-download-screenshot-method '"scrot -s -l mode=edge %s"))
+#+end_src
 
+** Org-Roam
+#+begin_src emacs-lisp
 (use-package org-roam
   :custom
   (org-roam-directory "/home/fab/note-box/pages/")
@@ -559,7 +676,10 @@
   ;; If you're using a vertical completion framework, you might want a more informative completion interface
   (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (org-roam-db-autosync-mode))
+  #+end_src
 
+** Citar
+#+begin_src emacs-lisp
 (use-package citar
   :custom
   (org-cite-global-bibliography '("/home/fab/note-box/biblio/references.bib"))
@@ -571,14 +691,23 @@
   :hook
   (LaTeX-mode . citar-capf-setup)
   (org-mode . citar-capf-setup))
+#+end_src
 
+*** Citar-embark
+#+begin_src emacs-lisp
 (use-package citar-embark
   :no-require
   :config (citar-embark-mode))
+#+end_src
 
+*** citar-org-roam
+#+begin_src emacs-lisp
 (use-package citar-org-roam
   :config (citar-org-roam-mode))
+#+end_src
 
+** Org-noter
+#+begin_src emacs-lisp
 (use-package org-noter
     :custom
         (org-noter-notes-search-path '("/home/fab/note-box/pages"))
@@ -587,24 +716,37 @@
           :keymaps '(org-noter-mode-map pdf-view-mode-map)
             "I" 'org-noter-insert-note-toggle-no-questions
             "i" 'org-noter-insert-note))
+#+end_src
 
+** Spellchecking
+#+begin_src emacs-lisp
 (use-package jinx
   :config
      (global-jinx-mode)
      (setq jinx-languages '("en" "es"))
 (keymap-global-set "<remap> <ispell-word>" #'jinx-correct))
+#+end_src
+** AUCTeX
 
+#+begin_src emacs-lisp
 (use-package tex
     :straight auctex
     :init
     (require 'texmathp)
     (require 'preview))
+#+end_src
 
+*** CDLaTeX
+
+#+begin_src emacs-lisp
 (use-package cdlatex
    :hook
    (LaTeX-mode . turn-on-cdlatex)
    (org-mode . turn-on-org-cdlatex))
+#+end_src
 
+*** math-delimiters
+#+begin_src emacs-lisp
 (use-package math-delimiters
   :straight (:host github :repo "oantolin/math-delimiters")
   :config
@@ -615,16 +757,28 @@
     (define-key TeX-mode-map "$" #'math-delimiters-insert))
   (with-eval-after-load 'cdlatex
     (define-key cdlatex-mode-map "$" nil)))
+#+end_src
 
+** Helpful
+
+#+begin_src emacs-lisp
 (use-package helpful
   :bind
   ([remap describe-function] . helpful-callable)
   ([remap describe-command] . helpful-command)
   ([remap describe-variable] . helpful-variable)
   ([remap describe-key] . helpful-key))
+#+end_src
 
+** Magit
+
+#+begin_src emacs-lisp
 (use-package magit)
+#+end_src
 
+** Projectile
+
+#+begin_src emacs-lisp
 (use-package projectile
   :diminish projectile-mode
   :config (projectile-mode)
@@ -637,7 +791,11 @@
 (use-package consult-projectile
   :after projectile)
 (use-package rg)
+#+end_src
 
+** Treemacs
+
+#+begin_src emacs-lisp
 (use-package treemacs
   :defer t
   :init
@@ -655,8 +813,12 @@
 
 (use-package treemacs-magit
   :after (treemacs magit))
+#+end_src
 
+** pdf-tools
+#+begin_src emacs-lisp
 (use-package pdf-tools
   :magic ("%PDF" . pdf-view-mode)
   :config
   (pdf-loader-install :no-query))
+#+end_src
