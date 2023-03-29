@@ -61,20 +61,49 @@
 
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
-  ;; Enable custom neotree theme (all-the-icons must be installed!)
-  (doom-themes-neotree-config)
-  ;; or for treemacs users
+  ;; Enable custom treemacs theme (all-the-icons must be installed!)
   (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
   (doom-themes-treemacs-config)
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
 
-(use-package all-the-icons)
+(use-package solaire-mode
+  :init (solaire-global-mode))
+
 (use-package doom-modeline)
   :init (doom-modeline-mode 1)
 
+(use-package all-the-icons)
+
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
+
+(use-package vi-tilde-fringe
+  :hook (prog-mode . vi-tilde-fringe-mode))
+
+(use-package diff-hl
+  :init (global-diff-hl-mode))
+
+(use-package highlight-indent-guides
+  :hook (prog-mode . highlight-indent-guides-mode)
+  :custom
+  (highlight-indent-guides-method 'character)
+  (highlight-indent-guides-responsive 'top))
+
+(use-package ligature
+  :straight (:host github :repo "mickeynp/ligature.el")
+  :config
+  ;; Enable all Iosevka ligatures in programming modes
+  (ligature-set-ligatures 'prog-mode '("<---" "<--"  "<<-" "<-" "->" "-->" "--->" "<->" "<-->" "<--->" "<---->" "<!--"
+                                       "<==" "<===" "<=" "=>" "=>>" "==>" "===>" ">=" "<=>" "<==>" "<===>" "<====>" "<!---"
+                                       "<~~" "<~" "~>" "~~>" "::" ":::" "==" "!=" "===" "!=="
+                                       ":=" ":-" ":+" "<*" "<*>" "*>" "<|" "<|>" "|>" "+:" "-:" "=:" "<******>" "++" "+++"))
+  ;; Enables ligature checks globally in all buffers. You can also do it
+  ;; per mode with `ligature-mode'.
+  (global-ligature-mode t))
+
+(use-package minimap
+  :defer t)
 
 ;;; Vim Bindings
 (use-package evil
@@ -93,6 +122,7 @@
     (define-key evil-motion-state-map (kbd "SPC") nil)
     (define-key evil-motion-state-map (kbd "RET") nil)
     (define-key evil-motion-state-map (kbd "TAB") nil))
+
 (use-package undo-fu) ;; needed for undo functionality
 
 ;;; Vim Bindings Everywhere else
@@ -305,7 +335,7 @@
          ("M-y" . consult-yank-pop)                ;; orig. yank-pop
          ;; M-g bindings (goto-map)
          ("M-g e" . consult-compile-error)
-         ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+         ("M-g f" . consult-flycheck)               ;; Alternative: consult-flymake
          ("M-g g" . consult-goto-line)             ;; orig. goto-line
          ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
          ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
@@ -447,7 +477,6 @@
 (setq enable-recursive-minibuffers t)
 
 (defun fab/org-mode-setup ()
-  (org-indent-mode)
   (variable-pitch-mode 1)
   (visual-line-mode 1))
 
@@ -465,7 +494,6 @@
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
   (set-face-attribute 'org-block nil :inherit 'fixed-pitch)
-  (set-face-attribute 'org-latex-and-related nil :foreground "#b8bb26" :weight 'normal :inherit '(org-formula fixed-pitch))
   (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
   (set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
   (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
@@ -473,13 +501,13 @@
   (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
   (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
 
+
 (use-package org
   :hook (org-mode . fab/org-mode-setup)
   :init (setq org-directory "/home/fab/org/")
   :config
   (setq org-hide-emphasis-markers t
         org-pretty-entities t
-        org-pretty-entities-include-sub-superscripts nil
         org-format-latex-options (plist-put org-format-latex-options :scale 1.5)
         org-startup-with-latex-preview t
         org-highlight-latex-and-related '(native scripts entities)
@@ -490,18 +518,21 @@
         org-attach-id-dir "/home/fab/note-box/assets/"
         org-attach-dir "/home/fab/note-box/assets/"
         org-attach-store-link-p 'attached)
+  
+  ;; Fix org-mode latex preview background color
   (require 'org-src)
   (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t)))
-  (fab/org-font-setup))
 
-(require 'org-tempo)
-(add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-(add-to-list 'org-structure-template-alist '("py" . "src python"))
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((emacs-lisp . t)
-   (python . t)))
+  (fab/org-font-setup)
+  
+  (require 'org-tempo)
+  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("py" . "src python"))
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (python . t))))
 
 (defun fab/org-mode-visual-fill ()
   (setq visual-fill-column-width 100
@@ -511,14 +542,14 @@
 (use-package visual-fill-column
   :hook (org-mode . fab/org-mode-visual-fill))
 
-;; (use-package org-modern
-;;   :after org
-;;   :config
-;;   (setq org-modern-hide-stars nil
-;; 	org-modern-table nil)
-;;   :init
-;;   (add-hook 'org-mode-hook #'org-modern-mode)
-;;   (add-hook 'org-agenda-finalize-hook #'org-modern-agenda))
+(use-package org-modern
+  :after org
+  :custom
+  (org-modern-table nil)
+  (org-modern-block-fringe nil)
+  :init
+  (add-hook 'org-mode-hook #'org-modern-mode)
+  (add-hook 'org-agenda-finalize-hook #'org-modern-agenda))
 
 (use-package org-fragtog
   :after org
@@ -535,7 +566,7 @@
   :hook (org-mode . org-auto-tangle-mode))
 
 (use-package org-sticky-header
-  :after org
+  :after (org org-modern)
   :defer t
   :hook (org-mode . org-sticky-header-mode))
 
@@ -548,7 +579,7 @@
 (use-package org-roam
   :custom
   (org-roam-directory "/home/fab/note-box/pages/")
-  :bind (("C-c n l" . org-roam-buffer-toggle)
+  :bind (("C-c n t" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
          ("C-c n g" . org-roam-graph)
          ("C-c n i" . org-roam-node-insert)
@@ -560,13 +591,43 @@
   (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (org-roam-db-autosync-mode))
 
+(use-package citar-org-roam
+  :after org-roam
+  :config (citar-org-roam-mode))
+
+(use-package consult-org-roam
+   :after org-roam
+   :init
+   (require 'consult-org-roam)
+   ;; Activate the minor mode
+   (consult-org-roam-mode 1)
+   :custom
+   ;; Use `ripgrep' for searching with `consult-org-roam-search'
+   (consult-org-roam-grep-func #'consult-ripgrep)
+   ;; Configure a custom narrow key for `consult-buffer'
+   (consult-org-roam-buffer-narrow-key ?r)
+   ;; Display org-roam buffers right after non-org-roam buffers
+   ;; in consult-buffer (and not down at the bottom)
+   (consult-org-roam-buffer-after-buffers t)
+   :config
+   ;; Eventually suppress previewing for certain functions
+   (consult-customize
+    consult-org-roam-forward-links
+    :preview-key (kbd "M-."))
+   :bind
+   ;; Define some convenient keybindings as an addition
+   ("C-c n e" . consult-org-roam-file-find)
+   ("C-c n b" . consult-org-roam-backlinks)
+   ("C-c n l" . consult-org-roam-forward-links)
+   ("C-c n r" . consult-org-roam-search))
+
 (use-package citar
   :custom
-  (org-cite-global-bibliography '("/home/fab/note-box/biblio/references.bib"))
+  (org-cite-global-bibliography '("/home/fab/note-box/references/references.bib"))
   (org-cite-insert-processor 'citar)
   (org-cite-follow-processor 'citar)
   (org-cite-activate-processor 'citar)
-  (citar-bibliography org-cite-global-bibliography)
+  (citar-bibliography '("/home/fab/note-box/references/references.bib"))
   (citar-notes-paths '("/home/fab/note-box/pages/"))
   :hook
   (LaTeX-mode . citar-capf-setup)
@@ -575,9 +636,6 @@
 (use-package citar-embark
   :no-require
   :config (citar-embark-mode))
-
-(use-package citar-org-roam
-  :config (citar-org-roam-mode))
 
 (use-package org-noter
     :custom
@@ -589,10 +647,15 @@
             "i" 'org-noter-insert-note))
 
 (use-package jinx
-  :config
+  :init
      (global-jinx-mode)
      (setq jinx-languages '("en" "es"))
 (keymap-global-set "<remap> <ispell-word>" #'jinx-correct))
+
+(use-package langtool
+  :straight (:host github :repo "mhayashi1120/Emacs-langtool")
+  :custom
+  (langtool-java-classpath "/usr/share/languagetool:/usr/share/java/languagetool/*"))
 
 (use-package tex
     :straight auctex
@@ -636,7 +699,23 @@
 
 (use-package consult-projectile
   :after projectile)
-(use-package rg)
+
+(use-package flycheck
+  :init (global-flycheck-mode))
+
+(use-package consult-flycheck
+  :after flycheck)
+
+(use-package rg
+  :defer t)
+
+(use-package tree-sitter
+  :init (global-tree-sitter-mode)
+  :hook
+  (python-mode . tree-sitter-hl-mode))
+
+(use-package tree-sitter-langs
+  :after tree-sitter)
 
 (use-package treemacs
   :defer t
@@ -660,3 +739,25 @@
   :magic ("%PDF" . pdf-view-mode)
   :config
   (pdf-loader-install :no-query))
+
+(use-package lsp-mode
+  :init
+  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+  (setq lsp-keymap-prefix "C-c l")
+  :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+	 (python-mode . lsp-mode) ; pip install python-language-server[all]
+	 (LaTeX-mode . lsp-mode) ; pacman -S texlab
+         ;; if you want which-key integration
+         (lsp-mode . lsp-enable-which-key-integration))
+  :commands lsp)
+
+(use-package lsp-ui
+  :after lsp-mode
+  :commands lsp-ui-mode)
+
+(use-package consult-lsp
+  :after lsp-mode)
+
+(use-package lsp-treemacs
+  :after lsp-mode
+  :commands lsp-treemacs-errors-list)
