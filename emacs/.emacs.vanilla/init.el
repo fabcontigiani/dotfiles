@@ -222,57 +222,6 @@
 (recentf-mode 1)
 (save-place-mode 1)
 
-;; Corfu
-(use-package corfu
-  :custom
-  (corfu-auto t)
-  :init
-  (global-corfu-mode))
-
-(use-package cape
-  ;; Bind dedicated completion commands
-  ;; Alternative prefix keys: C-c p, M-p, M-+, ...
-  :bind (("C-c c p" . completion-at-point) ;; capf
-         ("C-c c t" . complete-tag)        ;; etags
-         ("C-c c d" . cape-dabbrev)        ;; or dabbrev-completion
-         ("C-c c h" . cape-history)
-         ("C-c c f" . cape-file)
-         ("C-c c k" . cape-keyword)
-         ("C-c c s" . cape-symbol)
-         ("C-c c a" . cape-abbrev)
-         ("C-c c i" . cape-ispell)
-         ("C-c c l" . cape-line)
-         ("C-c c w" . cape-dict)
-         ("C-c c \\" . cape-tex)
-         ("C-c c _" . cape-tex)
-         ("C-c c ^" . cape-tex)
-         ("C-c c &" . cape-sgml)
-         ("C-c c r" . cape-rfc1345))
-  :init
-  ;; Add `completion-at-point-functions', used by `completion-at-point'.
-  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-  (add-to-list 'completion-at-point-functions #'cape-file)
-  ;;(add-to-list 'completion-at-point-functions #'cape-history)
-  ;;(add-to-list 'completion-at-point-functions #'cape-keyword)
-  ;;(add-to-list 'completion-at-point-functions #'cape-tex)
-  ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
-  ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
-  ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
-  ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
-  ;;(add-to-list 'completion-at-point-functions #'cape-dict)
-  ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
-  ;;(add-to-list 'completion-at-point-functions #'cape-line)
-)
-
-(use-package orderless
-  :init
-  ;; Configure a custom style dispatcher (see the Consult wiki)
-  ;; (setq orderless-style-dispatchers '(+orderless-consult-dispatch orderless-affix-dispatch)
-  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
-  (setq completion-styles '(orderless basic)
-        completion-category-defaults nil
-        completion-category-overrides '((file (styles partial-completion)))))
-
 ;; Enable rich annotations using the Marginalia package
 (use-package marginalia
   ;; Either bind `marginalia-cycle' globally or only in the minibuffer
@@ -287,29 +236,14 @@
   ;; enabled right away. Note that this forces loading the package.
   (marginalia-mode))
 
-(use-package embark
-  :bind
-  (("C-;" . embark-act)         ;; pick some comfortable binding
-   ("C-'" . embark-dwim)        ;; good alternative: M-.
-   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
-
+(use-package orderless
   :init
-
-  ;; Optionally replace the key help with a completing-read interface
-  (setq prefix-help-command #'embark-prefix-help-command)
-
-  ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
-  ;; strategy, if you want to see the documentation from multiple providers.
-  (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
-
-  :config
-
-  ;; Hide the mode line of the Embark live/completions buffers
-  (add-to-list 'display-buffer-alist
-               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                 nil
-                 (window-parameters (mode-line-format . none)))))
+  ;; Configure a custom style dispatcher (see the Consult wiki)
+  ;; (setq orderless-style-dispatchers '(+orderless-consult-dispatch orderless-affix-dispatch)
+  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package consult
   ;; Replace bindings. Lazily loaded due by `use-package'.
@@ -429,9 +363,119 @@
   ;; (setq consult-project-function nil)
   )
 
+(use-package embark
+  :bind
+  (("C-;" . embark-act)         ;; pick some comfortable binding
+   ("C-:" . embark-dwim)        ;; good alternative: M-.
+   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+
+  :init
+
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
+  ;; strategy, if you want to see the documentation from multiple providers.
+  (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+
+  :config
+
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
 (use-package embark-consult
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
+
+;; Corfu
+(use-package corfu
+  :custom
+  (corfu-auto t)
+  :init
+  (global-corfu-mode))
+
+(use-package kind-icon
+  :after corfu
+  :custom
+  (kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
+(use-package cape
+  ;; Bind dedicated completion commands
+  ;; Alternative prefix keys: C-c p, M-p, M-+, ...
+  :bind (("C-c c p" . completion-at-point) ;; capf
+         ("C-c c t" . complete-tag)        ;; etags
+         ("C-c c d" . cape-dabbrev)        ;; or dabbrev-completion
+         ("C-c c h" . cape-history)
+         ("C-c c f" . cape-file)
+         ("C-c c k" . cape-keyword)
+         ("C-c c s" . cape-symbol)
+         ("C-c c a" . cape-abbrev)
+         ("C-c c i" . cape-ispell)
+         ("C-c c l" . cape-line)
+         ("C-c c w" . cape-dict)
+         ("C-c c \\" . cape-tex)
+         ("C-c c _" . cape-tex)
+         ("C-c c ^" . cape-tex)
+         ("C-c c &" . cape-sgml)
+         ("C-c c r" . cape-rfc1345))
+  :init
+  ;; Add `completion-at-point-functions', used by `completion-at-point'.
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  ;;(add-to-list 'completion-at-point-functions #'cape-history)
+  ;;(add-to-list 'completion-at-point-functions #'cape-keyword)
+  ;;(add-to-list 'completion-at-point-functions #'cape-tex)
+  ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
+  ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
+  ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
+  ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
+  ;;(add-to-list 'completion-at-point-functions #'cape-dict)
+  ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
+  ;;(add-to-list 'completion-at-point-functions #'cape-line)
+)
+
+;; Configure Tempel
+(use-package tempel
+  ;; Require trigger prefix before template name when completing.
+  ;; :custom
+  ;; (tempel-trigger-prefix "<")
+
+  :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
+         ("M-*" . tempel-insert))
+
+  :init
+
+  ;; Setup completion at point
+  (defun tempel-setup-capf ()
+    ;; Add the Tempel Capf to `completion-at-point-functions'.
+    ;; `tempel-expand' only triggers on exact matches. Alternatively use
+    ;; `tempel-complete' if you want to see all matches, but then you
+    ;; should also configure `tempel-trigger-prefix', such that Tempel
+    ;; does not trigger too often when you don't expect it. NOTE: We add
+    ;; `tempel-expand' *before* the main programming mode Capf, such
+    ;; that it will be tried first.
+    (setq-local completion-at-point-functions
+                (cons #'tempel-expand
+                      completion-at-point-functions)))
+
+  (add-hook 'prog-mode-hook 'tempel-setup-capf)
+  (add-hook 'text-mode-hook 'tempel-setup-capf)
+
+  ;; Optionally make the Tempel templates available to Abbrev,
+  ;; either locally or globally. `expand-abbrev' is bound to C-x '.
+  ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
+  ;; (global-tempel-abbrev-mode)
+)
+
+;; The package is young and doesn't have comprehensive coverage.
+(use-package tempel-collection
+  :after tempel)
 
 (use-package emacs
   :straight (:type built-in)
@@ -515,8 +559,8 @@
         org-edit-src-content-indentation 0
         org-return-follows-link t
         org-preview-latex-image-directory "/tmp/ltximg/"
-        org-attach-id-dir "/home/fab/note-box/assets/"
-        org-attach-dir "/home/fab/note-box/assets/"
+        org-attach-id-dir "/home/fab/note-box/attachments/"
+        org-attach-dir "/home/fab/note-box/attachments/"
         org-attach-store-link-p 'attached)
   
   ;; Fix org-mode latex preview background color
@@ -525,6 +569,7 @@
 
   (fab/org-font-setup)
   
+  ;; templates
   (require 'org-tempo)
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
@@ -578,7 +623,7 @@
 
 (use-package org-roam
   :custom
-  (org-roam-directory "/home/fab/note-box/pages/")
+  (org-roam-directory "/home/fab/note-box/")
   :bind (("C-c n t" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
          ("C-c n g" . org-roam-graph)
@@ -592,11 +637,9 @@
   (org-roam-db-autosync-mode))
 
 (use-package citar-org-roam
-  :after org-roam
   :config (citar-org-roam-mode))
 
 (use-package consult-org-roam
-   :after org-roam
    :init
    (require 'consult-org-roam)
    ;; Activate the minor mode
@@ -614,6 +657,8 @@
    (consult-customize
     consult-org-roam-forward-links
     :preview-key (kbd "M-."))
+   ;; Disable automatic latex preview when using consult live preview
+   (add-to-list 'consult-preview-variables '(org-startup-with-latex-preview . nil))
    :bind
    ;; Define some convenient keybindings as an addition
    ("C-c n e" . consult-org-roam-file-find)
@@ -650,18 +695,25 @@
   :init
      (global-jinx-mode)
      (setq jinx-languages '("en" "es"))
-(keymap-global-set "<remap> <ispell-word>" #'jinx-correct))
+     (keymap-global-set "<remap> <ispell-word>" #'jinx-correct))
 
-(use-package langtool
-  :straight (:host github :repo "mhayashi1120/Emacs-langtool")
+(use-package lsp-ltex
+  :hook (LaTeX-mode . (lambda ()
+                       (require 'lsp-ltex)
+                       (lsp-deferred)))  ; or lsp-deferred
   :custom
-  (langtool-java-classpath "/usr/share/languagetool:/usr/share/java/languagetool/*"))
+  (lsp-ltex-server-store-path nil)  ; use ltex-ls from PATH, install from AUR
+  (lsp-ltex-language "es-AR"))
 
-(use-package tex
+(use-package latex
     :straight auctex
     :init
     (require 'texmathp)
-    (require 'preview))
+    (require 'preview)
+    (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
+    :custom
+    (TeX-view-program-selection '((output-pdf "PDF Tools")))
+    (TeX-source-correlate-start-server t))
 
 (use-package cdlatex
    :hook
@@ -717,6 +769,9 @@
 (use-package tree-sitter-langs
   :after tree-sitter)
 
+(use-package ts-fold
+  :straight (ts-fold :type git :host github :repo "emacs-tree-sitter/ts-fold"))
+
 (use-package treemacs
   :defer t
   :init
@@ -747,6 +802,7 @@
   :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
 	 (python-mode . lsp-mode) ; pip install python-language-server[all]
 	 (LaTeX-mode . lsp-mode) ; pacman -S texlab
+	 (c-mode . lsp-mode) ; pacman -S clang
          ;; if you want which-key integration
          (lsp-mode . lsp-enable-which-key-integration))
   :commands lsp)
