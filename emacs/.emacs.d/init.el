@@ -11,6 +11,7 @@
 
   (require 'use-package-ensure)
   (setq use-package-always-ensure t)
+  (setq use-package-compute-statistics t)
 
   ;; TAB cycle if there are only few candidates
   (setq completion-cycle-threshold 3)
@@ -49,18 +50,22 @@
 
   :config
   (global-display-line-numbers-mode t)
+  (electric-pair-mode t)
   (scroll-bar-mode -1)
   (horizontal-scroll-bar-mode -1)
   (tool-bar-mode -1)
   (tooltip-mode -1)
   (menu-bar-mode -1)
+  (column-number-mode 1)
   (save-place-mode t)
   (savehist-mode t)
   (recentf-mode t)
+  (winner-mode 1)
   (global-auto-revert-mode 1)
   (global-hl-line-mode t)
   (blink-cursor-mode -1)
   (global-tree-sitter-mode 1)
+  (fset 'yes-or-no-p 'y-or-n-p) ;; change all prompts to y or n
 
   :custom
   (warning-minimum-level :error)
@@ -70,10 +75,23 @@
   (confirm-kill-emacs #'y-or-n-p)
   (display-line-numbers-type 'relative)
   (global-auto-revert-non-file-buffers t)
+  (package-install-upgrade-built-in t)
   (backup-directory-alist `(("." . ,(concat user-emacs-directory "backups"))))
 
   :bind
   (("C-/" . comment-dwim)))
+
+(use-package hideshow
+  :hook (prog-mode . hs-minor-mode))
+
+(use-package windmove
+  :init
+  (windmove-default-keybindings 'meta)
+  :bind
+  (("M-h" . windmove-left)
+   ("M-j" . windmove-down)
+   ("M-k" . windmove-up)
+   ("M-l" . windmove-right)))
 
 (use-package undo-fu)
 
@@ -97,12 +115,31 @@
   :config
   (evil-collection-init))
 
+(use-package evil-surround
+  :after evil
+  :config
+  (global-evil-surround-mode 1))
+
+(use-package evil-snipe
+  :after evil
+  :config
+  (evil-snipe-mode 1)
+  (evil-snipe-override-mode 1)
+  :custom
+  (evil-snipe-scope 'visible)
+  (evil-snipe-smart-case t))
+
 (use-package evil-goggles
   :after evil
   :config
   (evil-goggles-mode)
   (evil-goggles-use-diff-faces))
-  
+
+(use-package evil-multiedit
+  :after evil
+  :config
+  (evil-multiedit-default-keybinds))
+
 (use-package which-key
   :init (which-key-mode))
 
@@ -142,7 +179,7 @@
   ;; available in the *Completions* buffer, add it to the
   ;; `completion-list-mode-map'.
   :bind (:map minibuffer-local-map
-         ("M-A" . marginalia-cycle))
+              ("M-A" . marginalia-cycle))
   :init (marginalia-mode))
 
 (use-package orderless
@@ -261,7 +298,7 @@
   ;; (setq consult-project-function (lambda (_) (projectile-project-root)))
   ;;;; 5. No project support
   ;; (setq consult-project-function nil)
-)
+  )
 
 (use-package embark
   :bind
@@ -296,7 +333,7 @@
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                 ;; Enable auto completion
-  ;; (corfu-separator ?\s)          ;; Orderless field separator
+  (corfu-separator ?\s)          ;; Orderless field separator
   ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
   ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
   ;; (corfu-preview-current nil)    ;; Disable current candidate preview
@@ -313,7 +350,10 @@
   ;; This is recommended since Dabbrev can be used globally (M-/).
   ;; See also `global-corfu-modes'.
   :init
-  (global-corfu-mode))
+  (global-corfu-mode)
+  :config
+  (corfu-history-mode 1)
+  (corfu-popupinfo-mode 1))
 
 (use-package cape
   ;; Bind dedicated completion commands
@@ -350,7 +390,7 @@
   ;;(add-to-list 'completion-at-point-functions #'cape-dict)
   ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
   ;;(add-to-list 'completion-at-point-functions #'cape-line)
-)
+  )
 
 (use-package tempel
   ;; Require trigger prefix before template name when completing.
@@ -382,7 +422,7 @@
   ;; either locally or globally. `expand-abbrev' is bound to C-x '.
   ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
   ;; (global-tempel-abbrev-mode)
-)
+  )
 
 (use-package math-delimiters
   :vc (:url "https://github.com/oantolin/math-delimiters.git")
@@ -460,8 +500,7 @@
   (indent-bars-display-on-blank-lines nil))
 
 (use-package magit
-  :ensure t
-  :demand t)
+  :defer t)
 
 (use-package diff-hl
   :init (global-diff-hl-mode)
@@ -471,6 +510,7 @@
   (magit-post-refresh . diff-hl-magit-post-refresh))
 
 (use-package org
+  :defer t
   :hook
   (org-mode . (lambda ()
                 (variable-pitch-mode 1)
@@ -485,10 +525,10 @@
   (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t)))
 
   ;; Set faces for heading levels
-  (dolist (face '((org-level-1 . 1.3)
-                  (org-level-2 . 1.25)
-                  (org-level-3 . 1.2)
-                  (org-level-4 . 1.15)
+  (dolist (face '((org-level-1 . 1.2)
+                  (org-level-2 . 1.15)
+                  (org-level-3 . 1.125)
+                  (org-level-4 . 1.1)
                   (org-level-5 . 1.1)
                   (org-level-6 . 1.1)
                   (org-level-7 . 1.1)
@@ -531,11 +571,11 @@
   (evil-org-agenda-set-keys))
 
 (use-package org-download
-   :after org
-   :config
-   (setq org-download-annotate-function (lambda (link) (previous-line 1) ""))
-   :custom
-   (org-download-method 'attach))
+  :after org
+  :config
+  (setq org-download-annotate-function (lambda (link) (previous-line 1) ""))
+  :custom
+  (org-download-method 'attach))
 
 (use-package visual-fill-column
   :hook (org-mode . visual-fill-column-mode)
@@ -572,6 +612,7 @@
 
 (use-package org-modern-indent
   :vc (:url "https://github.com/jdtsmith/org-modern-indent.git")
+  :after org
   :config ; add late to hook
   (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
 
@@ -593,31 +634,32 @@
   (org-roam-db-autosync-mode))
 
 (use-package consult-org-roam
-   :init
-   (require 'consult-org-roam)
-   ;; Activate the minor mode
-   (consult-org-roam-mode 1)
-   :custom
-   ;; Use `ripgrep' for searching with `consult-org-roam-search'
-   (consult-org-roam-grep-func #'consult-ripgrep)
-   ;; Configure a custom narrow key for `consult-buffer'
-   (consult-org-roam-buffer-narrow-key ?r)
-   ;; Display org-roam buffers right after non-org-roam buffers
-   ;; in consult-buffer (and not down at the bottom)
-   (consult-org-roam-buffer-after-buffers t)
-   :config
-   ;; Eventually suppress previewing for certain functions
-   (consult-customize
-    consult-org-roam-forward-links
-    :preview-key (kbd "M-."))
-   ;; Disable automatic latex preview when using consult live preview
-   (add-to-list 'consult-preview-variables '(org-startup-with-latex-preview . nil))
-   :bind
-   ;; Define some convenient keybindings as an addition
-   ("C-c n e" . consult-org-roam-file-find)
-   ("C-c n b" . consult-org-roam-backlinks)
-   ("C-c n l" . consult-org-roam-forward-links)
-   ("C-c n s" . consult-org-roam-search))
+  :init
+  (require 'consult-org-roam)
+  ;; Activate the minor mode
+  (consult-org-roam-mode 1)
+  :custom
+  ;; Use `ripgrep' for searching with `consult-org-roam-search'
+  (consult-org-roam-grep-func #'consult-ripgrep)
+  ;; Configure a custom narrow key for `consult-buffer'
+  (consult-org-roam-buffer-narrow-key ?r)
+  ;; Display org-roam buffers right after non-org-roam buffers
+  ;; in consult-buffer (and not down at the bottom)
+  (consult-org-roam-buffer-after-buffers t)
+  :config
+  ;; Eventually suppress previewing for certain functions
+  (consult-customize
+   consult-org-roam-forward-links
+   :preview-key (kbd "M-."))
+  ;; Disable automatic latex preview when using consult live preview
+  (add-to-list 'consult-preview-variables '(org-startup-with-latex-preview . nil))
+  (add-to-list 'consult-preview-variables '(org-startup-indented . nil))
+  :bind
+  ;; Define some convenient keybindings as an addition
+  ("C-c n e" . consult-org-roam-file-find)
+  ("C-c n b" . consult-org-roam-backlinks)
+  ("C-c n l" . consult-org-roam-forward-links)
+  ("C-c n s" . consult-org-roam-search))
 
 (use-package bibtex
   :custom
@@ -689,14 +731,17 @@
   :config (citar-org-roam-mode))
 
 (use-package tex
+  :defer t
   :ensure auctex
   :custom
   (font-latex-fontify-script nil))
 
 (use-package cdlatex
-   :hook
-   (LaTeX-mode . turn-on-cdlatex)
-   (org-mode . turn-on-org-cdlatex))
+  :hook
+  (LaTeX-mode . turn-on-cdlatex)
+  (org-mode . turn-on-org-cdlatex)
+  :custom
+  (cdlatex-insert-auto-labels-in-env-templates nil))
 
 (use-package pdf-tools
   :magic ("%PDF" . pdf-view-mode)
@@ -711,11 +756,7 @@
                                 (list nil)))))
 
 (use-package org-noter
+  :after org
   :custom
   (org-noter-auto-save-last-location t))
 
-(use-package treesit-auto
-  :config
-  (global-treesit-auto-mode)
-  :custom
-  (treesit-auto-install t))
