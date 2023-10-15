@@ -6,8 +6,8 @@
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets. It is optional.
-;; (setq user-full-name "John Doe"
-;;       user-mail-address "john@doe.com")
+(setq user-full-name "Fabrizio Contigiani"
+      user-mail-address "fabcontigiani@gmail.com")
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom:
 ;;
@@ -15,18 +15,15 @@
 ;; - `doom-variable-pitch-font' -- a non-monospace font (where applicable)
 ;; - `doom-big-font' -- used for `doom-big-font-mode'; use this for
 ;;   presentations or streaming.
-;; - `doom-unicode-font' -- for unicode glyphs
+;; - `doom-symbol-font' -- for symbols
 ;; - `doom-serif-font' -- for the `fixed-pitch-serif' face
 ;;
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
 ;;
-;;(setq doom-font (font-spec :family "Fira Code" :size 12 :weight 'semi-light)
+(setq doom-font (font-spec :family "JetBrains Mono" :size 14))
 ;;      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
 ;;
-(setq doom-font (font-spec :family "Iosevka" :size 16)
-      doom-variable-pitch-font (font-spec :family "Iosevka Aile" :size 16))
-
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
 ;; refresh your font settings. If Emacs still can't find your font, it likely
@@ -36,6 +33,8 @@
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'doom-gruvbox)
+;; (after! diff-hl (adwaita-dark-theme-diff-hl-fringe-bmp-enable))
+;; (after! flycheck (adwaita-dark-theme-flycheck-fringe-bmp-enable))
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -43,7 +42,7 @@
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/note-box/")
+(setq org-directory "~/Documents/")
 
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
@@ -92,10 +91,10 @@
     (define-key cdlatex-mode-map "$" nil)))
 
 (after! org
-  (setq org-directory "/home/fab/note-box/")
-  (setq org-agenda-files `("/home/fab/note-box/tasks.org"))
-  (setq org-attach-id-dir "/home/fab/note-box/attachments/")
-  (setq org-attach-dir "/home/fab/note-box/attachments/")
+  (setq org-directory "/home/fab/Documents/note-box/")
+  (setq org-agenda-files `("/home/fab/Documents/note-box/tasks.org"))
+  (setq org-attach-id-dir "/home/fab/Documents/note-box/attachments/")
+  (setq org-attach-dir "/home/fab/Documents/note-box/attachments/")
   (setq org-hide-emphasis-markers t)
   (setq org-pretty-entities t)
   (setq org-pretty-entities-include-sub-superscripts nil)
@@ -105,17 +104,16 @@
   ;; (setq org-cycle-hide-drawers t)
   (setq org-fontify-quote-and-verse-blocks t)
   (setq org-highlight-latex-and-related '(native scripts entities))
-
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
   ;; Fix org-mode latex preview background color
   (require 'org-src)
-  (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t)))
-)
+  (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t))))
 
 (add-hook! org-mode
   (org-fragtog-mode)
   (org-appear-mode))
 
-(setq org-roam-directory "/home/fab/note-box/")
+(setq org-roam-directory "/home/fab/Documents/note-box/")
 
 (use-package! consult-org-roam
   :after org
@@ -138,6 +136,7 @@
    :preview-key (kbd "M-."))
   ;; Disable automatic latex preview when using consult live preview
   (add-to-list 'consult-preview-variables '(org-startup-with-latex-preview . nil))
+  ;; Disable indentation when using consult live preview
   (add-to-list 'consult-preview-variables '(org-startup-indented . nil)))
 
 (map! :map doom-leader-notes-map
@@ -147,4 +146,16 @@
       "r l" #'consult-org-roam-forward-links
       "r S" #'consult-org-roam-search)
 
-(setq citar-bibliography '("/home/fab/note-box/references/references.bib"))
+(after! citar
+  (setq citar-bibliography '("/home/fab/Documents/note-box/references.bib"))
+  (setq citar-notes-paths '("/home/fab/Documents/note-box/pages/")))
+
+(after! org-roam
+  (setq org-roam-directory "/home/fab/Documents/note-box/")
+  (setq org-roam-dailies-directory "journals/")
+  (setq org-roam-capture-templates
+        '(("d" "default" plain
+           "%?" :target
+           (file+head "pages/${slug}.org" "#+title: ${title}\n")
+           :unnarrowed t))))
+
