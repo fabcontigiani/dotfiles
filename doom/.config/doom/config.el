@@ -21,7 +21,7 @@
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
 ;;
-(setq doom-font (font-spec :family "JetBrains Mono" :size 14))
+;;(setq doom-font (font-spec :family "JetBrains Mono" :size 14))
 ;;      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
 ;;
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
@@ -33,8 +33,6 @@
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'doom-gruvbox)
-;; (after! diff-hl (adwaita-dark-theme-diff-hl-fringe-bmp-enable))
-;; (after! flycheck (adwaita-dark-theme-flycheck-fringe-bmp-enable))
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -42,7 +40,7 @@
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/Documents/")
+(setq org-directory "~/Documents/note-box/")
 
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
@@ -92,9 +90,13 @@
 
 (after! org
   (setq org-directory "/home/fab/Documents/note-box/")
-  (setq org-agenda-files `("/home/fab/Documents/note-box/tasks.org"))
-  (setq org-attach-id-dir "/home/fab/Documents/note-box/attachments/")
-  (setq org-attach-dir "/home/fab/Documents/note-box/attachments/")
+  (setq org-agenda-files `("/home/fab/Documents/note-box/inbox.org"))
+  (setq org-attach-id-dir "/home/fab/Documents/note-box/assets/")
+  (setq org-id-method 'ts)
+  (setq org-attach-auto-tag nil)
+  (setq org-attach-id-to-path-function-list '(org-attach-id-ts-folder-format
+                                              org-attach-id-uuid-folder-format
+                                              org-attach-id-fallback-folder-format)))
   (setq org-hide-emphasis-markers t)
   (setq org-pretty-entities t)
   (setq org-pretty-entities-include-sub-superscripts nil)
@@ -104,16 +106,23 @@
   ;; (setq org-cycle-hide-drawers t)
   (setq org-fontify-quote-and-verse-blocks t)
   (setq org-highlight-latex-and-related '(native scripts entities))
-  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+  ;;(setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
   ;; Fix org-mode latex preview background color
   (require 'org-src)
-  (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t))))
+  (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t)))
 
 (add-hook! org-mode
   (org-fragtog-mode)
   (org-appear-mode))
 
-(setq org-roam-directory "/home/fab/Documents/note-box/")
+(after! org-roam
+  (setq org-roam-directory "/home/fab/Documents/note-box/")
+  (setq org-roam-dailies-directory "journals/")
+  (setq org-roam-capture-templates
+        '(("d" "default" plain
+           "%?" :target
+           (file+head "pages/${slug}.org" "#+title: ${title}\n")
+           :unnarrowed t))))
 
 (use-package! consult-org-roam
   :after org
@@ -159,3 +168,21 @@
            (file+head "pages/${slug}.org" "#+title: ${title}\n")
            :unnarrowed t))))
 
+(use-package! jinx
+  :hook (emacs-startup . global-jinx-mode)
+  :bind (("M-$" . jinx-correct)
+         ("C-M-$" . jinx-languages))
+  :custom
+  (jinx-languages "en_US es_AR"))
+
+(require 'platformio-mode)
+
+;; Enable ccls for all c++ files, and platformio-mode only
+;; when needed (platformio.ini present in project root).
+(add-hook 'c++-mode-hook (lambda ()
+                           (lsp-deferred)
+                           (platformio-conditionally-enable)))
+
+(after! ccls
+  (setq ccls-initialization-options '(:index (:comments 2) :completion (:detailedLabel t)))
+  (set-lsp-priority! 'ccls 2)) ; optional as ccls is the default in Doom

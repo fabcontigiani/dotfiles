@@ -49,8 +49,9 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;(unpin! t)
 
-(package! adwaita-dark-theme)
 (package! math-delimiters :recipe (:host github :repo "oantolin/math-delimiters"))
 (package! org-fragtog)
 (package! org-appear)
 (package! consult-org-roam)
+(package! jinx)
+(package! platformio-mode)
