@@ -1,7 +1,8 @@
 (use-package emacs
   :init
   (require 'package)
-  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+  (add-to-list 'package-archives '(("melpa" . "https://melpa.org/packages/")
+                                   ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
   (package-initialize)
 
   ;; Store automatic customization options elsewhere
@@ -12,6 +13,9 @@
   (require 'use-package-ensure)
   (setq use-package-always-ensure t)
   (setq use-package-compute-statistics t)
+
+  (unless (package-installed-p 'vc-use-package)
+    (package-vc-install "https://github.com/slotThe/vc-use-package"))
 
   ;; TAB cycle if there are only few candidates
   (setq completion-cycle-threshold 3)
@@ -44,9 +48,9 @@
   ;; `completion-at-point' is often bound to M-TAB.
   (setq tab-always-indent 'complete)
 
-  (set-face-attribute 'default nil :font "Iosevka" :height 120)
-  (set-face-attribute 'fixed-pitch nil :font "Iosevka" :height 120)
-  (set-face-attribute 'variable-pitch nil :font "Iosevka Aile" :height 120)
+  (set-face-attribute 'default nil :font "JetBrains Mono" :height 120)
+  (set-face-attribute 'fixed-pitch nil :font "JetBrains Mono" :height 120)
+  (set-face-attribute 'variable-pitch nil :font "Cantarell" :height 120)
 
   :config
   (global-display-line-numbers-mode t)
@@ -64,11 +68,11 @@
   (global-auto-revert-mode 1)
   (global-hl-line-mode t)
   (blink-cursor-mode -1)
-  (global-tree-sitter-mode 1)
   (fset 'yes-or-no-p 'y-or-n-p) ;; change all prompts to y or n
 
   :custom
   (warning-minimum-level :error)
+  (ring-bell-function 'ignore)
   (use-dialog-box nil)
   (window-resize-pixelwise t)
   (frame-resize-pixelwise t)
@@ -76,10 +80,7 @@
   (display-line-numbers-type 'relative)
   (global-auto-revert-non-file-buffers t)
   (package-install-upgrade-built-in t)
-  (backup-directory-alist `(("." . ,(concat user-emacs-directory "backups"))))
-
-  :bind
-  (("C-/" . comment-dwim)))
+  (backup-directory-alist `(("." . ,(concat user-emacs-directory "backups")))))
 
 (use-package hideshow
   :hook (prog-mode . hs-minor-mode))
@@ -94,6 +95,9 @@
    ("M-l" . windmove-right)))
 
 (use-package undo-fu)
+(use-package undo-fu-session
+  :after undo-fu
+  :config (undo-fu-session-global-mode))
 
 (use-package evil
   :init
@@ -329,26 +333,10 @@
   (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package corfu
-  ;; Optional customizations
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                 ;; Enable auto completion
   (corfu-separator ?\s)          ;; Orderless field separator
-  ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-  ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
-  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
-  ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
-  ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
-
-  ;; Enable Corfu only for certain modes.
-  ;; :hook ((prog-mode . corfu-mode)
-  ;;        (shell-mode . corfu-mode)
-  ;;        (eshell-mode . corfu-mode))
-
-  ;; Recommended: Enable Corfu globally.
-  ;; This is recommended since Dabbrev can be used globally (M-/).
-  ;; See also `global-corfu-modes'.
   :init
   (global-corfu-mode)
   :config
@@ -425,7 +413,7 @@
   )
 
 (use-package math-delimiters
-  :vc (:url "https://github.com/oantolin/math-delimiters.git")
+  :vc (:fetcher github :repo oantolin/math-delimiters)
   :config
   (autoload 'math-delimiters-insert "math-delimiters")
   (with-eval-after-load 'org
@@ -452,36 +440,20 @@
   ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
   )
 
-(use-package kind-icon
-  :after corfu
+(use-package mood-line
+  :config
+  (mood-line-mode))
+
+(use-package adwaita-dark-theme
+  :config
+  (load-theme 'adwaita-dark :no-confirm)
+  (adwaita-dark-theme-arrow-fringe-bmp-enable)
+  (eval-after-load 'diff-hl #'adwaita-dark-theme-diff-hl-fringe-bmp-enable)
+  ;(eval-after-load 'flymake #'adwaita-dark-theme-flymake-fringe-bmp-enable)
+  ;(eval-after-load 'neotree #'adwaita-dark-theme-neotree-configuration-enable)
   :custom
-  (kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
-  :config
-  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
-
-(use-package all-the-icons
-  :if (display-graphic-p))
-
-(use-package all-the-icons-completion
-  :init (all-the-icons-completion-mode))
-
-(use-package doom-modeline
-  :init (doom-modeline-mode 1))
-
-(use-package doom-themes
-  :config
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-gruvbox t)
-
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
-  ;; Enable custom treemacs theme (all-the-icons must be installed!)
-  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
-  (doom-themes-treemacs-config)
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
+  (adwaita-dark-theme-bold-vertico-current t "Embolden the currently-selected candidate in vertico"))
+  ;(adwaita-dark-theme-gray-rainbow-delimiters t "Use a gray color for rainbow-delimiters faces"))
 
 (use-package solaire-mode
   :init (solaire-global-mode))
@@ -493,14 +465,23 @@
   :hook (prog-mode . vi-tilde-fringe-mode))
 
 (use-package indent-bars
-  :vc (:url "https://github.com/jdtsmith/indent-bars.git")
+  :vc (:fetcher github :repo jdtsmith/indent-bars)
   :hook (prog-mode . indent-bars-mode)
   :custom
   (indent-tabs-mode nil)
+  (indent-bars-treesit-support t)
+  (indent-bars-color '(highlight :face-bg t :blend 0.15))
+  (indent-bars-pattern ".")
+  (indent-bars-width-frac 0.2)
+  (indent-bars-pad-frac 0.1)
+  (indent-bars-zigzag nil)
+  (indent-bars-color-by-depth '(:regexp "outline-\\([0-9]+\\)" :blend 1)) ; blend=1: blend with BG only
+  (indent-bars-highlight-current-depth '(:blend 0.5)) ; pump up the BG blend on current  (indent-bars-highlight-current-depth nil)
   (indent-bars-display-on-blank-lines nil))
 
 (use-package magit
-  :defer t)
+  :custom
+  (magit-diff-refine-hunk t))
 
 (use-package diff-hl
   :init (global-diff-hl-mode)
@@ -511,11 +492,11 @@
 
 (use-package org
   :defer t
-  :hook
-  (org-mode . (lambda ()
-                (variable-pitch-mode 1)
-                (visual-line-mode 1)
-                (display-line-numbers-mode -1)))
+  ;; :hook
+  ;; (org-mode . (lambda ()
+  ;;               (variable-pitch-mode 1)
+  ;;               (visual-line-mode 1)
+  ;;               (display-line-numbers-mode -1)))
 
   :config
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
@@ -532,21 +513,25 @@
                   (org-level-5 . 1.1)
                   (org-level-6 . 1.1)
                   (org-level-7 . 1.1)
-                  (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "Iosevka Etoile" :weight 'regular :height (cdr face)))
+                  (org-level-8 . 1.1))))
+    ;(set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-  (set-face-attribute 'org-block nil :inherit 'fixed-pitch)
-  (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
+  ;(set-face-attribute 'org-block nil :inherit 'fixed-pitch)
+  ;(set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
+  ;(set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
+  ;(set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+  ;(set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+  ;(set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+  ;(set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
+
+  (setq org-attach-id-to-path-function-list '(org-attach-id-ts-folder-format
+                                              org-attach-id-uuid-folder-format
+                                              org-attach-id-fallback-folder-format))
 
   :custom
-  (org-directory "/home/fab/note-box/")
-  (org-agenda-files `("/home/fab/note-box/agenda.org"))
+  (org-directory "/home/fab/Documents/note-box/")
+  (org-agenda-files `("/home/fab/Documents/note-box/inbox.org"))
   (org-hide-emphasis-markers t)
   (org-pretty-entities t)
   (org-pretty-entities-include-sub-superscripts nil)
@@ -559,8 +544,9 @@
   (org-src-preserve-indentation nil)
   (org-edit-src-content-indentation 0)
   (org-return-follows-link t)
-  (org-attach-id-dir "/home/fab/note-box/attachments/")
-  (org-attach-dir "/home/fab/note-box/attachments/")
+  (org-id-method 'ts)
+  (org-attach-id-dir "/home/fab/Documents/note-box/assets/")
+  (org-attach-auto-tag nil)
   (org-attach-store-link-p 'attached))
 
 (use-package evil-org
@@ -577,11 +563,11 @@
   :custom
   (org-download-method 'attach))
 
-(use-package visual-fill-column
-  :hook (org-mode . visual-fill-column-mode)
-  :custom
-  (visual-fill-column-width 100)
-  (visual-fill-column-center-text t))
+;(use-package visual-fill-column
+  ;:hook (org-mode . visual-fill-column-mode)
+  ;:custom
+  ;(visual-fill-column-width 100)
+  ;(visual-fill-column-center-text t))
 
 (use-package org-fragtog
   :after org
@@ -591,35 +577,10 @@
   :after org
   :hook (org-mode . org-appear-mode))
 
-(use-package org-sticky-header
-  :after org
-  :hook (org-mode . org-sticky-header-mode)
-  :custom
-  (org-sticky-header-heading-star "")
-  (org-sticky-header-full-path 'full))
-
-(use-package org-modern
-  :custom
-  (org-modern-hide-stars nil)
-  (org-modern-table nil)
-  (org-modern-list '((?- . "-")
-                     (?* . "•")
-                     (?+ . "‣")))
-
-  :hook
-  (org-mode . org-modern-mode)
-  (org-agenda-finalize . org-modern-agenda))
-
-(use-package org-modern-indent
-  :vc (:url "https://github.com/jdtsmith/org-modern-indent.git")
-  :after org
-  :config ; add late to hook
-  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
-
 (use-package org-roam
   :after org
   :custom
-  (org-roam-directory "/home/fab/note-box/")
+  (org-roam-directory "/home/fab/Documents/note-box/")
   (org-roam-completion-everywhere t)
   :bind (("C-c n t" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
@@ -666,55 +627,9 @@
   (bibtex-dialect 'biblatex))
 
 (use-package citar
-  :config
-  (defvar citar-indicator-files-icons
-    (citar-indicator-create
-     :symbol (all-the-icons-faicon
-              "file-o"
-              :face 'all-the-icons-green
-              :v-adjust -0.1)
-     :function #'citar-has-files
-     :padding "  " ; need this because the default padding is too low for these icons
-     :tag "has:files"))
-
-  (defvar citar-indicator-links-icons
-    (citar-indicator-create
-     :symbol (all-the-icons-octicon
-              "link"
-              :face 'all-the-icons-orange
-              :v-adjust 0.01)
-     :function #'citar-has-links
-     :padding "  "
-     :tag "has:links"))
-
-  (defvar citar-indicator-notes-icons
-    (citar-indicator-create
-     :symbol (all-the-icons-material
-              "speaker_notes"
-              :face 'all-the-icons-blue
-              :v-adjust -0.3)
-     :function #'citar-has-notes
-     :padding "  "
-     :tag "has:notes"))
-
-  (defvar citar-indicator-cited-icons
-    (citar-indicator-create
-     :symbol (all-the-icons-faicon
-              "circle-o"
-              :face 'all-the-icon-green)
-     :function #'citar-is-cited
-     :padding "  "
-     :tag "is:cited"))
-
-  (setq citar-indicators
-        (list citar-indicator-files-icons
-              citar-indicator-links-icons
-              citar-indicator-notes-icons
-              citar-indicator-cited-icons)) 
-
   :custom
-  (org-cite-global-bibliography '("/home/fab/note-box/references/references.bib"))
-  (org-cite-insert-processor 'citar)
+  (org-cite-global-bibliography '("/home/fab/Documents/note-box/references.bib"))
+  (org-cike-insert-processor 'citar)
   (org-cite-follow-processor 'citar)
   (org-cite-activate-processor 'citar)
   (citar-bibliography org-cite-global-bibliography)
@@ -760,3 +675,13 @@
   :custom
   (org-noter-auto-save-last-location t))
 
+(use-package treesit-auto
+  :config
+  (global-treesit-auto-mode)
+  :custom
+  (treesit-auto-install t))
+
+(use-package eat
+  :vc (:fetcher codeberg :repo akib/emacs-eat)
+  :custom
+  (eat-kill-buffer-on-exit t))
