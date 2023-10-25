@@ -53,7 +53,6 @@
   (set-face-attribute 'variable-pitch nil :font "Cantarell" :height 120)
 
   :config
-  (global-display-line-numbers-mode t)
   (electric-pair-mode t)
   (scroll-bar-mode -1)
   (horizontal-scroll-bar-mode -1)
@@ -82,19 +81,14 @@
   (package-install-upgrade-built-in t)
   (backup-directory-alist `(("." . ,(concat user-emacs-directory "backups")))))
 
+(use-package display-line-numbers
+  :hook prog-mode)
+
 (use-package hideshow
   :hook (prog-mode . hs-minor-mode))
 
-(use-package windmove
-  :init
-  (windmove-default-keybindings 'meta)
-  :bind
-  (("M-h" . windmove-left)
-   ("M-j" . windmove-down)
-   ("M-k" . windmove-up)
-   ("M-l" . windmove-right)))
-
 (use-package undo-fu)
+
 (use-package undo-fu-session
   :after undo-fu
   :config (undo-fu-session-global-mode))
@@ -144,6 +138,8 @@
   :config
   (evil-multiedit-default-keybinds))
 
+(use-package avy)
+
 (use-package which-key
   :init (which-key-mode))
 
@@ -159,8 +155,8 @@
   :custom
   (vertico-cycle t)
   :bind (:map vertico-map
-	      ("C-j" . vertico-next)
-	      ("C-k" . vertico-previous)))
+              ("C-j" . vertico-next)
+              ("C-k" . vertico-previous)))
 
 (use-package vertico-directory
   :ensure nil
@@ -432,14 +428,6 @@
   :custom
   (jinx-languages "en_US es_AR"))
 
-(use-package nerd-icons
-  ;; :custom
-  ;; The Nerd Font you want to use in GUI
-  ;; "Symbols Nerd Font Mono" is the default and is recommended
-  ;; but you can use any other Nerd Font if you want
-  ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
-  )
-
 (use-package mood-line
   :config
   (mood-line-mode))
@@ -449,11 +437,10 @@
   (load-theme 'adwaita-dark :no-confirm)
   (adwaita-dark-theme-arrow-fringe-bmp-enable)
   (eval-after-load 'diff-hl #'adwaita-dark-theme-diff-hl-fringe-bmp-enable)
-  ;(eval-after-load 'flymake #'adwaita-dark-theme-flymake-fringe-bmp-enable)
-  ;(eval-after-load 'neotree #'adwaita-dark-theme-neotree-configuration-enable)
+  (eval-after-load 'flymake #'adwaita-dark-theme-flymake-fringe-bmp-enable)
+  (eval-after-load 'neotree #'adwaita-dark-theme-neotree-configuration-enable)
   :custom
   (adwaita-dark-theme-bold-vertico-current t "Embolden the currently-selected candidate in vertico"))
-  ;(adwaita-dark-theme-gray-rainbow-delimiters t "Use a gray color for rainbow-delimiters faces"))
 
 (use-package solaire-mode
   :init (solaire-global-mode))
@@ -514,20 +501,16 @@
                   (org-level-6 . 1.1)
                   (org-level-7 . 1.1)
                   (org-level-8 . 1.1))))
-    ;(set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
+                                        ;(set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-  ;(set-face-attribute 'org-block nil :inherit 'fixed-pitch)
-  ;(set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
-  ;(set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
-  ;(set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-  ;(set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-  ;(set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-  ;(set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
-
-  (setq org-attach-id-to-path-function-list '(org-attach-id-ts-folder-format
-                                              org-attach-id-uuid-folder-format
-                                              org-attach-id-fallback-folder-format))
+                                        ;(set-face-attribute 'org-block nil :inherit 'fixed-pitch)
+                                        ;(set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
+                                        ;(set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
+                                        ;(set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+                                        ;(set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+                                        ;(set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+                                        ;(set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
 
   :custom
   (org-directory "/home/fab/Documents/note-box/")
@@ -536,6 +519,8 @@
   (org-pretty-entities t)
   (org-pretty-entities-include-sub-superscripts nil)
   (org-startup-with-latex-preview t)
+  (org-preview-latex-default-process 'dvisvgm)
+  (org-preview-latex-image-directory (concat "/home/fab/.config/emacs-vanilla/.cache/ltximg/" (buffer-file-name)))
   (org-startup-indented t)
   (org-startup-folded nil)
   (org-cycle-hide-drawers t)
@@ -543,11 +528,7 @@
   (org-highlight-latex-and-related '(native scripts entities))
   (org-src-preserve-indentation nil)
   (org-edit-src-content-indentation 0)
-  (org-return-follows-link t)
-  (org-id-method 'ts)
-  (org-attach-id-dir "/home/fab/Documents/note-box/assets/")
-  (org-attach-auto-tag nil)
-  (org-attach-store-link-p 'attached))
+  (org-return-follows-link t))
 
 (use-package evil-org
   :after org
@@ -561,13 +542,7 @@
   :config
   (setq org-download-annotate-function (lambda (link) (previous-line 1) ""))
   :custom
-  (org-download-method 'attach))
-
-;(use-package visual-fill-column
-  ;:hook (org-mode . visual-fill-column-mode)
-  ;:custom
-  ;(visual-fill-column-width 100)
-  ;(visual-fill-column-center-text t))
+  (org-download-image-dir "/home/fab/Documents/note-box/assets/"))
 
 (use-package org-fragtog
   :after org
@@ -581,6 +556,12 @@
   :after org
   :custom
   (org-roam-directory "/home/fab/Documents/note-box/")
+  (org-roam-dailies-directory "journals/")
+  (org-roam-capture-templates
+   '(("d" "default" plain
+      "%?" :target
+      (file+head "pages/${slug}.org" "#+title: ${title}\n")
+      :unnarrowed t)))
   (org-roam-completion-everywhere t)
   :bind (("C-c n t" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
@@ -629,6 +610,7 @@
 (use-package citar
   :custom
   (org-cite-global-bibliography '("/home/fab/Documents/note-box/references.bib"))
+  (citar-notes-paths '("/home/fab/Documents/note-box/pages/"))
   (org-cike-insert-processor 'citar)
   (org-cite-follow-processor 'citar)
   (org-cite-activate-processor 'citar)
@@ -671,7 +653,7 @@
                                 (list nil)))))
 
 (use-package org-noter
-  :after org
+  :bind ("C-c n p" . org-noter)
   :custom
   (org-noter-auto-save-last-location t))
 
@@ -681,7 +663,16 @@
   :custom
   (treesit-auto-install t))
 
+(use-package flymake-popon
+  :hook (flymake-mode flymake-popon-mode))
+
+(use-package rainbow-mode)
+
+(use-package markdown-mode)
+
 (use-package eat
-  :vc (:fetcher codeberg :repo akib/emacs-eat)
-  :custom
-  (eat-kill-buffer-on-exit t))
+  :init
+  ;; For `eat-eshell-mode'.
+  (add-hook 'eshell-load-hook #'eat-eshell-mode)
+  ;; For `eat-eshell-visual-command-mode'.
+  (add-hook 'eshell-load-hook #'eat-eshell-visual-command-mode))
