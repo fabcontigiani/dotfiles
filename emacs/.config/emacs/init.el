@@ -1,8 +1,8 @@
 (use-package emacs
   :init
   (require 'package)
-  (add-to-list 'package-archives '(("melpa" . "https://melpa.org/packages/")
-                                   ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
+  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+  (add-to-list 'package-archives '("nongnu" . "https://elpa.nongnu.org/nongnu/"))
   (package-initialize)
 
   ;; Store automatic customization options elsewhere
@@ -76,13 +76,24 @@
   (window-resize-pixelwise t)
   (frame-resize-pixelwise t)
   (confirm-kill-emacs #'y-or-n-p)
-  (display-line-numbers-type 'relative)
+  (shell-kill-buffer-on-exit t)
   (global-auto-revert-non-file-buffers t)
   (package-install-upgrade-built-in t)
   (backup-directory-alist `(("." . ,(concat user-emacs-directory "backups")))))
 
+(use-package dired
+  :ensure nil
+  :hook (dired-mode . dired-hide-details-mode)
+  :custom
+  (delete-by-moving-to-trash t)
+  (dired-recursive-copies 'always)
+  (dired-recursive-deletes 'always)
+  (dired-dwim-target t))
+
 (use-package display-line-numbers
-  :hook prog-mode)
+  :hook prog-mode
+  :custom
+  (display-line-numbers-type 'relative))
 
 (use-package hideshow
   :hook (prog-mode . hs-minor-mode))
@@ -137,6 +148,10 @@
   :after evil
   :config
   (evil-multiedit-default-keybinds))
+
+(use-package evil-nerd-commenter
+  :config
+  (evilnc-default-hotkeys nil t))
 
 (use-package avy)
 
@@ -432,18 +447,11 @@
   :config
   (mood-line-mode))
 
-(use-package adwaita-dark-theme
+(use-package ef-themes
   :config
-  (load-theme 'adwaita-dark :no-confirm)
-  (adwaita-dark-theme-arrow-fringe-bmp-enable)
-  (eval-after-load 'diff-hl #'adwaita-dark-theme-diff-hl-fringe-bmp-enable)
-  (eval-after-load 'flymake #'adwaita-dark-theme-flymake-fringe-bmp-enable)
-  (eval-after-load 'neotree #'adwaita-dark-theme-neotree-configuration-enable)
+  (load-theme 'ef-elea-dark t)
   :custom
-  (adwaita-dark-theme-bold-vertico-current t "Embolden the currently-selected candidate in vertico"))
-
-(use-package solaire-mode
-  :init (solaire-global-mode))
+  (ef-themes-to-toggle '(ef-elea-light ef-elea-dark)))
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -466,16 +474,9 @@
   (indent-bars-highlight-current-depth '(:blend 0.5)) ; pump up the BG blend on current  (indent-bars-highlight-current-depth nil)
   (indent-bars-display-on-blank-lines nil))
 
-(use-package magit
-  :custom
-  (magit-diff-refine-hunk t))
-
 (use-package diff-hl
   :init (global-diff-hl-mode)
-  :config (diff-hl-flydiff-mode)
-  :hook
-  (magit-pre-refresh . diff-hl-magit-pre-refresh)
-  (magit-post-refresh . diff-hl-magit-post-refresh))
+  :config (diff-hl-flydiff-mode))
 
 (use-package org
   :defer t
@@ -592,8 +593,7 @@
   ;; Eventually suppress previewing for certain functions
   (consult-customize
    consult-org-roam-forward-links
-   :preview-key (kbd "M-."))
-  ;; Disable automatic latex preview when using consult live preview
+   :preview-key "M-.")  ;; Disable automatic latex preview when using consult live preview
   (add-to-list 'consult-preview-variables '(org-startup-with-latex-preview . nil))
   (add-to-list 'consult-preview-variables '(org-startup-indented . nil))
   :bind
@@ -664,15 +664,8 @@
   (treesit-auto-install t))
 
 (use-package flymake-popon
-  :hook (flymake-mode flymake-popon-mode))
+  :hook flymake-mode)
 
 (use-package rainbow-mode)
 
 (use-package markdown-mode)
-
-(use-package eat
-  :init
-  ;; For `eat-eshell-mode'.
-  (add-hook 'eshell-load-hook #'eat-eshell-mode)
-  ;; For `eat-eshell-visual-command-mode'.
-  (add-hook 'eshell-load-hook #'eat-eshell-visual-command-mode))
