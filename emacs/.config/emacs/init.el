@@ -1,9 +1,23 @@
+;;; init.el --- Initialization file for Emacs
+
+;;; Commentary:
+;; 
+
+;;; Code:
+
 (use-package emacs
   :init
   (require 'package)
-  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-  (add-to-list 'package-archives '("nongnu" . "https://elpa.nongnu.org/nongnu/"))
-  (package-initialize)
+  (setq package-archives
+        '(("elpa" . "https://elpa.gnu.org/packages/")
+          ("elpa-devel" . "https://elpa.gnu.org/devel/")
+          ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+          ("melpa" . "https://melpa.org/packages/")))
+  (setq package-archive-priorities
+        '(("elpa" . 2)
+          ("nongnu" . 1)))
+  ;; (setq package-pinned-packages
+  ;;       '((org . "elpa-devel")))
 
   ;; Store automatic customization options elsewhere
   (setq custom-file (locate-user-emacs-file "custom.el"))
@@ -12,13 +26,11 @@
 
   (require 'use-package-ensure)
   (setq use-package-always-ensure t)
-  (setq use-package-compute-statistics t)
+  ;; (setq use-package-compute-statistics t)
 
+  ;; Not needed on Emacs 30
   (unless (package-installed-p 'vc-use-package)
     (package-vc-install "https://github.com/slotThe/vc-use-package"))
-
-  ;; TAB cycle if there are only few candidates
-  (setq completion-cycle-threshold 3)
 
   ;; Add prompt indicator to `completing-read-multiple'.
   ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
@@ -36,21 +48,11 @@
         '(read-only t cursor-intangible t face minibuffer-prompt))
   (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
 
-  ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
-  ;; Vertico commands are hidden in normal buffers.
-  (setq read-extended-command-predicate
-        #'command-completion-default-include-p)
-
-  ;; Enable recursive minibuffers
-  (setq enable-recursive-minibuffers t)
-
-  ;; Enable indentation+completion using the TAB key.
-  ;; `completion-at-point' is often bound to M-TAB.
-  (setq tab-always-indent 'complete)
-
-  (set-face-attribute 'default nil :font "JetBrains Mono" :height 120)
-  (set-face-attribute 'fixed-pitch nil :font "JetBrains Mono" :height 120)
-  (set-face-attribute 'variable-pitch nil :font "Cantarell" :height 120)
+  ;; Font configuration
+  (set-face-attribute 'default nil :font "Iosevka" :height 120)
+  (set-face-attribute 'fixed-pitch nil :font "Iosevka" :height 120)
+  (set-face-attribute 'variable-pitch nil :font "Iosevka Aile" :height 120)
+  (set-face-attribute 'fixed-pitch-serif nil :font "Iosevka Slab" :height 120)
 
   :config
   (electric-pair-mode t)
@@ -70,15 +72,64 @@
   (fset 'yes-or-no-p 'y-or-n-p) ;; change all prompts to y or n
 
   :custom
-  (warning-minimum-level :error)
-  (ring-bell-function 'ignore)
+  ;; Elisp compilation warnings
+  (native-comp-async-report-warnings-errors nil "Don't report errors from async native compilation")
+  (byte-compile-warnings '(not lexical
+                               free-vars
+                               noruntime
+                               unresolved
+                               docstrings))
+
+  ;; General configuration
+  (truncate-lines t "Truncate lines instead of wrapping")
+  (kill-whole-line t "Include newline character when killing a line.")
+  (context-menu-mode t "Enable global context menu support")
+  (message-truncate-lines t "Truncate messages in the echo area")
+  (cursor-in-non-selected-windows nil "Hide cursor in inactive windows")
+  (ring-bell-function 'ignore "Disable terminal bell")
+  (fill-column 80 "Set default line-wrap column to column 80")
+  (max-mini-window-height 10 "Limit minibuffer height to 10 lines")
+  (enable-recursive-minibuffers t "Allow minibuffer commands to be called in the minibuffer")
   (use-dialog-box nil)
+  (load-prefer-newer t "Load from source files if they are newer than bytecode files")
+  (read-extended-command-predicate #'command-completion-default-include-p "Hide commands in M-x which do not work in the current mode.")
+
+
+  ;; Startup
+  ;; (initial-scratch-message "" "Leave scratch buffer empty on startup")
+  ;; (initial-major-mode 'fundamental-mode "Set initial mode to fundamental-mode on startup")
+  ;; (inhibit-startup-screen t "Do not create or show the initial splash screen")
+  ;; (inhibit-default-init t "Do not attempt to load any OS-provided init files")
+
+  ;; Default style rules
+  (sentence-end-double-space nil "Do not use double spacing between sentences in paragraphs.")
+  (require-final-newline t "Require a terminating newline at the end of every file.")
+  (indent-tabs-mode nil "Use spaces for indentation")
+  (tab-width 4 "Use 4 spaces for indentation")
+
+  ;; Scrolling
+  (mouse-wheel-progressive-speed nil "Disable mouse wheel acceleration during scrolling")
+  (scroll-preserve-screen-position 1 "Prevent the cursor from moving during scrolling")
+  (scroll-conservatively 101 "Scroll only one line at a time when cursor leaves view")
+  (scroll-margin 5 "Maintain margin of 5 lines around cursor during scrolling")
+  (fast-but-imprecise-scrolling t "Improve redisplay performance while scrolling")
+
+  ;; Performance tweaks
+  (redisplay-skip-fontification-on-input t "Improve redisplay performance while scrolling")
+  (fast-but-imprecise-scrolling t "Improve redisplay performance while scrolling")
+  (jit-lock-defer-time 0 "Defer fontification while input is pending")
+  (auto-window-vscroll nil "Prevent calcuation of arbitrary line heights while scrolling")
+  (auto-mode-case-fold nil "Disable case-insensitive second pass over `auto-mode-alist'")
+
   (window-resize-pixelwise t)
   (frame-resize-pixelwise t)
   (confirm-kill-emacs #'y-or-n-p)
   (shell-kill-buffer-on-exit t)
   (global-auto-revert-non-file-buffers t)
   (package-install-upgrade-built-in t)
+  (tab-always-indent 'complete "Enable indentation+completion using the TAB key")
+  (completion-cycle-threshold 3 "TAB cycle if there are only few candidates")
+
   (backup-directory-alist `(("." . ,(concat user-emacs-directory "backups")))))
 
 (use-package dired
@@ -90,10 +141,18 @@
   (dired-recursive-deletes 'always)
   (dired-dwim-target t))
 
+(use-package dired-sidebar
+  :bind
+  ("C-x C-l" . dired-sidebar-toggle-sidebar))
+
+(use-package nerd-icons-dired
+  :hook dired-mode)
+
 (use-package display-line-numbers
-  :hook prog-mode
+  :hook (prog-mode LaTeX-mode)
   :custom
-  (display-line-numbers-type 'relative))
+  (display-line-numbers-type 'relative)
+  (display-line-numbers-width-start 100))
 
 (use-package hideshow
   :hook (prog-mode . hs-minor-mode))
@@ -114,10 +173,10 @@
     (define-key evil-motion-state-map (kbd "RET") nil)
     (define-key evil-motion-state-map (kbd "TAB") nil))
   :custom
-  (evil-want-keybinding nil)
-  (evil-search-module 'evil-search)
   (evil-undo-system 'undo-fu)
-  (evil-want-C-u-scroll t))
+  (evil-want-keybinding nil)
+  (evil-want-C-u-scroll t)
+  (evil-want-Y-yank-to-eol t))
 
 (use-package evil-collection
   :after evil
@@ -128,6 +187,12 @@
   :after evil
   :config
   (global-evil-surround-mode 1))
+
+(use-package evil-embrace
+  :after evil-surround
+  :config
+  (evil-embrace-enable-evil-surround-integration)
+  (add-hook 'org-mode-hook 'embrace-org-mode-hook))
 
 (use-package evil-snipe
   :after evil
@@ -153,7 +218,22 @@
   :config
   (evilnc-default-hotkeys nil t))
 
-(use-package avy)
+(use-package evil-anzu
+  :after evil
+  :config
+  (global-anzu-mode))
+
+(use-package evil-numbers
+  :after evil
+  :config
+  :bind (:map evil-normal-state-map
+              ("g C-a" . evil-numbers/inc-at-pt)
+              ("g C-x" . evil-numbers/dec-at-pt)))
+
+(use-package avy
+  :bind (:map evil-normal-state-map
+              ("z f" . evil-avy-goto-char-timer)
+              ("z j" . evil-avy-goto-line)))
 
 (use-package which-key
   :init (which-key-mode))
@@ -163,7 +243,9 @@
   ([remap describe-function] . helpful-callable)
   ([remap describe-command] . helpful-command)
   ([remap describe-variable] . helpful-variable)
-  ([remap describe-key] . helpful-key))
+  ([remap describe-symbol] . helpful-symbol)
+  ([remap describe-key] . helpful-key)
+  ([remap display-local-help] . helpful-at-point))
 
 (use-package vertico
   :init (vertico-mode)
@@ -196,6 +278,12 @@
   :bind (:map minibuffer-local-map
               ("M-A" . marginalia-cycle))
   :init (marginalia-mode))
+
+(use-package nerd-icons-completion
+  :after marginalia
+  :config
+  (nerd-icons-completion-mode)
+  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 
 (use-package orderless
   :init
@@ -240,6 +328,7 @@
          ("M-g I" . consult-imenu-multi)
          ;; M-s bindings in `search-map'
          ("M-s d" . consult-find)
+         ("M-s f" . consult-fd)
          ("M-s D" . consult-locate)
          ("M-s g" . consult-grep)
          ("M-s G" . consult-git-grep)
@@ -344,15 +433,26 @@
   (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package corfu
-  :custom
-  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-  (corfu-auto t)                 ;; Enable auto completion
-  (corfu-separator ?\s)          ;; Orderless field separator
   :init
   (global-corfu-mode)
   :config
+  (corfu-popupinfo-mode 1)
   (corfu-history-mode 1)
-  (corfu-popupinfo-mode 1))
+  (add-to-list 'savehist-additional-variables 'corfu-history)
+  :custom
+  (corfu-auto t)                 ;; Enable auto completion
+  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  (corfu-separator ?\s)          ;; Orderless field separator
+  :hook
+  ;; Displaying popups aggressively (i.e. without summoning them with a key press) can
+  ;; cause the cursor to jump around in `eshell-mode'
+  (eshell-mode . (lambda () (setq-local corfu-auto nil))))
+
+
+(use-package nerd-icons-corfu
+  :after corfu
+  :config
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 
 (use-package cape
   ;; Bind dedicated completion commands
@@ -443,27 +543,33 @@
   :custom
   (jinx-languages "en_US es_AR"))
 
-(use-package mood-line
+(use-package doom-themes
   :config
-  (mood-line-mode))
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-tomorrow-night t)
 
-(use-package ef-themes
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
+
+(use-package solaire-mode
+  :after doom-themes
   :config
-  (load-theme 'ef-elea-dark t)
-  :custom
-  (ef-themes-to-toggle '(ef-elea-light ef-elea-dark)))
+  (solaire-global-mode))
+
+(use-package doom-modeline
+  :hook emacs-startup)
 
 (use-package rainbow-delimiters
-  :hook (prog-mode . rainbow-delimiters-mode))
-
-(use-package vi-tilde-fringe
-  :hook (prog-mode . vi-tilde-fringe-mode))
+  :hook prog-mode)
 
 (use-package indent-bars
   :vc (:fetcher github :repo jdtsmith/indent-bars)
-  :hook (prog-mode . indent-bars-mode)
+  :hook prog-mode
   :custom
-  (indent-tabs-mode nil)
   (indent-bars-treesit-support t)
   (indent-bars-color '(highlight :face-bg t :blend 0.15))
   (indent-bars-pattern ".")
@@ -471,57 +577,60 @@
   (indent-bars-pad-frac 0.1)
   (indent-bars-zigzag nil)
   (indent-bars-color-by-depth '(:regexp "outline-\\([0-9]+\\)" :blend 1)) ; blend=1: blend with BG only
-  (indent-bars-highlight-current-depth '(:blend 0.5)) ; pump up the BG blend on current  (indent-bars-highlight-current-depth nil)
-  (indent-bars-display-on-blank-lines nil))
+  (indent-bars-highlight-current-depth '(:blend 0.5))) ; pump up the BG blend on current  (indent-bars-highlight-current-depth nil)
 
 (use-package diff-hl
   :init (global-diff-hl-mode)
   :config (diff-hl-flydiff-mode))
 
+(use-package hl-todo
+  :hook prog-mode)
+
+(use-package visual-fill-column
+  :hook org-mode
+  :custom
+  (visual-fill-column-center-text t)
+  (visual-fill-column-width 100))
+
 (use-package org
   :defer t
-  ;; :hook
-  ;; (org-mode . (lambda ()
-  ;;               (variable-pitch-mode 1)
-  ;;               (visual-line-mode 1)
-  ;;               (display-line-numbers-mode -1)))
+  :vc (org-mode :url "https://git.tecosaur.net/tec/org-mode.git" :branch "dev")
+  :hook
+  (org-mode . (lambda ()
+                (auto-fill-mode)
+                (visual-line-mode)
+                (variable-pitch-mode)))
 
   :config
+
+  (require 'org-latex-preview)
+ 
+  (setq org-format-latex-options (plist-put org-format-latex-options :background "Transparent"))
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
   
   ;; Fix org-mode latex preview background color
-  (require 'org-src)
-  (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t)))
-
-  ;; Set faces for heading levels
-  (dolist (face '((org-level-1 . 1.2)
-                  (org-level-2 . 1.15)
-                  (org-level-3 . 1.125)
-                  (org-level-4 . 1.1)
-                  (org-level-5 . 1.1)
-                  (org-level-6 . 1.1)
-                  (org-level-7 . 1.1)
-                  (org-level-8 . 1.1))))
-                                        ;(set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
+  ;; (require 'org-src)
+  ;; (add-to-list 'org-src-block-faces '("latex" (:background "Transparent")))
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-                                        ;(set-face-attribute 'org-block nil :inherit 'fixed-pitch)
-                                        ;(set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
-                                        ;(set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
-                                        ;(set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-                                        ;(set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-                                        ;(set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-                                        ;(set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
+  (set-face-attribute 'org-block nil :inherit 'fixed-pitch)
+  (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
 
   :custom
   (org-directory "/home/fab/Documents/note-box/")
   (org-agenda-files `("/home/fab/Documents/note-box/inbox.org"))
+  (org-log-done 'time)
   (org-hide-emphasis-markers t)
   (org-pretty-entities t)
   (org-pretty-entities-include-sub-superscripts nil)
   (org-startup-with-latex-preview t)
-  (org-preview-latex-default-process 'dvisvgm)
-  (org-preview-latex-image-directory (concat "/home/fab/.config/emacs-vanilla/.cache/ltximg/" (buffer-file-name)))
+  (org-preview-latex-default-process 'dvipng)
+  (org-preview-latex-image-directory (concat user-emacs-directory ".cache/ltximg/" (buffer-file-name)))
   (org-startup-indented t)
   (org-startup-folded nil)
   (org-cycle-hide-drawers t)
@@ -529,7 +638,18 @@
   (org-highlight-latex-and-related '(native scripts entities))
   (org-src-preserve-indentation nil)
   (org-edit-src-content-indentation 0)
-  (org-return-follows-link t))
+  (org-return-follows-link t)
+
+  :custom-face
+  (org-level-1 ((t (:font "Iosevka Etoile" :height 1.5))))
+  (org-level-2 ((t (:font "Iosevka Etoile" :height 1.3))))
+  (org-level-3 ((t (:font "Iosevka Etoile" :height 1.25))))
+  (org-level-4 ((t (:font "Iosevka Etoile" :height 1.2))))
+  (org-level-5 ((t (:font "Iosevka Etoile" :height 1.15))))
+  (org-level-6 ((t (:font "Iosevka Etoile" :height 1.1))))
+  (org-level-7 ((t (:font "Iosevka Etoile" :height 1.1))))
+  (org-level-8 ((t (:font "Iosevka Etoile" :height 1.1)))))
+
 
 (use-package evil-org
   :after org
@@ -546,12 +666,25 @@
   (org-download-image-dir "/home/fab/Documents/note-box/assets/"))
 
 (use-package org-fragtog
-  :after org
-  :hook (org-mode . org-fragtog-mode))
+  :hook org-mode)
 
 (use-package org-appear
-  :after org
-  :hook (org-mode . org-appear-mode))
+  :hook org-mode)
+
+(use-package org-modern
+  :hook org-mode
+  :custom
+  (org-modern-todo nil)
+  (org-modern-tag nil)
+  (org-modern-table nil)
+  (org-modern-priority nil)
+  (org-modern-timestamp nil)
+  (org-modern-todo nil))
+
+(use-package org-modern-indent
+  :vc (:fetcher github :repo jdtsmith/org-modern-indent)
+  :config ; add late to hook
+  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
 
 (use-package org-roam
   :after org
@@ -591,9 +724,8 @@
   (consult-org-roam-buffer-after-buffers t)
   :config
   ;; Eventually suppress previewing for certain functions
-  (consult-customize
-   consult-org-roam-forward-links
-   :preview-key "M-.")  ;; Disable automatic latex preview when using consult live preview
+  (consult-customize consult-org-roam-forward-links :preview-key "M-.")
+  ;; Disable automatic latex preview when using consult live preview
   (add-to-list 'consult-preview-variables '(org-startup-with-latex-preview . nil))
   (add-to-list 'consult-preview-variables '(org-startup-indented . nil))
   :bind
@@ -604,6 +736,7 @@
   ("C-c n s" . consult-org-roam-search))
 
 (use-package bibtex
+  :defer t
   :custom
   (bibtex-dialect 'biblatex))
 
@@ -621,11 +754,22 @@
 
 (use-package citar-embark
   :after (citar embark)
-  :config (citar-embark-mode))
+  :config (citar-embark-mode)
+  :custom
+  (citar-at-point-function 'embark-act))
 
 (use-package citar-org-roam
   :after (citar org-roam)
   :config (citar-org-roam-mode))
+
+(use-package org-ref
+  :commands (isbn-to-bibtex isbn-to-bibtex-lead isbn-to-bibtex-open-library))
+
+(use-package lua-mode
+  :mode "\\.lua\\'"
+  :interpreter "lua"
+  :custom
+  (lua-indent-level 2))
 
 (use-package tex
   :defer t
@@ -640,17 +784,28 @@
   :custom
   (cdlatex-insert-auto-labels-in-env-templates nil))
 
+(use-package auctex-latexmk
+  :after tex
+  :hook
+  ;; Set LatexMk as the default.
+  (LaTeX-mode . (lambda () (setq-local TeX-command-default "LatexMk")))
+  :init
+  ;; Pass the -pdf flag when TeX-PDF-mode is active.
+  (setq auctex-latexmk-inherit-TeX-PDF-mode t)
+  :config
+  ;; Add LatexMk as a TeX target.
+  (auctex-latexmk-setup))
+
+(use-package evil-tex
+  :hook LaTeX-mode)
+
 (use-package pdf-tools
   :magic ("%PDF" . pdf-view-mode)
+  :hook (pdf-view-mode . (lambda ()
+                           (pdf-view-midnight-minor-mode)
+                           (set (make-local-variable 'evil-normal-state-cursor) (list nil)))))
   :config
   (pdf-tools-install)
-
-  :hook (pdf-view-mode . (lambda ()
-                           (display-line-numbers-mode -1)
-                           (pdf-view-midnight-minor-mode)
-                           (set (make-local-variable 
-                                 'evil-normal-state-cursor)
-                                (list nil)))))
 
 (use-package org-noter
   :bind ("C-c n p" . org-noter)
@@ -663,9 +818,25 @@
   :custom
   (treesit-auto-install t))
 
+(use-package flymake
+  :hook prog-mode)
+
 (use-package flymake-popon
   :hook flymake-mode)
 
-(use-package rainbow-mode)
+(use-package eglot
+  :hook
+  ((c-ts-mode c++-ts-mode python-ts-mode) . eglot-ensure))
 
-(use-package markdown-mode)
+(use-package rainbow-mode
+  :defer t)
+
+(use-package markdown-mode
+  :defer t)
+
+(use-package wgrep
+  :defer t)
+
+(provide 'init)
+
+;;; init.el ends here
