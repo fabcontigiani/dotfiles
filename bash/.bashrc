@@ -112,6 +112,3 @@ if ! shopt -oq posix; then
   fi
 fi
 
-[ -n "$EAT_SHELL_INTEGRATION_DIR" ] && \
-  source "$EAT_SHELL_INTEGRATION_DIR/bash"
-

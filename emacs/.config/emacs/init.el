@@ -1,9 +1,10 @@
-;;; init.el --- Initialization file for Emacs
+;;; init.el --- Emacs configuration file -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;; 
+;;
 
 ;;; Code:
+(debug-on-variable-change 'org-element--property)
 
 (use-package emacs
   :init
@@ -18,6 +19,9 @@
           ("nongnu" . 1)))
   ;; (setq package-pinned-packages
   ;;       '((org . "elpa-devel")))
+  (unless (bound-and-true-p package--initialized)
+    (package-initialize))
+
 
   ;; Store automatic customization options elsewhere
   (setq custom-file (locate-user-emacs-file "custom.el"))
@@ -49,10 +53,10 @@
   (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
 
   ;; Font configuration
-  (set-face-attribute 'default nil :font "Iosevka" :height 120)
-  (set-face-attribute 'fixed-pitch nil :font "Iosevka" :height 120)
-  (set-face-attribute 'variable-pitch nil :font "Iosevka Aile" :height 120)
-  (set-face-attribute 'fixed-pitch-serif nil :font "Iosevka Slab" :height 120)
+  (set-face-attribute 'default nil :font "Iosevka" :height 130)
+  (set-face-attribute 'fixed-pitch nil :font "Iosevka" :height 130)
+  (set-face-attribute 'variable-pitch nil :font "Iosevka Aile" :height 130)
+  (set-face-attribute 'fixed-pitch-serif nil :font "Iosevka Slab" :height 130)
 
   :config
   (electric-pair-mode t)
@@ -62,23 +66,19 @@
   (tooltip-mode -1)
   (menu-bar-mode -1)
   (column-number-mode 1)
-  (save-place-mode t)
-  (savehist-mode t)
-  (recentf-mode t)
+  (save-place-mode t) ;; Remember and restore the last cursor location of opened files
+  (savehist-mode t) ;; Save what you enter into minibuffer prompts
+  (recentf-mode t) ;; Keep track of recently opened files
   (winner-mode 1)
-  (global-auto-revert-mode 1)
+  (global-auto-revert-mode 1) ;; Revert buffers when the underlying file has changed
   (global-hl-line-mode t)
   (blink-cursor-mode -1)
-  (fset 'yes-or-no-p 'y-or-n-p) ;; change all prompts to y or n
+  (fset 'yes-or-no-p 'y-or-n-p) ;; Change all prompts to y or n
 
   :custom
   ;; Elisp compilation warnings
   (native-comp-async-report-warnings-errors nil "Don't report errors from async native compilation")
-  (byte-compile-warnings '(not lexical
-                               free-vars
-                               noruntime
-                               unresolved
-                               docstrings))
+  (byte-compile-warnings '(not lexical free-vars noruntime unresolved docstrings))
 
   ;; General configuration
   (truncate-lines t "Truncate lines instead of wrapping")
@@ -90,16 +90,16 @@
   (fill-column 80 "Set default line-wrap column to column 80")
   (max-mini-window-height 10 "Limit minibuffer height to 10 lines")
   (enable-recursive-minibuffers t "Allow minibuffer commands to be called in the minibuffer")
-  (use-dialog-box nil)
+  (use-dialog-box nil "Don't pop up UI dialogs when prompting")
   (load-prefer-newer t "Load from source files if they are newer than bytecode files")
   (read-extended-command-predicate #'command-completion-default-include-p "Hide commands in M-x which do not work in the current mode.")
 
 
   ;; Startup
-  ;; (initial-scratch-message "" "Leave scratch buffer empty on startup")
-  ;; (initial-major-mode 'fundamental-mode "Set initial mode to fundamental-mode on startup")
-  ;; (inhibit-startup-screen t "Do not create or show the initial splash screen")
-  ;; (inhibit-default-init t "Do not attempt to load any OS-provided init files")
+  (initial-scratch-message "" "Leave scratch buffer empty on startup")
+  (initial-major-mode 'fundamental-mode "Set initial mode to fundamental-mode on startup")
+  (inhibit-startup-screen t "Do not create or show the initial splash screen")
+  (inhibit-default-init t "Do not attempt to load any OS-provided init files")
 
   ;; Default style rules
   (sentence-end-double-space nil "Do not use double spacing between sentences in paragraphs.")
@@ -125,12 +125,35 @@
   (frame-resize-pixelwise t)
   (confirm-kill-emacs #'y-or-n-p)
   (shell-kill-buffer-on-exit t)
-  (global-auto-revert-non-file-buffers t)
+  (global-auto-revert-non-file-buffers t "Revert Dired and other buffers")
   (package-install-upgrade-built-in t)
   (tab-always-indent 'complete "Enable indentation+completion using the TAB key")
   (completion-cycle-threshold 3 "TAB cycle if there are only few candidates")
 
   (backup-directory-alist `(("." . ,(concat user-emacs-directory "backups")))))
+
+(use-package dashboard
+  :init
+  ;; Mark the dashboard as a real buffer
+  (defun real-buffer-p ()
+    (or (solaire-mode-real-buffer-p)
+        (equal (buffer-name) "*dashboard*")))
+  (setq solaire-mode-real-buffer-fn #'real-buffer-p)
+  :config
+  (dashboard-setup-startup-hook)
+  :custom
+  (dashboard-center-content t)
+  (dashboard-startup-banner 'logo)
+  (dashboard-display-icons-p t)
+  (dashboard-icon-type 'nerd-icons)
+  (dashboard-set-heading-icons t)
+  (dashboard-set-file-icons t)
+  (dashboard-projects-backend 'project-el)
+  (dashboard-items '((recents  . 5)
+                     (bookmarks . 5)
+                     (projects . 5)
+                     (agenda . 5)
+                     (registers . 5))))
 
 (use-package dired
   :ensure nil
@@ -151,7 +174,7 @@
 (use-package display-line-numbers
   :hook (prog-mode LaTeX-mode)
   :custom
-  (display-line-numbers-type 'relative)
+  (display-line-numbers-type t)
   (display-line-numbers-width-start 100))
 
 (use-package hideshow
@@ -260,9 +283,9 @@
   :after vertico
   ;; More convenient directory navigation commands
   :bind (:map vertico-map
-	      ("RET" . vertico-directory-enter)
-	      ("DEL" . vertico-directory-delete-char)
-	      ("M-DEL" . vertico-directory-delete-word))
+              ("RET" . vertico-directory-enter)
+              ("DEL" . vertico-directory-delete-char)
+              ("M-DEL" . vertico-directory-delete-word))
   ;; Tidy shadowed file names
   :hook (rfn-eshadow-update-overlay . vertico-directory-tidy))
 
@@ -411,17 +434,15 @@
    ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
   :init
-
   ;; Optionally replace the key help with a completing-read interface
   (setq prefix-help-command #'embark-prefix-help-command)
 
   ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
   ;; strategy, if you want to see the documentation from multiple providers.
-  (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+  ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
   ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
 
   :config
-
   ;; Hide the mode line of the Embark live/completions buffers
   (add-to-list 'display-buffer-alist
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
@@ -429,8 +450,13 @@
                  (window-parameters (mode-line-format . none)))))
 
 (use-package embark-consult
+  :ensure nil
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
+
+(use-package embark-org
+  :ensure nil
+  :after embark org)
 
 (use-package corfu
   :init
@@ -446,7 +472,7 @@
   :hook
   ;; Displaying popups aggressively (i.e. without summoning them with a key press) can
   ;; cause the cursor to jump around in `eshell-mode'
-  (eshell-mode . (lambda () (setq-local corfu-auto nil))))
+  ((eshell-mode shell-mode) . (lambda () (setq-local corfu-auto nil))))
 
 
 (use-package nerd-icons-corfu
@@ -537,7 +563,7 @@
     (define-key cdlatex-mode-map "$" nil)))
 
 (use-package jinx
-  :hook (emacs-startup . global-jinx-mode)
+  :hook org-mode
   :bind (("M-$" . jinx-correct)
          ("C-M-$" . jinx-languages))
   :custom
@@ -568,7 +594,7 @@
 
 (use-package indent-bars
   :vc (:fetcher github :repo jdtsmith/indent-bars)
-  :hook prog-mode
+  :hook (c-ts-mode c++-ts-mode python-ts-mode)
   :custom
   (indent-bars-treesit-support t)
   (indent-bars-color '(highlight :face-bg t :blend 0.15))
@@ -577,7 +603,8 @@
   (indent-bars-pad-frac 0.1)
   (indent-bars-zigzag nil)
   (indent-bars-color-by-depth '(:regexp "outline-\\([0-9]+\\)" :blend 1)) ; blend=1: blend with BG only
-  (indent-bars-highlight-current-depth '(:blend 0.5))) ; pump up the BG blend on current  (indent-bars-highlight-current-depth nil)
+  (indent-bars-highlight-current-depth '(:blend 0.5)) ; pump up the BG blend on current
+  (indent-bars-display-on-blank-lines t))
 
 (use-package diff-hl
   :init (global-diff-hl-mode)
@@ -590,11 +617,10 @@
   :hook org-mode
   :custom
   (visual-fill-column-center-text t)
-  (visual-fill-column-width 100))
+  (visual-fill-column-width 90))
 
 (use-package org
   :defer t
-  :vc (org-mode :url "https://git.tecosaur.net/tec/org-mode.git" :branch "dev")
   :hook
   (org-mode . (lambda ()
                 (auto-fill-mode)
@@ -602,15 +628,12 @@
                 (variable-pitch-mode)))
 
   :config
-
-  (require 'org-latex-preview)
- 
-  (setq org-format-latex-options (plist-put org-format-latex-options :background "Transparent"))
+  ;; Make org latex previews bigger
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
   
   ;; Fix org-mode latex preview background color
-  ;; (require 'org-src)
-  ;; (add-to-list 'org-src-block-faces '("latex" (:background "Transparent")))
+  (require 'org-src)
+  (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t)))
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
   (set-face-attribute 'org-block nil :inherit 'fixed-pitch)
@@ -679,6 +702,7 @@
   (org-modern-table nil)
   (org-modern-priority nil)
   (org-modern-timestamp nil)
+  (org-modern-statistics nil)
   (org-modern-todo nil))
 
 (use-package org-modern-indent
@@ -754,9 +778,8 @@
 
 (use-package citar-embark
   :after (citar embark)
-  :config (citar-embark-mode)
-  :custom
-  (citar-at-point-function 'embark-act))
+  :config
+  (citar-embark-mode))
 
 (use-package citar-org-roam
   :after (citar org-roam)
@@ -803,9 +826,9 @@
   :magic ("%PDF" . pdf-view-mode)
   :hook (pdf-view-mode . (lambda ()
                            (pdf-view-midnight-minor-mode)
-                           (set (make-local-variable 'evil-normal-state-cursor) (list nil)))))
+                           (set (make-local-variable 'evil-normal-state-cursor) (list nil))))
   :config
-  (pdf-tools-install)
+  (pdf-tools-install))
 
 (use-package org-noter
   :bind ("C-c n p" . org-noter)
@@ -832,7 +855,7 @@
   :defer t)
 
 (use-package markdown-mode
-  :defer t)
+  :mode "\\.md\\'")
 
 (use-package wgrep
   :defer t)
