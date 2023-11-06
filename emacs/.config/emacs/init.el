@@ -4,8 +4,6 @@
 ;;
 
 ;;; Code:
-(debug-on-variable-change 'org-element--property)
-
 (use-package emacs
   :init
   (require 'package)
@@ -17,11 +15,10 @@
   (setq package-archive-priorities
         '(("elpa" . 2)
           ("nongnu" . 1)))
-  ;; (setq package-pinned-packages
-  ;;       '((org . "elpa-devel")))
+  (setq package-pinned-packages
+        '((org . "elpa-devel")))
   (unless (bound-and-true-p package--initialized)
     (package-initialize))
-
 
   ;; Store automatic customization options elsewhere
   (setq custom-file (locate-user-emacs-file "custom.el"))
@@ -30,7 +27,7 @@
 
   (require 'use-package-ensure)
   (setq use-package-always-ensure t)
-  ;; (setq use-package-compute-statistics t)
+  (setq use-package-compute-statistics t)
 
   ;; Not needed on Emacs 30
   (unless (package-installed-p 'vc-use-package)
@@ -187,14 +184,8 @@
   :config (undo-fu-session-global-mode))
 
 (use-package evil
-  :init
-  (evil-mode)
-  :bind (("<escape>" . keyboard-escape-quit))
   :config
-  (with-eval-after-load 'evil-maps
-    (define-key evil-motion-state-map (kbd "SPC") nil)
-    (define-key evil-motion-state-map (kbd "RET") nil)
-    (define-key evil-motion-state-map (kbd "TAB") nil))
+  (evil-mode)
   :custom
   (evil-undo-system 'undo-fu)
   (evil-want-keybinding nil)
@@ -204,7 +195,10 @@
 (use-package evil-collection
   :after evil
   :config
-  (evil-collection-init))
+  (evil-collection-init)
+  :custom
+  (evil-collection-setup-minibuffer t)
+  (evil-collection-calendar-want-org-bindings t))
 
 (use-package evil-surround
   :after evil
@@ -251,7 +245,9 @@
   :config
   :bind (:map evil-normal-state-map
               ("g C-a" . evil-numbers/inc-at-pt)
-              ("g C-x" . evil-numbers/dec-at-pt)))
+              ("g C-A" . evil-numbers/inc-at-pt-incremental)
+              ("g C-x" . evil-numbers/dec-at-pt)
+              ("g C-X" . evil-numbers/dec-at-pt-incremental)))
 
 (use-package avy
   :bind (:map evil-normal-state-map
@@ -271,12 +267,16 @@
   ([remap display-local-help] . helpful-at-point))
 
 (use-package vertico
-  :init (vertico-mode)
+  :init
+  (vertico-mode)
+  :config
+  (evil-collection-define-key 'insert 'vertico-map
+    (kbd "C-j") 'vertico-next
+    (kbd "C-k") 'vertico-previous
+    (kbd "<escape>") 'abort-recursive-edit
+    (kbd "C-<escape>") 'evil-force-normal-state)
   :custom
-  (vertico-cycle t)
-  :bind (:map vertico-map
-              ("C-j" . vertico-next)
-              ("C-k" . vertico-previous)))
+  (vertico-cycle t))
 
 (use-package vertico-directory
   :ensure nil
@@ -450,7 +450,6 @@
                  (window-parameters (mode-line-format . none)))))
 
 (use-package embark-consult
-  :ensure nil
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 
@@ -473,7 +472,6 @@
   ;; Displaying popups aggressively (i.e. without summoning them with a key press) can
   ;; cause the cursor to jump around in `eshell-mode'
   ((eshell-mode shell-mode) . (lambda () (setq-local corfu-auto nil))))
-
 
 (use-package nerd-icons-corfu
   :after corfu
@@ -673,7 +671,6 @@
   (org-level-7 ((t (:font "Iosevka Etoile" :height 1.1))))
   (org-level-8 ((t (:font "Iosevka Etoile" :height 1.1)))))
 
-
 (use-package evil-org
   :after org
   :hook (org-mode . evil-org-mode)
@@ -683,9 +680,8 @@
 
 (use-package org-download
   :after org
-  :config
-  (setq org-download-annotate-function (lambda (link) (previous-line 1) ""))
   :custom
+  (org-download-annotate-function (lambda (link) (previous-line 1) ""))
   (org-download-image-dir "/home/fab/Documents/note-box/assets/"))
 
 (use-package org-fragtog
@@ -707,6 +703,7 @@
 
 (use-package org-modern-indent
   :vc (:fetcher github :repo jdtsmith/org-modern-indent)
+  :after org-modern
   :config ; add late to hook
   (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
 
@@ -734,6 +731,7 @@
   (org-roam-db-autosync-mode))
 
 (use-package consult-org-roam
+  :after org-roam
   :init
   (require 'consult-org-roam)
   ;; Activate the minor mode
@@ -765,6 +763,7 @@
   (bibtex-dialect 'biblatex))
 
 (use-package citar
+  :commands (citar-open)
   :custom
   (org-cite-global-bibliography '("/home/fab/Documents/note-box/references.bib"))
   (citar-notes-paths '("/home/fab/Documents/note-box/pages/"))
@@ -787,12 +786,6 @@
 
 (use-package org-ref
   :commands (isbn-to-bibtex isbn-to-bibtex-lead isbn-to-bibtex-open-library))
-
-(use-package lua-mode
-  :mode "\\.lua\\'"
-  :interpreter "lua"
-  :custom
-  (lua-indent-level 2))
 
 (use-package tex
   :defer t
@@ -857,9 +850,16 @@
 (use-package markdown-mode
   :mode "\\.md\\'")
 
+(use-package lua-mode
+  :mode "\\.lua\\'"
+  :interpreter "lua"
+  :custom
+  (lua-indent-level 2))
+
+(use-package ein)
+
 (use-package wgrep
   :defer t)
 
 (provide 'init)
-
 ;;; init.el ends here
