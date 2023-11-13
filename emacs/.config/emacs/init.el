@@ -9,14 +9,14 @@
   (require 'package)
   (setq package-archives
         '(("elpa" . "https://elpa.gnu.org/packages/")
-          ("elpa-devel" . "https://elpa.gnu.org/devel/")
+          ;; ("elpa-devel" . "https://elpa.gnu.org/devel/")
           ("nongnu" . "https://elpa.nongnu.org/nongnu/")
           ("melpa" . "https://melpa.org/packages/")))
-  (setq package-archive-priorities
-        '(("elpa" . 2)
-          ("nongnu" . 1)))
-  (setq package-pinned-packages
-        '((org . "elpa-devel")))
+  ;; (setq package-archive-priorities
+  ;;       '(("elpa" . 2)
+  ;;         ("nongnu" . 1)))
+  ;; (setq package-pinned-packages
+  ;;       '((org . "elpa-devel")))
   (unless (bound-and-true-p package--initialized)
     (package-initialize))
 
@@ -130,16 +130,11 @@
   (backup-directory-alist `(("." . ,(concat user-emacs-directory "backups")))))
 
 (use-package dashboard
-  :init
-  ;; Mark the dashboard as a real buffer
-  (defun real-buffer-p ()
-    (or (solaire-mode-real-buffer-p)
-        (equal (buffer-name) "*dashboard*")))
-  (setq solaire-mode-real-buffer-fn #'real-buffer-p)
   :config
   (dashboard-setup-startup-hook)
   :custom
   (dashboard-center-content t)
+  (dashboard-path-style 'truncate-middle)
   (dashboard-startup-banner 'logo)
   (dashboard-display-icons-p t)
   (dashboard-icon-type 'nerd-icons)
@@ -171,7 +166,7 @@
 (use-package display-line-numbers
   :hook (prog-mode LaTeX-mode)
   :custom
-  (display-line-numbers-type t)
+  (display-line-numbers-type 'relative)
   (display-line-numbers-width-start 100))
 
 (use-package hideshow
@@ -186,6 +181,11 @@
 (use-package evil
   :config
   (evil-mode)
+  (with-eval-after-load 'evil-maps
+    (define-key evil-motion-state-map (kbd "RET") nil)
+    (define-key evil-motion-state-map (kbd "TAB") nil)
+    (define-key evil-motion-state-map (kbd "SPC") nil)
+    (define-key evil-motion-state-map (kbd "DEL") nil))
   :custom
   (evil-undo-system 'undo-fu)
   (evil-want-keybinding nil)
@@ -196,9 +196,11 @@
   :after evil
   :config
   (evil-collection-init)
+  (evil-collection-define-key 'insert 'minibuffer-local-map
+    (kbd "<escape>") 'abort-recursive-edit
+    (kbd "C-<escape>") 'evil-force-normal-state)
   :custom
-  (evil-collection-setup-minibuffer t)
-  (evil-collection-calendar-want-org-bindings t))
+  (evil-collection-setup-minibuffer t))
 
 (use-package evil-surround
   :after evil
@@ -232,8 +234,9 @@
   (evil-multiedit-default-keybinds))
 
 (use-package evil-nerd-commenter
-  :config
-  (evilnc-default-hotkeys nil t))
+  :bind
+  (:map evil-normal-state-map ("g c" . evilnc-comment-operator))
+  (:map evil-visual-state-map ("g c" . evilnc-comment-operator)))
 
 (use-package evil-anzu
   :after evil
@@ -249,10 +252,37 @@
               ("g C-x" . evil-numbers/dec-at-pt)
               ("g C-X" . evil-numbers/dec-at-pt-incremental)))
 
+(use-package general
+  :config
+  (general-evil-setup)
+  (general-create-definer user/leader-keys
+    :states '(normal insert visual emacs)
+    :keymaps 'override
+    :prefix "SPC"
+    :global-prefix "C-SPC")
+  (user/leader-keys
+    "." '(find-file :wk "Find file"))
+  (user/leader-keys
+    "f" '(:ignore t :wk "Find")
+    "f p" '((lambda () (interactive) (find-file (concat user-emacs-directory "init.el"))) :wk "Edit emacs config")
+    "f r" '(recentf-open :wk "Recent files"))
+  (user/leader-keys
+    "b" '(:ignore t :wk "Buffer Bookmarks")
+    "b b" '(switch-to-buffer :wk "Switch buffer")
+    "b k" '(kill-this-buffer :wk "Kill this buffer")
+    "b n" '(next-buffer :wk "Next buffer")
+    "b p" '(previous-buffer :wk "Previous buffer")
+    "b r" '(revert-buffer :wk "Reload buffer")
+    "b R" '(rename-buffer :wk "Rename buffer")))
+
 (use-package avy
-  :bind (:map evil-normal-state-map
-              ("z f" . evil-avy-goto-char-timer)
-              ("z j" . evil-avy-goto-line)))
+  :bind ((:map isearch-mode-map
+               ("C-'" . avy-isearch))
+         (:map global-map
+               ("C-c C-j" . avy-resume))
+         (:map evil-normal-state-map
+               ("z f" . evil-avy-goto-char-timer)
+               ("z j" . evil-avy-goto-line))))
 
 (use-package which-key
   :init (which-key-mode))
@@ -272,9 +302,7 @@
   :config
   (evil-collection-define-key 'insert 'vertico-map
     (kbd "C-j") 'vertico-next
-    (kbd "C-k") 'vertico-previous
-    (kbd "<escape>") 'abort-recursive-edit
-    (kbd "C-<escape>") 'evil-force-normal-state)
+    (kbd "C-k") 'vertico-previous)
   :custom
   (vertico-cycle t))
 
@@ -293,6 +321,11 @@
   :ensure nil
   :after vertico
   :config (vertico-mouse-mode))
+
+(use-package vertico-multiform
+  :ensure nil
+  :after vertico
+  :config (vertico-multiform-mode))
 
 (use-package marginalia
   ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
@@ -328,7 +361,8 @@
          ([remap Info-search] . consult-info)
          ;; C-x bindings in `ctl-x-map'
          ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
-         ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+         ([remap switch-to-buffer] . consult-buffer)  ;; orig. switch-to-buffer
+         ([remap recentf-open] . consult-recent-file) ;; orig. recentf-open
          ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
          ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
          ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
@@ -425,7 +459,10 @@
   ;; (setq consult-project-function (lambda (_) (projectile-project-root)))
   ;;;; 5. No project support
   ;; (setq consult-project-function nil)
-  )
+
+  ;; Disable automatic latex preview when using consult live preview
+  (add-to-list 'consult-preview-variables '(org-startup-with-latex-preview . nil))
+  (add-to-list 'consult-preview-variables '(org-startup-indented . nil)))
 
 (use-package embark
   :bind
@@ -561,9 +598,14 @@
     (define-key cdlatex-mode-map "$" nil)))
 
 (use-package jinx
-  :hook org-mode
-  :bind (("M-$" . jinx-correct)
-         ("C-M-$" . jinx-languages))
+  :hook (org-mode LaTeX-mode)
+  :bind ((:map evil-normal-state-map
+               ("z =" . jinx-correct))
+         (:map evil-visual-state-map
+               ("z = " . jinx-correct)))
+  :config
+  (add-to-list 'vertico-multiform-categories
+             '(jinx grid (vertico-grid-annotate . 20)))
   :custom
   (jinx-languages "en_US es_AR"))
 
@@ -581,6 +623,12 @@
 
 (use-package solaire-mode
   :after doom-themes
+  :init
+  (defun real-buffer-p ()
+    "Mark these buffers as a real buffers."
+    (or (solaire-mode-real-buffer-p)
+        (equal (buffer-name) "*dashboard*")))
+  (setq solaire-mode-real-buffer-fn #'real-buffer-p)
   :config
   (solaire-global-mode))
 
@@ -611,6 +659,10 @@
 (use-package hl-todo
   :hook prog-mode)
 
+(use-package consult-todo
+  :bind (("M-s t" . consult-todo)
+         ("C-x p t" . consult-todo-project)))
+
 (use-package visual-fill-column
   :hook org-mode
   :custom
@@ -619,6 +671,10 @@
 
 (use-package org
   :defer t
+  :init
+  ;; Set the org-directory variable before loading the package allowing other
+  ;; packages to use it without having to configure the whole package
+  (setq org-directory "~/Documents/org/")
   :hook
   (org-mode . (lambda ()
                 (auto-fill-mode)
@@ -634,17 +690,16 @@
   (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t)))
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-  (set-face-attribute 'org-block nil :inherit 'fixed-pitch)
-  (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
-
+  (dolist (face '(org-block
+                  org-code
+                  org-document-info
+                  org-meta-line
+                  org-special-keyword
+                  org-table
+                  org-verbatim))
+    (set-face-attribute `,face nil :inherit 'fixed-pitch))
   :custom
-  (org-directory "/home/fab/Documents/note-box/")
-  (org-agenda-files `("/home/fab/Documents/note-box/inbox.org"))
+  (org-agenda-files `("/home/fab/Documents/org/inbox.org")) ;; TODO config agenda
   (org-log-done 'time)
   (org-hide-emphasis-markers t)
   (org-pretty-entities t)
@@ -660,6 +715,11 @@
   (org-src-preserve-indentation nil)
   (org-edit-src-content-indentation 0)
   (org-return-follows-link t)
+  (org-babel-load-languages '((emacs-lisp . t)
+                              (latex . t)
+                              (C . t)
+                              (python . t)
+                              (lua . t)))
 
   :custom-face
   (org-level-1 ((t (:font "Iosevka Etoile" :height 1.5))))
@@ -672,17 +732,19 @@
   (org-level-8 ((t (:font "Iosevka Etoile" :height 1.1)))))
 
 (use-package evil-org
-  :after org
-  :hook (org-mode . evil-org-mode)
+  :hook org-mode
   :config
+  (evil-org-set-key-theme '(navigation insert return textobjects additional shift todo heading calendar))
   (require 'evil-org-agenda)
+  (evil-define-key nil 'evil-org-mode
+    (kbd "RET") 'evil-org-return)
   (evil-org-agenda-set-keys))
 
 (use-package org-download
   :after org
   :custom
   (org-download-annotate-function (lambda (link) (previous-line 1) ""))
-  (org-download-image-dir "/home/fab/Documents/note-box/assets/"))
+  (org-download-image-dir (concat org-directory org-attach-id-dir)))
 
 (use-package org-fragtog
   :hook org-mode)
@@ -709,13 +771,15 @@
 
 (use-package org-roam
   :after org
+  :config
+  (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+  (org-roam-db-autosync-mode)
   :custom
-  (org-roam-directory "/home/fab/Documents/note-box/")
-  (org-roam-dailies-directory "journals/")
+  (org-roam-directory (concat org-directory "roam"))
   (org-roam-capture-templates
    '(("d" "default" plain
       "%?" :target
-      (file+head "pages/${slug}.org" "#+title: ${title}\n")
+      (file+head "${slug}.org" "#+title: ${title}\n")
       :unnarrowed t)))
   (org-roam-completion-everywhere t)
   :bind (("C-c n t" . org-roam-buffer-toggle)
@@ -724,11 +788,11 @@
          ("C-c n g" . org-roam-graph)
          ("C-c n i" . org-roam-node-insert)
          ("C-c n c" . org-roam-capture)
-         ("C-c n j" . org-roam-dailies-capture-today))
-  :config
-  ;; If you're using a vertical completion framework, you might want a more informative completion interface
-  (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
-  (org-roam-db-autosync-mode))
+         ("C-c n j" . org-roam-dailies-capture-today)
+         ("C-c n e" . consult-org-roam-file-find)
+         ("C-c n b" . consult-org-roam-backlinks)
+         ("C-c n l" . consult-org-roam-forward-links)
+         ("C-c n s" . consult-org-roam-search)))
 
 (use-package consult-org-roam
   :after org-roam
@@ -746,16 +810,7 @@
   (consult-org-roam-buffer-after-buffers t)
   :config
   ;; Eventually suppress previewing for certain functions
-  (consult-customize consult-org-roam-forward-links :preview-key "M-.")
-  ;; Disable automatic latex preview when using consult live preview
-  (add-to-list 'consult-preview-variables '(org-startup-with-latex-preview . nil))
-  (add-to-list 'consult-preview-variables '(org-startup-indented . nil))
-  :bind
-  ;; Define some convenient keybindings as an addition
-  ("C-c n e" . consult-org-roam-file-find)
-  ("C-c n b" . consult-org-roam-backlinks)
-  ("C-c n l" . consult-org-roam-forward-links)
-  ("C-c n s" . consult-org-roam-search))
+  (consult-customize consult-org-roam-forward-links :preview-key "M-."))
 
 (use-package bibtex
   :defer t
@@ -764,14 +819,51 @@
 
 (use-package citar
   :commands (citar-open)
+  :hook ((LaTeX-mode org-mode) . citar-capf-setup)
+  :config
+  (defvar citar-indicator-files-icons
+    (citar-indicator-create
+     :symbol (nerd-icons-faicon
+              "nf-fa-file_o"
+              :face 'nerd-icons-green)
+     :function #'citar-has-files
+     :padding "  "
+     :tag "has:files"))
+  (defvar citar-indicator-links-icons
+    (citar-indicator-create
+     :symbol (nerd-icons-faicon
+              "nf-fa-link"
+              :face 'nerd-icons-orange)
+     :function #'citar-has-links
+     :padding "  "
+     :tag "has:links"))
+  (defvar citar-indicator-notes-icons
+    (citar-indicator-create
+     :symbol (nerd-icons-codicon
+              "nf-cod-note"
+              :face 'nerd-icons-blue)
+     :function #'citar-has-notes
+     :padding "    "
+     :tag "has:notes"))
+  (defvar citar-indicator-cited-icons
+    (citar-indicator-create
+     :symbol (nerd-icons-faicon
+              "nf-fa-circle_o"
+              :face 'nerd-icon-green)
+     :function #'citar-is-cited
+     :padding "  "
+     :tag "is:cited"))
+  (setq citar-indicators
+        (list citar-indicator-files-icons
+              citar-indicator-links-icons
+              citar-indicator-notes-icons
+              citar-indicator-cited-icons))
   :custom
-  (org-cite-global-bibliography '("/home/fab/Documents/note-box/references.bib"))
-  (citar-notes-paths '("/home/fab/Documents/note-box/pages/"))
-  (org-cike-insert-processor 'citar)
+  (org-cite-global-bibliography `(,(concat org-directory "references.bib")))
+  (org-cite-insert-processor 'citar)
   (org-cite-follow-processor 'citar)
   (org-cite-activate-processor 'citar)
   (citar-bibliography org-cite-global-bibliography)
-
   :bind
   (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
 
@@ -782,13 +874,15 @@
 
 (use-package citar-org-roam
   :after (citar org-roam)
-  :config (citar-org-roam-mode))
+  :config (citar-org-roam-mode)
+  :custom
+  (citar-org-roam-subdir "citar"))
 
 (use-package org-ref
   :commands (isbn-to-bibtex isbn-to-bibtex-lead isbn-to-bibtex-open-library))
 
 (use-package tex
-  :defer t
+  :mode "\\.tex\\'"
   :ensure auctex
   :custom
   (font-latex-fontify-script nil))
@@ -837,8 +931,11 @@
 (use-package flymake
   :hook prog-mode)
 
-(use-package flymake-popon
-  :hook flymake-mode)
+(use-package eldoc
+  :custom
+  (eldoc-echo-area-display-truncation-message nil)
+  (eldoc-print-after-edit t)
+  (eldoc-echo-area-prefer-doc-buffer 'maybe))
 
 (use-package eglot
   :hook
@@ -848,15 +945,25 @@
   :defer t)
 
 (use-package markdown-mode
-  :mode "\\.md\\'")
+  :mode "\\.md\\'"
+  :hook
+  (markdown-mode . visual-line-mode))
 
 (use-package lua-mode
   :mode "\\.lua\\'"
   :interpreter "lua"
   :custom
-  (lua-indent-level 2))
+  (lua-indent-level 4))
 
-(use-package ein)
+(use-package sideline
+  :hook flymake-mode
+  :custom
+  (sideline-flymake-display-mode 'line)
+  (sideline-order-left 'up)
+  (sideline-backends-left '(sideline-flymake)))
+
+(use-package sideline-flymake
+  :after sideline)
 
 (use-package wgrep
   :defer t)
