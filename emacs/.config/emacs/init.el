@@ -91,7 +91,6 @@
   (load-prefer-newer t "Load from source files if they are newer than bytecode files")
   (read-extended-command-predicate #'command-completion-default-include-p "Hide commands in M-x which do not work in the current mode.")
 
-
   ;; Startup
   (initial-scratch-message "" "Leave scratch buffer empty on startup")
   (initial-major-mode 'fundamental-mode "Set initial mode to fundamental-mode on startup")
@@ -128,49 +127,6 @@
   (completion-cycle-threshold 3 "TAB cycle if there are only few candidates")
 
   (backup-directory-alist `(("." . ,(concat user-emacs-directory "backups")))))
-
-(use-package dashboard
-  :config
-  (dashboard-setup-startup-hook)
-  :custom
-  (dashboard-center-content t)
-  (dashboard-path-style 'truncate-middle)
-  (dashboard-startup-banner 'logo)
-  (dashboard-display-icons-p t)
-  (dashboard-icon-type 'nerd-icons)
-  (dashboard-set-heading-icons t)
-  (dashboard-set-file-icons t)
-  (dashboard-projects-backend 'project-el)
-  (dashboard-items '((recents  . 5)
-                     (bookmarks . 5)
-                     (projects . 5)
-                     (agenda . 5)
-                     (registers . 5))))
-
-(use-package dired
-  :ensure nil
-  :hook (dired-mode . dired-hide-details-mode)
-  :custom
-  (delete-by-moving-to-trash t)
-  (dired-recursive-copies 'always)
-  (dired-recursive-deletes 'always)
-  (dired-dwim-target t))
-
-(use-package dired-sidebar
-  :bind
-  ("C-x C-l" . dired-sidebar-toggle-sidebar))
-
-(use-package nerd-icons-dired
-  :hook dired-mode)
-
-(use-package display-line-numbers
-  :hook (prog-mode LaTeX-mode)
-  :custom
-  (display-line-numbers-type 'relative)
-  (display-line-numbers-width-start 100))
-
-(use-package hideshow
-  :hook (prog-mode . hs-minor-mode))
 
 (use-package undo-fu)
 
@@ -227,6 +183,14 @@
   :config
   (evil-goggles-mode)
   (evil-goggles-use-diff-faces))
+
+(use-package evil-lion
+  :config
+  (evil-lion-mode))
+
+(use-package evil-matchit
+  :config
+  (global-evil-matchit-mode))
 
 (use-package evil-multiedit
   :after evil
@@ -335,6 +299,50 @@
               ("M-A" . marginalia-cycle))
   :init (marginalia-mode))
 
+(use-package dashboard
+  :config
+  (dashboard-setup-startup-hook)
+  :custom
+  (dashboard-center-content t)
+  (dashboard-path-style 'truncate-middle)
+  (dashboard-startup-banner 'logo)
+  (dashboard-display-icons-p t)
+  (dashboard-icon-type 'nerd-icons)
+  (dashboard-set-heading-icons t)
+  (dashboard-set-file-icons t)
+  (dashboard-projects-backend 'project-el)
+  (dashboard-items '((recents  . 5)
+                     (bookmarks . 5)
+                     (projects . 5)
+                     (agenda . 5)
+                     (registers . 5))))
+
+(use-package dired
+  :ensure nil
+  :hook (dired-mode . dired-hide-details-mode)
+  :custom
+  (delete-by-moving-to-trash t)
+  (dired-recursive-copies 'always)
+  (dired-recursive-deletes 'always)
+  (dired-dwim-target t))
+
+(use-package dired-sidebar
+  :general
+  (user/leader-keys
+    "t s" '(dired-sidebar-toggle-sidebar :wk "Toggle sidebar")))
+
+(use-package nerd-icons-dired
+  :hook dired-mode)
+
+(use-package display-line-numbers
+  :hook (prog-mode LaTeX-mode)
+  :custom
+  (display-line-numbers-type 'relative)
+  (display-line-numbers-width-start 100))
+
+(use-package hideshow
+  :hook (prog-mode . hs-minor-mode))
+
 (use-package nerd-icons-completion
   :after marginalia
   :config
@@ -342,13 +350,19 @@
   (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 
 (use-package orderless
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles basic partial-completion)))))
+
+(use-package affe
+  :disabled
+  :after orderless
   :init
-  ;; Configure a custom style dispatcher (see the Consult wiki)
-  ;; (setq orderless-style-dispatchers '(+orderless-consult-dispatch orderless-affix-dispatch)
-  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
-  (setq completion-styles '(orderless basic)
-        completion-category-defaults nil
-        completion-category-overrides '((file (styles partial-completion)))))
+  (defun affe-orderless-regexp-compiler (input _type _ignorecase)
+    (setq input (orderless-pattern-compiler input))
+    (cons input (apply-partially #'orderless--highlight input t)))
+  :config
+  (setq affe-regexp-compiler #'affe-orderless-regexp-compiler))
 
 (use-package consult
   ;; Replace bindings. Lazily loaded due by `use-package'.
@@ -625,7 +639,7 @@
   :after doom-themes
   :init
   (defun real-buffer-p ()
-    "Mark these buffers as a real buffers."
+    "Treat these buffers as real buffers."
     (or (solaire-mode-real-buffer-p)
         (equal (buffer-name) "*dashboard*")))
   (setq solaire-mode-real-buffer-fn #'real-buffer-p)
@@ -654,7 +668,15 @@
 
 (use-package diff-hl
   :init (global-diff-hl-mode)
-  :config (diff-hl-flydiff-mode))
+  :config
+  (diff-hl-flydiff-mode)
+  (add-hook 'magit-pre-refresh-hook 'diff-hl-magit-pre-refresh)
+  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
+
+(use-package magit
+  :general
+  (user/leader-keys
+    "g g" 'magit-status))
 
 (use-package hl-todo
   :hook prog-mode)
@@ -723,7 +745,7 @@
 
   :custom-face
   (org-level-1 ((t (:font "Iosevka Etoile" :height 1.5))))
-  (org-level-2 ((t (:font "Iosevka Etoile" :height 1.3))))
+  (org-level-2 ((t (:font "Iosevka Etoile" :height 1.35))))
   (org-level-3 ((t (:font "Iosevka Etoile" :height 1.25))))
   (org-level-4 ((t (:font "Iosevka Etoile" :height 1.2))))
   (org-level-5 ((t (:font "Iosevka Etoile" :height 1.15))))
@@ -929,7 +951,9 @@
   (treesit-auto-install t))
 
 (use-package flymake
-  :hook prog-mode)
+  :hook prog-mode
+  :custom
+  (flymake-show-diagnostics-at-end-of-line 'short))
 
 (use-package eldoc
   :custom
@@ -939,7 +963,9 @@
 
 (use-package eglot
   :hook
-  ((c-ts-mode c++-ts-mode python-ts-mode) . eglot-ensure))
+  ((c-ts-mode c++-ts-mode python-ts-mode) . eglot-ensure)
+  :custom
+  (eglot-autoshutdown t))
 
 (use-package rainbow-mode
   :defer t)
@@ -954,16 +980,6 @@
   :interpreter "lua"
   :custom
   (lua-indent-level 4))
-
-(use-package sideline
-  :hook flymake-mode
-  :custom
-  (sideline-flymake-display-mode 'line)
-  (sideline-order-left 'up)
-  (sideline-backends-left '(sideline-flymake)))
-
-(use-package sideline-flymake
-  :after sideline)
 
 (use-package wgrep
   :defer t)
