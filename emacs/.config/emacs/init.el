@@ -185,10 +185,12 @@
   (evil-goggles-use-diff-faces))
 
 (use-package evil-lion
+  :after evil
   :config
   (evil-lion-mode))
 
 (use-package evil-matchit
+  :after evil
   :config
   (global-evil-matchit-mode))
 
@@ -198,9 +200,9 @@
   (evil-multiedit-default-keybinds))
 
 (use-package evil-nerd-commenter
-  :bind
-  (:map evil-normal-state-map ("g c" . evilnc-comment-operator))
-  (:map evil-visual-state-map ("g c" . evilnc-comment-operator)))
+  :after evil
+  :config
+  (evilnc-default-hotkeys nil t))
 
 (use-package evil-anzu
   :after evil
@@ -217,6 +219,7 @@
               ("g C-X" . evil-numbers/dec-at-pt-incremental)))
 
 (use-package general
+  :after evil
   :config
   (general-evil-setup)
   (general-create-definer user/leader-keys
@@ -590,13 +593,7 @@
 
   (add-hook 'conf-mode-hook 'tempel-setup-capf)
   (add-hook 'prog-mode-hook 'tempel-setup-capf)
-  (add-hook 'text-mode-hook 'tempel-setup-capf)
-
-  ;; Optionally make the Tempel templates available to Abbrev,
-  ;; either locally or globally. `expand-abbrev' is bound to C-x '.
-  ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
-  ;; (global-tempel-abbrev-mode)
-  )
+  (add-hook 'text-mode-hook 'tempel-setup-capf))
 
 (use-package math-delimiters
   :vc (:fetcher github :repo oantolin/math-delimiters)
@@ -619,7 +616,7 @@
                ("z = " . jinx-correct)))
   :config
   (add-to-list 'vertico-multiform-categories
-             '(jinx grid (vertico-grid-annotate . 20)))
+               '(jinx grid (vertico-grid-annotate . 20)))
   :custom
   (jinx-languages "en_US es_AR"))
 
@@ -903,11 +900,22 @@
 (use-package org-ref
   :commands (isbn-to-bibtex isbn-to-bibtex-lead isbn-to-bibtex-open-library))
 
-(use-package tex
-  :mode "\\.tex\\'"
-  :ensure auctex
+(use-package org-noter
+  :bind ("C-c n p" . org-noter)
   :custom
-  (font-latex-fontify-script nil))
+  (org-noter-auto-save-last-location t))
+
+(use-package tex
+  :mode ("\\.tex\\'" . LaTeX-mode)
+  :ensure auctex
+  :hook
+  (TeX-after-compilation-finished-functions . TeX-revert-document-buffer)
+  (LaTeX-mode . prettify-symbols-mode)
+  :custom
+  (font-latex-fontify-script nil)
+  (TeX-view-program-selection '((output-pdf "PDF Tools")))
+  (TeX-source-correlate-start-server t)
+  (TeX-electric-sub-and-superscript t))
 
 (use-package cdlatex
   :hook
@@ -932,17 +940,12 @@
   :hook LaTeX-mode)
 
 (use-package pdf-tools
-  :magic ("%PDF" . pdf-view-mode)
+  :mode ("\\.pdf\\'" . pdf-view-mode)
   :hook (pdf-view-mode . (lambda ()
                            (pdf-view-midnight-minor-mode)
                            (set (make-local-variable 'evil-normal-state-cursor) (list nil))))
   :config
   (pdf-tools-install))
-
-(use-package org-noter
-  :bind ("C-c n p" . org-noter)
-  :custom
-  (org-noter-auto-save-last-location t))
 
 (use-package treesit-auto
   :config
@@ -961,14 +964,33 @@
   (eldoc-print-after-edit t)
   (eldoc-echo-area-prefer-doc-buffer 'maybe))
 
+(use-package eldoc-box
+  :after (eldoc eglot)
+  :bind (:map eglot-mode-map ([remap eldoc-doc-buffer] . eldoc-box-help-at-point))
+  :custom
+  (eldoc-box-only-multi-line t)
+  (eldoc-box-clear-with-C-g t))
+
 (use-package eglot
   :hook
-  ((c-ts-mode c++-ts-mode python-ts-mode) . eglot-ensure)
+  ((c-ts-mode c++-ts-mode python-ts-mode LaTeX-mode) . eglot-ensure)
   :custom
   (eglot-autoshutdown t))
 
+(use-package consult-eglot
+  :after eglot
+  :bind (:map eglot-mode-map ("M-g l" . consult-eglot-symbols)))
+
+(use-package lsp-snippet
+  :after eglot
+  :vc (:fetcher github :repo svaante/lsp-snippet)
+  :config
+  (lsp-snippet-tempel-eglot-init))
+
 (use-package rainbow-mode
-  :defer t)
+  :general
+  (user/leader-keys
+    "t c" '(rainbow-mode :wk "Toggle colorize")))
 
 (use-package markdown-mode
   :mode "\\.md\\'"
