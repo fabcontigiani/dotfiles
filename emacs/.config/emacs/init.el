@@ -222,18 +222,18 @@
   :after evil
   :config
   (general-evil-setup)
-  (general-create-definer user/leader-keys
+  (general-create-definer fab/leader-keys
     :states '(normal insert visual emacs)
     :keymaps 'override
     :prefix "SPC"
     :global-prefix "C-SPC")
-  (user/leader-keys
+  (fab/leader-keys
     "." '(find-file :wk "Find file"))
-  (user/leader-keys
+  (fab/leader-keys
     "f" '(:ignore t :wk "Find")
     "f p" '((lambda () (interactive) (find-file (concat user-emacs-directory "init.el"))) :wk "Edit emacs config")
     "f r" '(recentf-open :wk "Recent files"))
-  (user/leader-keys
+  (fab/leader-keys
     "b" '(:ignore t :wk "Buffer Bookmarks")
     "b b" '(switch-to-buffer :wk "Switch buffer")
     "b k" '(kill-this-buffer :wk "Kill this buffer")
@@ -331,12 +331,38 @@
 
 (use-package dired-sidebar
   :general
-  (user/leader-keys
+  (fab/leader-keys
     "t s" '(dired-sidebar-toggle-sidebar :wk "Toggle sidebar")))
 
 (use-package nerd-icons-dired
   :hook dired-mode)
 
+(use-package tab-bar
+  :hook emacs-startup)
+
+(use-package tabspaces
+  :hook emacs-startup
+  :commands (tabspaces-switch-or-create-workspace
+             tabspaces-open-or-create-project-and-workspace)
+  :custom
+  (tabspaces-use-filtered-buffers-as-default 'nil)
+  (tabspaces-default-tab "Default")
+  (tabspaces-remove-to-default t)
+  (tabspaces-include-buffers '("*scratch*"))
+  (tabspaces-initialize-project-with-todo 'nil)
+  (tabspaces-todo-file-name "project-todo.org")
+  ;; sessions
+  (tabspaces-session t)
+  (tabspaces-session-auto-restore t))
+
+(use-package windmove
+  :bind (:map global-map
+              ("M-o" . other-window)
+              ("M-H" . windmove-left)
+              ("M-J" . windmove-down)
+              ("M-K" . windmove-up)
+              ("M-L" . windmove-right)))
+  
 (use-package display-line-numbers
   :hook (prog-mode LaTeX-mode)
   :custom
@@ -575,7 +601,10 @@
   ;; (tempel-trigger-prefix "<")
 
   :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
-         ("M-*" . tempel-insert))
+         ("M-*" . tempel-insert)
+         (:map tempel-map
+               ("TAB" . tempel-next)
+               ("<backtab>" . tempel-previous)))
 
   :init
   ;; Setup completion at point
@@ -672,7 +701,7 @@
 
 (use-package magit
   :general
-  (user/leader-keys
+  (fab/leader-keys
     "g g" 'magit-status))
 
 (use-package hl-todo
@@ -989,7 +1018,7 @@
 
 (use-package rainbow-mode
   :general
-  (user/leader-keys
+  (fab/leader-keys
     "t c" '(rainbow-mode :wk "Toggle colorize")))
 
 (use-package markdown-mode
@@ -1005,6 +1034,9 @@
 
 (use-package wgrep
   :defer t)
+
+(use-package atomic-chrome
+  :commands (atomic-chrome-start-server))
 
 (provide 'init)
 ;;; init.el ends here
