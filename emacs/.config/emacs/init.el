@@ -365,11 +365,13 @@
 (use-package display-line-numbers
   :hook (prog-mode LaTeX-mode)
   :custom
-  (display-line-numbers-type 'relative)
+  (display-line-numbers-type t)
   (display-line-numbers-width-start 100))
 
-(use-package hideshow
-  :hook (prog-mode . hs-minor-mode))
+(use-package outline
+  :hook (prog-mode . outline-minor-mode)
+  :custom
+  (outline-minor-mode-highlight 'append))
 
 (use-package nerd-icons-completion
   :after marginalia
@@ -648,28 +650,18 @@
   :custom
   (jinx-languages "en_US es_AR"))
 
-(use-package doom-themes
+(use-package modus-themes
+  :pin melpa
   :config
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-tomorrow-night t)
-
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
-
-(use-package solaire-mode
-  :after doom-themes
-  :init
-  (defun real-buffer-p ()
-    "Treat these buffers as real buffers."
-    (or (solaire-mode-real-buffer-p)
-        (equal (buffer-name) "*dashboard*")))
-  (setq solaire-mode-real-buffer-fn #'real-buffer-p)
-  :config
-  (solaire-global-mode))
+  (setq modus-themes-common-palette-overrides modus-themes-preset-overrides-faint)
+  (modus-themes-load-theme 'modus-vivendi-tinted)
+  (define-key global-map (kbd "<f5>") #'modus-themes-toggle)
+  :custom
+  (modus-themes-to-toggle '(modus-vivendi-tinted modus-operandi-tinted))
+  (modus-themes-mixed-fonts t)
+  (modus-themes-bold-constructs t)
+  (modus-themes-italic-constructs t)
+  (modus-themes-org-blocks 'tinted-background))
 
 (use-package doom-modeline
   :hook emacs-startup)
@@ -981,10 +973,16 @@
   :custom
   (treesit-auto-install t))
 
+(use-package compile
+  :commands (compile recompile)
+  :custom
+  (compilation-scroll-output t))
+
 (use-package flymake
   :hook prog-mode
   :custom
-  (flymake-show-diagnostics-at-end-of-line 'short))
+  (flymake-show-diagnostics-at-end-of-line 'short)
+  (flymake-no-changes-timeout 1.5))
 
 (use-package eldoc
   :custom
