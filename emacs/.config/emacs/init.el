@@ -231,7 +231,6 @@
     "." '(find-file :wk "Find file"))
   (fab/leader-keys
     "f" '(:ignore t :wk "Find")
-    "f p" '((lambda () (interactive) (find-file (concat user-emacs-directory "init.el"))) :wk "Edit emacs config")
     "f r" '(recentf-open :wk "Recent files"))
   (fab/leader-keys
     "b" '(:ignore t :wk "Buffer Bookmarks")
