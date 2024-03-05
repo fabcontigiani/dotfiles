@@ -339,6 +339,7 @@
   :hook dired-mode)
 
 (use-package tab-bar
+  :disabled
   :hook emacs-startup)
 
 (use-package tabspaces
