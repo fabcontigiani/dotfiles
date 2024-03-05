@@ -787,8 +787,9 @@
                               (lua . t)))
 
   :custom-face
-  (org-level-1 ((t (:font "Iosevka Etoile" :height 1.5))))
-  (org-level-2 ((t (:font "Iosevka Etoile" :height 1.35))))
+  (org-document-title ((t (:font "Iosevka Etoile" :height 1.5))))
+  (org-level-1 ((t (:font "Iosevka Etoile" :height 1.35))))
+  (org-level-2 ((t (:font "Iosevka Etoile" :height 1.3))))
   (org-level-3 ((t (:font "Iosevka Etoile" :height 1.25))))
   (org-level-4 ((t (:font "Iosevka Etoile" :height 1.2))))
   (org-level-5 ((t (:font "Iosevka Etoile" :height 1.15))))
