@@ -307,6 +307,7 @@
   :custom
   (dashboard-center-content t)
   (dashboard-path-style 'truncate-middle)
+  (dashboard-path-max-length 50)
   (dashboard-startup-banner 'logo)
   (dashboard-display-icons-p t)
   (dashboard-icon-type 'nerd-icons)
@@ -317,7 +318,8 @@
                      (bookmarks . 5)
                      (projects . 5)
                      (agenda . 5)
-                     (registers . 5))))
+                     ;(registers . 5)
+                     )))
 
 (use-package dired
   :ensure nil
