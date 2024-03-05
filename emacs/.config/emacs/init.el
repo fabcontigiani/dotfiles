@@ -800,7 +800,15 @@
 (use-package evil-org
   :hook org-mode
   :config
-  (evil-org-set-key-theme '(navigation insert return textobjects additional shift todo heading calendar))
+  (evil-org-set-key-theme '(navigation
+                            insert
+                            return
+                            textobjects
+                            additional
+                            shift
+                            todo
+                            ;; heading
+                            calendar))
   (require 'evil-org-agenda)
   (evil-define-key nil 'evil-org-mode
     (kbd "RET") 'evil-org-return)
