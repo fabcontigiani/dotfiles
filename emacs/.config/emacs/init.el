@@ -653,18 +653,41 @@
   :custom
   (jinx-languages "en_US es_AR"))
 
-(use-package modus-themes
-  :pin melpa
+(use-package doom-themes
   :config
-  (setq modus-themes-common-palette-overrides modus-themes-preset-overrides-faint)
-  (modus-themes-load-theme 'modus-vivendi-tinted)
-  (define-key global-map (kbd "<f5>") #'modus-themes-toggle)
-  :custom
-  (modus-themes-to-toggle '(modus-vivendi-tinted modus-operandi-tinted))
-  (modus-themes-mixed-fonts t)
-  (modus-themes-bold-constructs t)
-  (modus-themes-italic-constructs t)
-  (modus-themes-org-blocks 'tinted-background))
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t  ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-tomorrow-night t)
+
+  (defun fab/toggle-theme ()
+    "Toggle between light and dark theme."
+    (interactive)
+    (if (string= (car custom-enabled-themes) "doom-tomorrow-night")
+        (progn
+          (disable-theme (car custom-enabled-themes))
+          (load-theme 'doom-tomorrow-day t))
+      (progn
+        (disable-theme (car custom-enabled-themes))
+        (load-theme 'doom-tomorrow-night t))))
+  (define-key global-map (kbd "<f5>") #'fab/toggle-theme)
+
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
+
+
+(use-package solaire-mode
+  :after doom-themes
+  :init
+  (defun real-buffer-p ()
+    "Treat these buffers as real buffers."
+    (or (solaire-mode-real-buffer-p)
+        (equal (buffer-name) "*dashboard*")))
+  (setq solaire-mode-real-buffer-fn #'real-buffer-p)
+  :config
+  (solaire-global-mode))
 
 (use-package doom-modeline
   :hook emacs-startup)
