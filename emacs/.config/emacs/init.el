@@ -1027,7 +1027,8 @@
 
 (use-package eldoc-box
   :after (eldoc eglot)
-  :bind (:map eglot-mode-map ([remap eldoc-doc-buffer] . eldoc-box-help-at-point))
+  :bind (:map eglot-mode-map
+              ([remap eldoc-doc-buffer] . eldoc-box-help-at-point))
   :custom
   (eldoc-box-only-multi-line t)
   (eldoc-box-clear-with-C-g t))
