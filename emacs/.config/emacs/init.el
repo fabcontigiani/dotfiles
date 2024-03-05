@@ -68,7 +68,7 @@
   (recentf-mode t) ;; Keep track of recently opened files
   (winner-mode 1)
   (global-auto-revert-mode 1) ;; Revert buffers when the underlying file has changed
-  (global-hl-line-mode t)
+  ;(global-hl-line-mode t)
   (blink-cursor-mode -1)
   (fset 'yes-or-no-p 'y-or-n-p) ;; Change all prompts to y or n
 
