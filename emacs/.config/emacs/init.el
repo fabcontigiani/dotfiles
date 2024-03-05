@@ -1071,5 +1071,14 @@
 (use-package atomic-chrome
   :commands (atomic-chrome-start-server))
 
+(use-package flymake-languagetool
+  :hook ((text-mode
+          latex-mode
+          org-mode
+          markdown-mode) . flymake-languagetool-load)
+  :custom
+  (flymake-languagetool-server-jar nil)
+  (flymake-languagetool-url "https://api.languagetool.org"))
+
 (provide 'init)
 ;;; init.el ends here
