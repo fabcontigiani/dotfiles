@@ -85,7 +85,6 @@
   (message-truncate-lines t "Truncate messages in the echo area")
   (cursor-in-non-selected-windows nil "Hide cursor in inactive windows")
   (ring-bell-function 'ignore "Disable terminal bell")
-  (fill-column 79 "Set default line-wrap column to column 79")
   (max-mini-window-height 10 "Limit minibuffer height to 10 lines")
   (enable-recursive-minibuffers t "Allow minibuffer commands to be called in the minibuffer")
   (use-dialog-box nil "Don't pop up UI dialogs when prompting")
@@ -737,8 +736,12 @@
          ("C-x p t" . consult-todo-project)))
 
 (use-package visual-fill-column
-  :hook org-mode
+  :hook (((org-mode
+           markdown-mode
+           text-mode) . visual-fill-column-mode)
+         (prog-mode . display-fill-column-indicator-mode))
   :custom
+  (fill-column 80 "Set default line-wrap column to column 80")
   (visual-fill-column-center-text t)
   (visual-fill-column-width 90))
 
