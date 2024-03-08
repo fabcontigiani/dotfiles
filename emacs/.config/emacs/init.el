@@ -12,9 +12,10 @@
           ;; ("elpa-devel" . "https://elpa.gnu.org/devel/")
           ("nongnu" . "https://elpa.nongnu.org/nongnu/")
           ("melpa" . "https://melpa.org/packages/")))
-  ;; (setq package-archive-priorities
-  ;;       '(("elpa" . 2)
-  ;;         ("nongnu" . 1)))
+  (setq package-archive-priorities
+        '(("melpa" . 2)
+          ("elpa" . 1)
+          ("nongnu" . 1)))
   ;; (setq package-pinned-packages
   ;;       '((org . "elpa-devel")))
   (unless (bound-and-true-p package--initialized)
