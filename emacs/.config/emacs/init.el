@@ -324,7 +324,7 @@
                      ;(registers . 5)
                      )))
 
-((use-package project
+(use-package project
   :custom
   (project-switch-use-entire-map t))
 
