@@ -771,15 +771,36 @@
                   org-table
                   org-verbatim))
     (set-face-attribute `,face nil :inherit 'fixed-pitch))
+
   :custom
-  (org-agenda-files `("/home/fab/Documents/org/inbox.org")) ;; TODO config agenda
+  (org-agenda-files `(,(concat org-directory "tasks.org")))
+  (org-archive-location "::* Archived Tasks")
+  (org-archive-reversed-order t)
+  (org-capture-templates
+   '(("t" "Tasks")
+     ("tf" "Final Exam" entry
+      (file+headline "tasks.org" "Finales")
+      "** TODO Final %?\nSCHEDULED: %^{Scheduled: }t")
+     ("te" "Exam" entry
+      (file+headline "tasks.org" "Parciales")
+      "** TODO Parcial %?\nSCHEDULED: %^{Scheduled: }t")
+     ("tp" "Project/Assignment" entry
+      (file+headline "tasks.org" "Trabajos Prácticos")
+      "** TODO Trabajo Práctico %?\nDEADLINE: %^{Deadline: }t")
+     ("tu" "Unscheduled" entry
+      (file+headline "tasks.org" "Unscheduled")
+      "** TODO %?")))
+  (org-capture-bookmark nil "Don't bookmark last position when capturing")
+  (org-id-method 'ts)
+  (org-id-ts-format "%Y%m%dT%H%M%S")
   (org-log-done 'time)
   (org-hide-emphasis-markers t)
   (org-pretty-entities t)
   (org-pretty-entities-include-sub-superscripts nil)
   (org-startup-with-latex-preview t)
   (org-preview-latex-default-process 'dvipng)
-  (org-preview-latex-image-directory (concat user-emacs-directory ".cache/ltximg/" (buffer-file-name)))
+  (org-preview-latex-image-directory
+   (concat user-emacs-directory ".cache/ltximg/" (buffer-file-name)))
   (org-startup-indented t)
   (org-startup-folded nil)
   (org-cycle-hide-drawers t)
