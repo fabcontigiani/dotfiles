@@ -1021,7 +1021,6 @@
   (compilation-scroll-output t))
 
 (use-package flymake
-  :hook prog-mode
   :custom
   (flymake-show-diagnostics-at-end-of-line 'short)
   (flymake-no-changes-timeout 1.5))
