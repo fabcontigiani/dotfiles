@@ -834,6 +834,7 @@
   :hook org-mode)
 
 (use-package org-modern
+  :disabled
   :hook org-mode
   :custom
   (org-modern-todo nil)
@@ -845,6 +846,7 @@
   (org-modern-todo nil))
 
 (use-package org-modern-indent
+  :disabled
   :vc (:fetcher github :repo jdtsmith/org-modern-indent)
   :after org-modern
   :config ; add late to hook
