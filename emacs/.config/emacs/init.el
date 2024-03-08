@@ -136,6 +136,8 @@
   :config (undo-fu-session-global-mode))
 
 (use-package evil
+  :init
+  (setq evil-want-Y-yank-to-eol t) ; doesn't work with :custom
   :config
   (evil-mode)
   (with-eval-after-load 'evil-maps
@@ -146,8 +148,7 @@
   :custom
   (evil-undo-system 'undo-fu)
   (evil-want-keybinding nil)
-  (evil-want-C-u-scroll t)
-  (evil-want-Y-yank-to-eol t))
+  (evil-want-C-u-scroll t))
 
 (use-package evil-collection
   :after evil
