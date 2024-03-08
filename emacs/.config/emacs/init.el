@@ -346,6 +346,31 @@
               ("M-J" . windmove-down)
               ("M-K" . windmove-up)
               ("M-L" . windmove-right)))
+
+(use-package harpoon
+  :vc (:fetcher github :repo kofm/harpoon.el)
+  :bind (:map harpoon-minor-mode-map
+	      ("C-c j m" . 'harpoon-set)
+	      ("C-c j b" . 'harpoon-buffer)
+	      ("C-c j 1" . 'harpoon-jump-1)
+	      ("C-c j 2" . 'harpoon-jump-2)
+	      ("C-c j 3" . 'harpoon-jump-3)
+	      ("C-c j 4" . 'harpoon-jump-4)
+	      ("C-c j 5" . 'harpoon-jump-5)
+	      ("C-c j 6" . 'harpoon-jump-6)
+	      ("C-c j 7" . 'harpoon-jump-7)
+	      ("C-c j 8" . 'harpoon-jump-8))
+  :config
+  (add-to-list
+   'display-buffer-alist
+   '("\\*harpoon\\*"
+     (display-buffer-in-side-window)
+     (side . bottom)
+     (slot . -1)
+     (window-height . 0.33)
+     (window-parameters
+      (no-delete-other-windows . nil))))
+  (harpoon-minor-mode 1))
   
 (use-package display-line-numbers
   :hook (prog-mode LaTeX-mode)
