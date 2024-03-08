@@ -67,11 +67,13 @@
   (save-place-mode t) ;; Remember and restore the last cursor location of opened files
   (savehist-mode t) ;; Save what you enter into minibuffer prompts
   (recentf-mode t) ;; Keep track of recently opened files
-  (winner-mode 1)
+  (winner-mode 1) ;; Record changes to window configuration
   (global-auto-revert-mode 1) ;; Revert buffers when the underlying file has changed
-  ;(global-hl-line-mode t)
-  (blink-cursor-mode -1)
+  ;; (global-hl-line-mode t)
+  ;; (blink-cursor-mode -1)
   (fset 'yes-or-no-p 'y-or-n-p) ;; Change all prompts to y or n
+
+  (add-hook 'before-save-hook 'time-stamp)
 
   :custom
   ;; Elisp compilation warnings
@@ -321,6 +323,10 @@
                      (agenda . 5)
                      ;(registers . 5)
                      )))
+
+((use-package project
+  :custom
+  (project-switch-use-entire-map t))
 
 (use-package dired
   :ensure nil
@@ -755,7 +761,8 @@
   (org-mode . (lambda ()
                 (auto-fill-mode)
                 (visual-line-mode)
-                (variable-pitch-mode)))
+                (variable-pitch-mode)
+                (setq line-spacing 2)))
 
   :config
   ;; Make org latex previews bigger
@@ -765,7 +772,7 @@
   (require 'org-src)
   (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t)))
 
-  ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+  ;; Ensure that anything that should be fixed-pitch in org appears that way
   (dolist (face '(org-block
                   org-code
                   org-document-info
@@ -817,6 +824,10 @@
                               (C . t)
                               (python . t)
                               (lua . t)))
+  (org-attach-auto-tag nil)
+  (org-attach-id-to-path-function-list '(org-attach-id-ts-folder-format
+                                         org-attach-id-uuid-folder-format
+                                         org-attach-id-fallback-folder-format))
 
   :custom-face
   (org-document-title ((t (:font "Iosevka Etoile" :height 1.5))))
@@ -827,7 +838,10 @@
   (org-level-5 ((t (:font "Iosevka Etoile" :height 1.15))))
   (org-level-6 ((t (:font "Iosevka Etoile" :height 1.1))))
   (org-level-7 ((t (:font "Iosevka Etoile" :height 1.1))))
-  (org-level-8 ((t (:font "Iosevka Etoile" :height 1.1)))))
+  (org-level-8 ((t (:font "Iosevka Etoile" :height 1.1))))
+
+  :bind
+  ("C-c c" . org-capture))
 
 (use-package evil-org
   :hook org-mode
@@ -848,9 +862,10 @@
 
 (use-package org-download
   :after org
+  :config
+  (setq org-download-annotate-function (lambda (_)  "Return empty string" ""))
   :custom
-  (org-download-annotate-function (lambda (link) (previous-line 1) ""))
-  (org-download-image-dir (concat org-directory org-attach-id-dir)))
+  (org-download-method 'attach))
 
 (use-package org-fragtog
   :hook org-mode)
