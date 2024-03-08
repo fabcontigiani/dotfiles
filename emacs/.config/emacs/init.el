@@ -339,25 +339,6 @@
 (use-package nerd-icons-dired
   :hook dired-mode)
 
-(use-package tab-bar
-  :disabled
-  :hook emacs-startup)
-
-(use-package tabspaces
-  :hook emacs-startup
-  :commands (tabspaces-switch-or-create-workspace
-             tabspaces-open-or-create-project-and-workspace)
-  :custom
-  (tabspaces-use-filtered-buffers-as-default 'nil)
-  (tabspaces-default-tab "Default")
-  (tabspaces-remove-to-default t)
-  (tabspaces-include-buffers '("*scratch*"))
-  (tabspaces-initialize-project-with-todo 'nil)
-  (tabspaces-todo-file-name "project-todo.org")
-  ;; sessions
-  (tabspaces-session t)
-  (tabspaces-session-auto-restore t))
-
 (use-package windmove
   :bind (:map global-map
               ("M-o" . other-window)
