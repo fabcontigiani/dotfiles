@@ -112,7 +112,7 @@
   (mouse-wheel-progressive-speed nil "Disable mouse wheel acceleration during scrolling")
   (scroll-preserve-screen-position 1 "Prevent the cursor from moving during scrolling")
   (scroll-conservatively 101 "Scroll only one line at a time when cursor leaves view")
-                                        ;(scroll-margin 5 "Maintain margin of 5 lines around cursor during scrolling")
+  (scroll-margin 5 "Maintain margin of 5 lines around cursor during scrolling")
   (fast-but-imprecise-scrolling t "Improve redisplay performance while scrolling")
 
   ;; Performance tweaks
@@ -134,9 +134,8 @@
   :config
 
   ;; Convenience
-  (electric-pair-mode t)
-
-  (repeat-mode 1)
+  (electric-pair-mode t) ;; Tidy parenthesis
+  (repeat-mode 1) ;; It bears repeating
   (save-place-mode t) ;; Remember and restore the last cursor location of opened files
   (savehist-mode t) ;; Save what you enter into minibuffer prompts
   (recentf-mode t) ;; Keep track of recently opened files
@@ -157,11 +156,6 @@
   (set-face-attribute 'fixed-pitch nil :font "Iosevka" :height 130)
   (set-face-attribute 'variable-pitch nil :font "Iosevka Aile" :height 130)
   (set-face-attribute 'fixed-pitch-serif nil :font "Iosevka Slab" :height 130)
-
-  :bind
-  ("M-o" . other-window)
-  ("M-n" . forward-paragraph)
-  ("M-p" . backward-paragraph)
   )
 
 (use-package dired
@@ -574,6 +568,12 @@
   :init
   (global-corfu-mode))
 
+(use-package corfu-popupinfo
+  :ensure nil
+  :after corfu
+  :config
+  (corfu-popupinfo-mode))
+
 (use-package cape
   ;; Bind dedicated completion commands
   ;; Alternative prefix keys: C-c p, M-p, M-+, ...
@@ -658,13 +658,13 @@
 
 (use-package ef-themes
   :config
-  (ef-themes-select 'ef-trio-dark)
+  (ef-themes-select 'ef-dream)
   :custom
   (ef-themes-bold-constructs t)
   (ef-themes-italic-constructs t)
   (ef-themes-mixed-fonts t)
-  (ef-themes-to-toggle '(ef-trio-dark
-                         ef-trio-light)))
+  (ef-themes-to-toggle '(ef-dream
+                         ef-reverie)))
 
 (use-package rainbow-delimiters
   :hook prog-mode)
@@ -774,7 +774,6 @@
    ("C-c n g" . consult-denote-grep)))
 
 (use-package citar
-  :commands (citar-open)
   :hook ((LaTeX-mode org-mode) . citar-capf-setup)
   :config
   (require 'citar-denote)
@@ -784,6 +783,7 @@
   (org-cite-activate-processor 'citar)
   (citar-bibliography fab/bibliography-file)
   :bind
+  ("C-c n c o" . citar-open)
   (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
 
 (use-package citar-embark
@@ -847,6 +847,10 @@
   :custom
   (reftex-default-bibliography `(,fab/bibliography-file))
   (reftex-plug-into-AUCTeX t))
+
+(use-package consult-reftex
+  :ensure (:fetcher github :repo "karthink/consult-reftex")
+  :after reftex)
 
 (use-package cdlatex
   :hook
@@ -988,12 +992,10 @@
 (use-package nix-mode
   :mode "\\.nix\\'")
 
+(provide 'init)
 ;; Local Variables:
 ;; no-byte-compile: t
 ;; no-native-compile: t
 ;; no-update-autoloads: t
 ;; End:
-
-(provide 'init)
-
 ;;; init.el ends here
