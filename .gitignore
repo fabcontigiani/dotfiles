@@ -1,3 +1,7 @@
 *.json
 qtile/.config/qtile/__pycache__/*
 qutebrowser/.config/qutebrowser/autoconfig.yml
+emacs/*
+!emacs/.config/README.org
+!emacs/.config/init.el
+!emacs/.config/early-init.el

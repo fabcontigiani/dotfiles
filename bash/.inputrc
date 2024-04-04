@@ -1,10 +1,4 @@
 $include /etc/inputrc
-set editing-mode vi
-set show-mode-in-prompt on
-# ins -> beam, cmd -> block
-set vi-ins-mode-string \1\e[6 q\2
-set vi-cmd-mode-string \1\e[2 q\2
-
 TAB: menu-complete
 # shift + tab
 "\e[Z": menu-complete-backward
@@ -15,23 +9,3 @@ set menu-complete-display-prefix on
 set colored-stats on
 set colored-completion-prefix on
 set mark-symlinked-directories on
-
-$if mode=vi
-set keymap vi-command
-# these are for vi-command mode
-"\e[A": history-search-backward
-"\e[B": history-search-forward
-j: history-search-forward
-k: history-search-backward
-set keymap vi-insert
-# these are for vi-insert mode
-"\e[A": history-search-backward
-"\e[B": history-search-forward
-$endif
-
-# ctrl + left/right
-"\e[1;5D": backward-word
-"\e[1;5C": forward-word
-"\C-p": history-search-backward
-"\C-n": history-search-forward
-"\C-l": clear-screen
