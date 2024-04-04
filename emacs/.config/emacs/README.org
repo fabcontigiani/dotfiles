@@ -1,3 +1,4 @@
+# -*- eval: (org-latex-preview-auto-mode -1); -*-
 #+title: My Emacs Configuration
 #+property: header-args :tangle init.el
 #+startup: content
@@ -1048,11 +1049,19 @@ org-mode
 ** Install =pdf-tools=
 
 #+begin_src emacs-lisp
-  (use-package pdf-tools
-    :mode ("\\.pdf\\'" . pdf-view-mode)
-    :hook (pdf-view-mode . pdf-view-midnight-minor-mode)
-    :config
-    (pdf-tools-install))  
+(use-package pdf-tools
+  :ensure (pdf-tools :pre-build ("./server/autobuild") :files (:defaults "server/epdfinfo"))
+  :mode ("\\.pdf\\'" . pdf-view-mode)
+  :hook (pdf-view-mode . (lambda ()
+                           ;; get rid of borders on pdf's edges
+                           (set (make-local-variable 'evil-normal-state-cursor) (list nil))
+                           ;;for fast i-search in pdf buffers
+                           (pdf-isearch-minor-mode)
+                           (pdf-isearch-batch-mode)
+                           (pdf-view-themed-minor-mode)))
+  :bind
+  (:map pdf-view-mode-map
+        ("o" . #'pdf-outline)))
 #+end_src
 
 *** Install =org-noter=
@@ -1257,6 +1266,7 @@ org-mode
 
 #+begin_src emacs-lisp
 (use-package flymake
+  :ensure nil ;; use built-in
   :defer t
   :custom
   (flymake-no-changes-timeout 1.5))
@@ -1318,6 +1328,7 @@ org-mode
 
 #+begin_src emacs-lisp
 (use-package hl-todo
+  :ensure (:depth nil)
   :config
   (add-hook 'flymake-diagnostic-functions 'hl-todo-flymake)
   (global-hl-todo-mode))
@@ -1325,19 +1336,19 @@ org-mode
 
 *** Install =consult-todo=
 
-# #+begin_src emacs-lisp
-#   (use-package consult-todo
-#     :bind (("M-s t" . consult-todo)
-#            ("C-x p t" . consult-todo-project)))
-# #+end_src
+#+begin_src emacs-lisp
+  (use-package consult-todo
+    :bind (("M-s t" . consult-todo)
+           ("C-x p t" . consult-todo-project)))
+#+end_src
 
 *** Install =magit-todos=
 
-# #+begin_src emacs-lisp
-#   (use-package magit-todos
-#     :after magit
-#     :config (magit-todos-mode 1))
-# #+end_src
+#+begin_src emacs-lisp
+  (use-package magit-todos
+    :after magit
+    :config (magit-todos-mode 1))
+#+end_src
 
 ** Install =apheleia=
 

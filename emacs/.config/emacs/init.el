@@ -691,10 +691,18 @@
   (persid-isbn-generate-citekey 'user))
 
 (use-package pdf-tools
+  :ensure (pdf-tools :pre-build ("./server/autobuild") :files (:defaults "server/epdfinfo"))
   :mode ("\\.pdf\\'" . pdf-view-mode)
-  :hook (pdf-view-mode . pdf-view-midnight-minor-mode)
-  :config
-  (pdf-tools-install))
+  :hook (pdf-view-mode . (lambda ()
+                           ;; get rid of borders on pdf's edges
+                           (set (make-local-variable 'evil-normal-state-cursor) (list nil))
+                           ;;for fast i-search in pdf buffers
+                           (pdf-isearch-minor-mode)
+                           (pdf-isearch-batch-mode)
+                           (pdf-view-themed-minor-mode)))
+  :bind
+  (:map pdf-view-mode-map
+        ("o" . #'pdf-outline)))
 
 (use-package org-noter
   :custom
@@ -847,6 +855,7 @@
   (lsp-snippet-tempel-eglot-init))
 
 (use-package flymake
+  :ensure nil ;; use built-in
   :defer t
   :custom
   (flymake-no-changes-timeout 1.5))
@@ -885,9 +894,18 @@
   (diff-hl-draw-borders nil))
 
 (use-package hl-todo
+  :ensure (:depth nil)
   :config
   (add-hook 'flymake-diagnostic-functions 'hl-todo-flymake)
   (global-hl-todo-mode))
+
+(use-package consult-todo
+  :bind (("M-s t" . consult-todo)
+         ("C-x p t" . consult-todo-project)))
+
+(use-package magit-todos
+  :after magit
+  :config (magit-todos-mode 1))
 
 (use-package apheleia
   :commands
