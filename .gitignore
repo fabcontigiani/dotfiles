@@ -1,7 +1,14 @@
 *.json
 qtile/.config/qtile/__pycache__/*
 qutebrowser/.config/qutebrowser/autoconfig.yml
+<<<<<<< HEAD
 emacs/*
 !emacs/.config/README.org
 !emacs/.config/init.el
 !emacs/.config/early-init.el
+=======
+emacs/.config/emacs/*
+!emacs/.config/emacs/README.org
+!emacs/.config/emacs/init.el
+!emacs/.config/emacs/early-init.el
+>>>>>>> 1e8d705 (We move praise the elpaca lord now)
