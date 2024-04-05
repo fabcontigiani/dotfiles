@@ -81,6 +81,7 @@
   (undo-no-redo t)
   (isearch-lazy-count t)
   (search-whitespace-regexp ".?*")
+  (blink-cursor-blinks -1 "Infinite blinks")
 
   ;; Startup
   (initial-scratch-message "" "Leave scratch buffer empty on startup")
@@ -122,6 +123,7 @@
 
   ;; Convenience
   (electric-pair-mode t)
+
   (repeat-mode 1)
   (save-place-mode t) ;; Remember and restore the last cursor location of opened files
   (savehist-mode t) ;; Save what you enter into minibuffer prompts
@@ -231,7 +233,7 @@
   (org-log-done 'time)
   ;; (org-hide-emphasis-markers t)
   (org-pretty-entities t)
-  ;; (org-pretty-entities-include-sub-superscripts nil)
+  (org-pretty-entities-include-sub-superscripts nil)
   (org-startup-with-latex-preview t)
   ;; (org-preview-latex-default-process 'dvipng)
   ;; (org-preview-latex-image-directory (concat user-emacs-directory ".cache/ltximg/"))
@@ -694,11 +696,10 @@
   :ensure (pdf-tools :pre-build ("./server/autobuild") :files (:defaults "server/epdfinfo"))
   :mode ("\\.pdf\\'" . pdf-view-mode)
   :hook (pdf-view-mode . (lambda ()
-                           ;; get rid of borders on pdf's edges
-                           (set (make-local-variable 'evil-normal-state-cursor) (list nil))
                            ;;for fast i-search in pdf buffers
                            (pdf-isearch-minor-mode)
                            (pdf-isearch-batch-mode)
+                           (pdf-annot-minor-mode)
                            (pdf-view-themed-minor-mode)))
   :bind
   (:map pdf-view-mode-map
@@ -715,6 +716,7 @@
 (use-package denote
   :config
   (require 'denote-journal-extras)
+  (require 'consult-denote)
   :custom
   (denote-rename-buffer-mode t)
   (denote-directory (concat fab/org-directory "denote/"))
@@ -728,7 +730,6 @@
    ("C-c n i" . denote-link-or-create)
    ("C-c n l" . denote-find-link)
    ("C-c n b" . denote-find-backlink)
-   ("C-c n d" . denote-org-dblock-insert-links)
    ("C-c n r" . denote-rename-file)
    ("C-c n R" . denote-rename-file-using-front-matter)
    ("C-c n k" . denote-keywords-add)
@@ -921,11 +922,10 @@
 
 (use-package gptel
   :config
-  (setq gptel-model "mistral:latest"
-        gptel-backend (gptel-make-ollama "Ollama"
-                                         :host "localhost:11434"
-                                         :stream t
-                                         :models '("mistral:latest"))))
+  (setq
+   gptel-model "gemini-pro"
+   gptel-backend (gptel-make-gemini "Gemini"
+                   :stream t)))
 
 ;; Local Variables:
 ;; no-byte-compile: t
