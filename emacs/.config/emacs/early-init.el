@@ -1,7 +1,9 @@
 ;;; early-init.el --- Early initialization -*- lexical-binding: t; -*-
 
+;;; Disable package.el
 (setq package-enable-at-startup nil)
 
+;;; Defer garbage collection at startup
 (defconst fab/gc-cons-threshold (* 32 1024 1024)
   "Preferred garbage collection threshold value (32MB).")
 (defconst fab/gc-cons-percentage 0.1
@@ -20,6 +22,7 @@
 (fab/defer-garbage-collection)
 (add-hook 'elpaca-after-init-hook #'fab/restore-garbage-collection)
 
+;;; Maximize initial frame
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 
 ;; Local Variables:

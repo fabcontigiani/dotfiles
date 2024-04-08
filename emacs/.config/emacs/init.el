@@ -1,5 +1,10 @@
-;;; init.el --- Emacs configuration file -*- lexical-binding: t; -*-
+ ;;; init.el --- Emacs configuration file -*- lexical-binding: t; -*-
 
+;;; Commentary:
+;; 
+
+;;; Code:
+;;;; Bootstrap elpaca
 (defvar elpaca-installer-version 0.7)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
@@ -39,15 +44,17 @@
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 
-;; Install use-package support
+;;;;; Install use-package support
 (elpaca elpaca-use-package
   ;; Enable use-package :ensure support for Elpaca.
   (elpaca-use-package-mode)
-  (setq use-package-always-ensure t))
+  (setq use-package-always-ensure t
+        use-package-expand-minimally t))
 
-;; Block until current queue processed.
+;;;;; Block until current queue processed.
 (elpaca-wait)
 
+;;;; Better Defaults
 (use-package emacs
   :ensure nil
   :init
@@ -57,6 +64,11 @@
   (defvar fab/bibliography-dir (concat fab/org-directory "biblio/"))
   (defvar fab/bibliography-file (concat fab/bibliography-dir "references.bib"))
 
+  ;; Store automatic customization options elsewhere
+  (setq custom-file (locate-user-emacs-file "custom.el"))
+  (when (file-exists-p custom-file)
+    (load custom-file))
+  
   :custom
   (user-full-name "Fabrizio Contigiani")
 
@@ -145,6 +157,11 @@
   (set-face-attribute 'fixed-pitch nil :font "Iosevka" :height 130)
   (set-face-attribute 'variable-pitch nil :font "Iosevka Aile" :height 130)
   (set-face-attribute 'fixed-pitch-serif nil :font "Iosevka Slab" :height 130)
+
+  :bind
+  ("M-o" . other-window)
+  ("M-n" . forward-paragraph)
+  ("M-p" . backward-paragraph)
   )
 
 (use-package dired
@@ -158,6 +175,7 @@
   (dired-dwim-target t)
   (dired-kill-when-opening-new-dired-buffer t))
 
+;;;; Org-mode
 (use-package org
   :defer
   :ensure `(org
@@ -189,25 +207,6 @@
                 (visual-line-mode)
                 (variable-pitch-mode)
                 (setq-local line-spacing 2)))
-
-  :config
-  ;; Make org latex previews bigger
-  ;; (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
-
-  ;; Fix org-mode latex preview background color
-  ;; (require 'org-src)
-  ;; (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t)))
-
-  ;; Ensure that anything that should be fixed-pitch in org appears that way
-  ;; (dolist (face '(org-block
-  ;;                 org-code
-  ;;                 org-document-info
-  ;;                 org-meta-line
-  ;;                 org-special-keyword
-  ;;                 org-table
-  ;;                 org-verbatim))
-  ;;   (set-face-attribute `,face nil :inherit 'fixed-pitch))
-
   :custom
   (org-directory fab/org-directory)
   (org-agenda-files `(,(concat fab/org-directory "tasks.org")))
@@ -231,12 +230,9 @@
   (org-id-method 'ts)
   (org-id-ts-format "%Y%m%dT%H%M%S")
   (org-log-done 'time)
-  ;; (org-hide-emphasis-markers t)
   (org-pretty-entities t)
   (org-pretty-entities-include-sub-superscripts nil)
   (org-startup-with-latex-preview t)
-  ;; (org-preview-latex-default-process 'dvipng)
-  ;; (org-preview-latex-image-directory (concat user-emacs-directory ".cache/ltximg/"))
   (org-startup-indented t)
   (org-startup-folded nil)
   (org-cycle-hide-drawers t)
@@ -245,6 +241,7 @@
   (org-src-preserve-indentation nil)
   (org-edit-src-content-indentation 0)
   (org-return-follows-link t)
+  (org-use-speed-commands t)
   (org-babel-load-languages '((emacs-lisp . t)
                               (latex . t)
                               (C . t)
@@ -305,18 +302,37 @@
   :custom
   (org-tree-slide-slide-in-effect nil))
 
+;;;; Better undo-redo
 (use-package undo-fu
   :bind
   ([remap undo] . #'undo-fu-only-undo)
   ([remap undo-redo] . #'undo-fu-only-redo))
 
+;;;;; Undo history across sessions
 (use-package undo-fu-session
   :config (undo-fu-session-global-mode))
 
+;;;;; Undo tree
 (use-package vundo
   :commands
   (vundo))
 
+;;;; Line numbers
+(use-package display-line-numbers
+  :ensure nil
+  :hook (prog-mode LaTeX-mode bibtex-mode)
+  :custom
+  (display-line-numbers-type 'relative)
+  (display-line-numbers-width-start 100))
+
+;;;; Better folding
+(use-package outline
+  :ensure nil
+  :hook (prog-mode . outline-minor-mode)
+  :custom
+  (outline-minor-mode-cycle t))
+
+;;;; Better help
 (use-package helpful
   :bind
   ([remap describe-function] . helpful-function)
@@ -487,7 +503,7 @@
 (use-package embark
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
-   ("C-;" . embark-dwim)        ;; good alternative: M-.
+   ("M-." . embark-dwim)        ;; good alternative: M-.
    ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
   :init
   ;; Optionally replace the key help with a completing-read interface
@@ -519,15 +535,25 @@
   (setf (alist-get ?\; avy-dispatch-alist) 'avy-action-embark)
   :bind
   ((:map isearch-mode-map
-         ("C-:" . avy-isearch))
+         ("C-;" . avy-isearch))
    (:map global-map
          ("C-c C-j" . avy-resume)
-         ("C-:" . avy-goto-char-timer))))
+         ("C-;" . avy-goto-char-timer))))
 
 (use-package link-hint
   :bind
   ("C-c l o" . link-hint-open-link)
   ("C-c l c" . link-hint-copy-link))
+
+(use-package expand-region
+  :bind ("C-=" . er/expand-region))
+
+(use-package multiple-cursors
+  :bind
+  ("C->" . mc/mark-next-like-this)
+  ("C-<" . mc/mark-previous-line-this)
+  ("C-c C-<" . mc/mark-all-like-this)
+  ("C-S-c C-S-c" . mc/edit-lines))
 
 (use-package corfu
   ;; Optional customizations
@@ -630,26 +656,27 @@
   :custom
   (jinx-languages "es_AR en_US"))
 
-(use-package modus-themes
+(use-package ef-themes
   :config
-  ;; (setq modus-themes-common-palette-overrides
-  ;;      modus-themes-preset-overrides-faint)
-  (modus-themes-select 'modus-vivendi-tinted)
+  (ef-themes-select 'ef-trio-dark)
   :custom
-  (modus-themes-bold-constructs t)
-  (modus-themes-italic-constructs t)
-  (modus-themes-mixed-fonts t)
-  (modus-themes-headings '((0 . (semibold 1.5))
-                           (1 . (semibold 1.3))
-                           (2 . (semibold 1.25))
-                           (3 . (semibold 1.2))
-                           (4 . (semibold 1.15))
-                           (t . (semibold 1.1))))
-  (modus-themes-to-toggle '(modus-vivendi-tinted
-                            modus-operandi-tinted)))
+  (ef-themes-bold-constructs t)
+  (ef-themes-italic-constructs t)
+  (ef-themes-mixed-fonts t)
+  (ef-themes-to-toggle '(ef-trio-dark
+                         ef-trio-light)))
 
 (use-package rainbow-delimiters
   :hook prog-mode)
+
+(use-package indent-bars
+  :ensure (:fetcher github :repo "jdtsmith/indent-bars")
+  :commands
+  (indent-bars-mode)
+  :custom
+  (indent-bars-treesit-support t)
+  (indent-bars-display-on-blank-lines nil)
+  (indent-bars-prefer-character t))
 
 (use-package goggles
   :hook ((prog-mode text-mode) . goggles-mode)
@@ -809,14 +836,22 @@
   ;; (font-latex-fontify-script nil)
   (TeX-view-program-selection '((output-pdf "PDF Tools")))
   (TeX-source-correlate-start-server t)
-  (TeX-electric-sub-and-superscript t))
+  (TeX-electric-sub-and-superscript t)
+  )
+
+(use-package reftex
+  :ensure nil
+  :after org
+  :config
+  (require 'auctex)
+  :custom
+  (reftex-default-bibliography `(,fab/bibliography-file))
+  (reftex-plug-into-AUCTeX t))
 
 (use-package cdlatex
   :hook
   (LaTeX-mode . turn-on-cdlatex)
-  (org-mode . turn-on-org-cdlatex)
-  :custom
-  (cdlatex-insert-auto-labels-in-env-templates nil))
+  (org-mode . turn-on-org-cdlatex))
 
 (use-package math-delimiters
   :ensure (:fetcher github :repo "oantolin/math-delimiters")
@@ -849,6 +884,14 @@
   :custom
   (eglot-autoshutdown t))
 
+(use-package consult-eglot
+  :bind (:map eglot-mode-map ("M-g l" . consult-eglot-symbols)))
+
+(use-package consult-eglot-embark
+  :after (embark consult-eglot)
+  :config
+  (consult-eglot-embark-mode 1))
+
 (use-package lsp-snippet
   :ensure (:fetcher github :repo "svaante/lsp-snippet")
   :after eglot
@@ -861,7 +904,7 @@
   :custom
   (flymake-no-changes-timeout 1.5))
 
-(use-package flymake-cursor
+(use-package flymake-popon ;; alternative flymake-cursor
   :hook flymake-mode)
 
 (use-package eldoc
@@ -921,14 +964,36 @@
   :commands (free-keys))
 
 (use-package gptel
+  :init
+  (load-file (concat user-emacs-directory "gemini-apikey.el"))
   :config
   (setq
    gptel-model "gemini-pro"
    gptel-backend (gptel-make-gemini "Gemini"
+                   :key #'gemini-apikey
                    :stream t)))
+
+;;;; Languages
+(use-package markdown-mode
+  :mode "\\.md\\'"
+  :hook
+  (markdown-mode . visual-line-mode))
+
+(use-package lua-mode
+  :mode "\\.lua\\'"
+  :interpreter "lua"
+  :custom
+  (lua-indent-level 4))
+
+(use-package nix-mode
+  :mode "\\.nix\\'")
 
 ;; Local Variables:
 ;; no-byte-compile: t
 ;; no-native-compile: t
 ;; no-update-autoloads: t
 ;; End:
+
+(provide 'init)
+
+;;; init.el ends here
