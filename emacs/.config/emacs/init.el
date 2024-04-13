@@ -338,6 +338,7 @@
   :commands
   (helpful-callable helpful-macro))
 
+;;;; Better minibuffer
 (use-package vertico
   :config
   (vertico-mode))
@@ -367,12 +368,13 @@
   :config
   (marginalia-mode))
 
+;;;; Better completion-styles
 (use-package orderless
   :custom
   (completion-styles '(orderless basic))
   (completion-category-overrides '((file (styles basic partial-completion)))))
 
-;; Example configuration for Consult
+;;;; Better completing-read
 (use-package consult
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings in `mode-specific-map'
@@ -486,6 +488,12 @@
   ;; (setq consult-project-function (lambda (_) (projectile-project-root)))
   ;;;; 5. No project support
   ;; (setq consult-project-function nil)
+
+  ;; Avoid indenting when previewing org files
+  (add-to-list 'consult-preview-variables '(org-startup-indented . nil))
+
+  ;; Disable automatic latex preview when using consult live preview
+  (add-to-list 'consult-preview-variables '(org-startup-with-latex-preview . nil))
   )
 
 (use-package consult-dir
@@ -617,12 +625,9 @@
   ;; Require trigger prefix before template name when completing.
   ;; :custom
   ;; (tempel-trigger-prefix "<")
-
   :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
          ("M-*" . tempel-insert))
-
   :init
-
   ;; Setup completion at point
   (defun tempel-setup-capf ()
     ;; Add the Tempel Capf to `completion-at-point-functions'.
@@ -635,11 +640,9 @@
     (setq-local completion-at-point-functions
                 (cons #'tempel-expand
                       completion-at-point-functions)))
-
   (add-hook 'conf-mode-hook 'tempel-setup-capf)
   (add-hook 'prog-mode-hook 'tempel-setup-capf)
   (add-hook 'text-mode-hook 'tempel-setup-capf)
-
   ;; Optionally make the Tempel templates available to Abbrev,
   ;; either locally or globally. `expand-abbrev' is bound to C-x '.
   ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
@@ -656,6 +659,7 @@
   :custom
   (jinx-languages "es_AR en_US"))
 
+;;;; Better themes
 (use-package ef-themes
   :config
   (ef-themes-select 'ef-dream)
@@ -665,6 +669,12 @@
   (ef-themes-mixed-fonts t)
   (ef-themes-to-toggle '(ef-dream
                          ef-reverie)))
+
+(use-package auto-dark
+  :config (auto-dark-mode t)
+  :custom
+  (auto-dark-dark-theme 'ef-dream)
+  (auto-dark-light-theme 'ef-reverie))
 
 (use-package rainbow-delimiters
   :hook prog-mode)
@@ -888,6 +898,11 @@
   :custom
   (eglot-autoshutdown t))
 
+(use-package eglot-booster
+  :ensure (:fetcher github :repo "jdtsmith/eglot-booster")
+  :after eglot
+  :config (eglot-booster-mode))
+
 (use-package consult-eglot
   :bind (:map eglot-mode-map ("M-g l" . consult-eglot-symbols)))
 
@@ -966,6 +981,9 @@
 (use-package free-keys
   :ensure (:fetcher github :repo "Fuco1/free-keys")
   :commands (free-keys))
+
+(use-package atomic-chrome
+  :commands (atomic-chrome-start-server))
 
 (use-package gptel
   :init
