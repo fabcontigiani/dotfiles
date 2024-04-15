@@ -58,16 +58,16 @@
 (use-package emacs
   :ensure nil
   :init
+  ;; Store automatic customization options elsewhere
+  (setq custom-file (locate-user-emacs-file "custom.el"))
+  (when (file-exists-p custom-file)
+    (load custom-file))
+  
   ;; User variables
   (defvar user-email-address "fabcontigiani@gmail.com")
   (defvar fab/org-directory (expand-file-name "~/Documents/org/"))
   (defvar fab/bibliography-dir (concat fab/org-directory "biblio/"))
   (defvar fab/bibliography-file (concat fab/bibliography-dir "references.bib"))
-
-  ;; Store automatic customization options elsewhere
-  (setq custom-file (locate-user-emacs-file "custom.el"))
-  (when (file-exists-p custom-file)
-    (load custom-file))
   
   :custom
   (user-full-name "Fabrizio Contigiani")
@@ -90,10 +90,6 @@
   (load-prefer-newer t "Load from source files if they are newer than bytecode files")
   (read-extended-command-predicate #'command-completion-default-include-p "Hide commands in M-x which do not work in the current mode.")
   (large-file-warning-threshold (* 100 (expt 2 20)) "Warn about 100MB+ files")
-  (undo-no-redo t)
-  (isearch-lazy-count t)
-  (search-whitespace-regexp ".?*")
-  (blink-cursor-blinks -1 "Infinite blinks")
 
   ;; Startup
   (initial-scratch-message "" "Leave scratch buffer empty on startup")
@@ -158,6 +154,13 @@
   (set-face-attribute 'fixed-pitch-serif nil :font "Iosevka Slab" :height 130)
   )
 
+(use-package isearch
+  :ensure nil
+  :defer t
+  :custom
+  (isearch-lazy-count t)
+  (search-whitespace-regexp ".?*"))
+
 (use-package dired
   :ensure nil
   :defer t
@@ -199,8 +202,7 @@
   (org-mode . (lambda ()
                 (auto-fill-mode)
                 (visual-line-mode)
-                (variable-pitch-mode)
-                (setq-local line-spacing 2)))
+                (variable-pitch-mode)))
   :custom
   (org-directory fab/org-directory)
   (org-agenda-files `(,(concat fab/org-directory "tasks.org")))
@@ -298,6 +300,8 @@
 
 ;;;; Better undo-redo
 (use-package undo-fu
+  :custom
+  (undo-no-redo t)
   :bind
   ([remap undo] . #'undo-fu-only-undo)
   ([remap undo-redo] . #'undo-fu-only-redo))
@@ -308,8 +312,7 @@
 
 ;;;;; Undo tree
 (use-package vundo
-  :commands
-  (vundo))
+  :commands (vundo))
 
 ;;;; Line numbers
 (use-package display-line-numbers
@@ -676,6 +679,10 @@
   (auto-dark-dark-theme 'ef-dream)
   (auto-dark-light-theme 'ef-reverie))
 
+(use-package spacious-padding
+  :config
+  (spacious-padding-mode))
+
 (use-package rainbow-delimiters
   :hook prog-mode)
 
@@ -736,11 +743,10 @@
                            ;;for fast i-search in pdf buffers
                            (pdf-isearch-minor-mode)
                            (pdf-isearch-batch-mode)
+                           (pdf-outline-minor-mode)
+                           (pdf-outline-imenu-enable)
                            (pdf-annot-minor-mode)
-                           (pdf-view-themed-minor-mode)))
-  :bind
-  (:map pdf-view-mode-map
-        ("o" . #'pdf-outline)))
+                           (pdf-view-themed-minor-mode))))
 
 (use-package org-noter
   :custom
@@ -754,8 +760,8 @@
   :config
   (require 'denote-journal-extras)
   (require 'consult-denote)
-  :custom
   (denote-rename-buffer-mode t)
+  :custom
   (denote-directory (concat fab/org-directory "denote/"))
   :hook
   (dired-mode . denote-dired-mode)
@@ -916,6 +922,10 @@
   :after eglot
   :config
   (lsp-snippet-tempel-eglot-init))
+
+(use-package breadcrumb
+  :config
+  (breadcrumb-mode))
 
 (use-package flymake
   :ensure nil ;; use built-in
