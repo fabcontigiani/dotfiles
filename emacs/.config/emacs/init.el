@@ -1,4 +1,4 @@
- ;;; init.el --- Emacs configuration file -*- lexical-binding: t; -*-
+;;; init.el --- Emacs configuration file -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;; 
@@ -148,10 +148,10 @@
   (column-number-mode 1)
 
   ;; Font configuration
-  (set-face-attribute 'default nil :font "Iosevka" :height 130)
-  (set-face-attribute 'fixed-pitch nil :font "Iosevka" :height 130)
-  (set-face-attribute 'variable-pitch nil :font "Iosevka Aile" :height 130)
-  (set-face-attribute 'fixed-pitch-serif nil :font "Iosevka Slab" :height 130)
+  (set-face-attribute 'default nil :font "Iosevka" :height 140)
+  (set-face-attribute 'fixed-pitch nil :font "Iosevka" :height 140)
+  (set-face-attribute 'variable-pitch nil :font "Iosevka Aile" :height 140)
+  (set-face-attribute 'fixed-pitch-serif nil :font "Iosevka Slab" :height 140)
   )
 
 (use-package isearch
@@ -901,6 +901,8 @@
   :defer t
   :hook
   ((c-ts-mode c++-ts-mode python-ts-mode LaTeX-mode) . eglot-ensure)
+  :config
+  (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
   :custom
   (eglot-autoshutdown t))
 
@@ -952,7 +954,8 @@
   (eldoc-box-only-multi-line t)
   (eldoc-box-clear-with-C-g t))
 
-(use-package magit)
+(use-package magit
+  :defer t)
 
 (use-package diff-hl
   :hook
