@@ -769,6 +769,7 @@
   (denote-faces-link ((t (:slant italic))))
   :bind
   (("C-c n n" . denote-create-note)
+   ("C-c n o" . denote-open-or-create)
    ("C-c n d" . denote-date)
    ("C-c n i" . denote-link-or-create)
    ("C-c n l" . denote-find-link)
@@ -785,8 +786,7 @@
   :custom
   (consult-denote-grep-command #'consult-ripgrep)
   :bind
-  (("C-c n o" . consult-denote-open)
-   ("C-c n f" . consult-denote-find)
+  (("C-c n f" . consult-denote-find)
    ("C-c n g" . consult-denote-grep)))
 
 (use-package citar
@@ -954,8 +954,11 @@
   (eldoc-box-only-multi-line t)
   (eldoc-box-clear-with-C-g t))
 
-(use-package magit
-  :defer t)
+(use-package transient)
+
+(use-package magit-section)
+
+(use-package magit)
 
 (use-package diff-hl
   :hook
