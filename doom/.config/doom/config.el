@@ -6,8 +6,8 @@
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets. It is optional.
-(setq user-full-name "Fabrizio Contigiani"
-      user-mail-address "fabcontigiani@gmail.com")
+;; (setq user-full-name "John Doe"
+;;       user-mail-address "john@doe.com")
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom:
 ;;
@@ -21,7 +21,7 @@
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
 ;;
-;;(setq doom-font (font-spec :family "JetBrains Mono" :size 14))
+;;(setq doom-font (font-spec :family "Fira Code" :size 12 :weight 'semi-light)
 ;;      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
 ;;
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
@@ -32,15 +32,15 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-gruvbox)
+(setq doom-theme 'doom-tomorrow-night)
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type 'relative)
+(setq display-line-numbers-type t)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/Documents/note-box/")
+(setq org-directory "~/Documents/org/")
 
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
@@ -75,114 +75,36 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
-(use-package! math-delimiters
-  :after (:any auctex org)
+(use-package! denote
   :config
-  (autoload 'math-delimiters-insert "math-delimiters")
-  (with-eval-after-load 'org
-    (define-key org-mode-map "$" #'math-delimiters-insert))
-  (with-eval-after-load 'tex              ; for AUCTeX
-    (define-key TeX-mode-map "$" #'math-delimiters-insert))
-  (with-eval-after-load 'tex-mode         ; for the built-in TeX/LaTeX modes
-    (define-key tex-mode-map "$" #'math-delimiters-insert))
-  (with-eval-after-load 'cdlatex
-    (define-key cdlatex-mode-map "$" nil)))
-
-(after! org
-  (setq org-directory "/home/fab/Documents/note-box/")
-  (setq org-agenda-files `("/home/fab/Documents/note-box/inbox.org"))
-  (setq org-attach-id-dir "/home/fab/Documents/note-box/assets/")
-  (setq org-id-method 'ts)
-  (setq org-attach-auto-tag nil)
-  (setq org-attach-id-to-path-function-list '(org-attach-id-ts-folder-format
-                                              org-attach-id-uuid-folder-format
-                                              org-attach-id-fallback-folder-format)))
-  (setq org-hide-emphasis-markers t)
-  (setq org-pretty-entities t)
-  (setq org-pretty-entities-include-sub-superscripts nil)
-  (setq org-startup-with-latex-preview t)
-  ;; (setq org-startup-indented t)
-  ;; (setq org-startup-folded nil)
-  ;; (setq org-cycle-hide-drawers t)
-  (setq org-fontify-quote-and-verse-blocks t)
-  (setq org-highlight-latex-and-related '(native scripts entities))
-  ;;(setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
-  ;; Fix org-mode latex preview background color
-  (require 'org-src)
-  (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t)))
-
-(add-hook! org-mode
-  (org-fragtog-mode)
-  (org-appear-mode))
-
-(after! org-roam
-  (setq org-roam-directory "/home/fab/Documents/note-box/")
-  (setq org-roam-dailies-directory "journals/")
-  (setq org-roam-capture-templates
-        '(("d" "default" plain
-           "%?" :target
-           (file+head "pages/${slug}.org" "#+title: ${title}\n")
-           :unnarrowed t))))
-
-(use-package! consult-org-roam
-  :after org
-  :init
-  (require 'consult-org-roam)
-  ;; Activate the minor mode
-  (consult-org-roam-mode 1)
+  (require 'denote-journal-extras)
+  (require 'consult-denote)
+  (denote-rename-buffer-mode t)
   :custom
-  ;; Use `ripgrep' for searching with `consult-org-roam-search'
-  (consult-org-roam-grep-func #'consult-ripgrep)
-  ;; Configure a custom narrow key for `consult-buffer'
-  (consult-org-roam-buffer-narrow-key ?r)
-  ;; Display org-roam buffers right after non-org-roam buffers
-  ;; in consult-buffer (and not down at the bottom)
-  (consult-org-roam-buffer-after-buffers t)
+  (denote-directory (concat org-directory "denote/"))
+  :hook
+  (dired-mode . denote-dired-mode)
+  :custom-face
+  (denote-faces-link ((t (:slant italic))))
+  :bind
+  (:map doom-leader-notes-map
+        ("e n" . denote-create-note)
+        ("e o" . denote-open-or-create)
+        ("e d" . denote-date)
+        ("e i" . denote-link-or-create)
+        ("e l" . denote-find-link)
+        ("e b" . denote-find-backlink)
+        ("e r" . denote-rename-file)
+        ("e R" . denote-rename-file-using-front-matter)
+        ("e k" . denote-keywords-add)
+        ("e K" . denote-keywords-remove)))
+
+(use-package consult-denote
   :config
-  ;; Eventually suppress previewing for certain functions
-  (consult-customize
-   consult-org-roam-forward-links
-   :preview-key (kbd "M-."))
-  ;; Disable automatic latex preview when using consult live preview
-  (add-to-list 'consult-preview-variables '(org-startup-with-latex-preview . nil))
-  ;; Disable indentation when using consult live preview
-  (add-to-list 'consult-preview-variables '(org-startup-indented . nil)))
-
-(map! :map doom-leader-notes-map
-      ;; Define some convenient keybindings as an addition
-      "r e" #'consult-org-roam-file-find
-      "r b" #'consult-org-roam-backlinks
-      "r l" #'consult-org-roam-forward-links
-      "r S" #'consult-org-roam-search)
-
-(after! citar
-  (setq citar-bibliography '("/home/fab/Documents/note-box/references.bib"))
-  (setq citar-notes-paths '("/home/fab/Documents/note-box/pages/")))
-
-(after! org-roam
-  (setq org-roam-directory "/home/fab/Documents/note-box/")
-  (setq org-roam-dailies-directory "journals/")
-  (setq org-roam-capture-templates
-        '(("d" "default" plain
-           "%?" :target
-           (file+head "pages/${slug}.org" "#+title: ${title}\n")
-           :unnarrowed t))))
-
-(use-package! jinx
-  :hook (emacs-startup . global-jinx-mode)
-  :bind (("M-$" . jinx-correct)
-         ("C-M-$" . jinx-languages))
+  (consult-denote-mode)
   :custom
-  (jinx-languages "en_US es_AR"))
-
-(require 'platformio-mode)
-
-;; Enable ccls for all c++ files, and platformio-mode only
-;; when needed (platformio.ini present in project root).
-(add-hook 'c++-mode-hook (lambda ()
-                           (lsp-deferred)
-                           (platformio-conditionally-enable)))
-
-(after! ccls
-  (setq ccls-initialization-options '(:index (:comments 2) :completion (:detailedLabel t)))
-  (set-lsp-priority! 'ccls 2)) ; optional as ccls is the default in Doom
+  (consult-denote-grep-command #'consult-ripgrep)
+  :bind
+  (:map doom-leader-notes-map
+        ("e f" . consult-denote-find)
+        ("e g" . consult-denote-grep)))
