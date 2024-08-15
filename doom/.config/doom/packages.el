@@ -51,3 +51,4 @@
 
 (package! denote)
 (package! consult-denote)
+(package! citar-denote)

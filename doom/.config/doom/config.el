@@ -21,8 +21,8 @@
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
 ;;
-(setq doom-font (font-spec :family "Fira Mono" :size 13)
-      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
+(setq doom-font (font-spec :family "JetBrains Mono" :size 15))
+;; doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
 ;;
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
@@ -75,6 +75,16 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
+(after! org
+  (setq org-agenda-files `(,(concat org-directory "tasks.org"))
+        org-id-method 'ts
+        org-id-ts-format "%Y%m%dT%H%M%S"
+        org-attach-auto-tag nil
+        org-attach-id-dir (concat org-directory "attach")
+        org-attach-id-to-path-function-list '(org-attach-id-ts-folder-format
+                                              org-attach-id-uuid-folder-format
+                                              org-attach-id-fallback-folder-format)))
+
 (use-package! denote
   :config
   (require 'denote-journal-extras)
@@ -88,23 +98,67 @@
   (denote-faces-link ((t (:slant italic))))
   :bind
   (:map doom-leader-notes-map
-        ("e n" . denote-create-note)
-        ("e o" . denote-open-or-create)
-        ("e d" . denote-date)
-        ("e i" . denote-link-or-create)
-        ("e l" . denote-find-link)
-        ("e b" . denote-find-backlink)
-        ("e r" . denote-rename-file)
-        ("e R" . denote-rename-file-using-front-matter)
-        ("e k" . denote-keywords-add)
-        ("e K" . denote-keywords-remove)))
+        ("r n" . denote-create-note)
+        ("r o" . denote-open-or-create)
+        ("r d" . denote-date)
+        ("r i" . denote-link-or-create)
+        ("r l" . denote-find-link)
+        ("r b" . denote-find-backlink)
+        ("r r" . denote-rename-file)
+        ("r R" . denote-rename-file-using-front-matter)
+        ("r k" . denote-keywords-add)
+        ("r K" . denote-keywords-remove)))
 
-(use-package consult-denote
+(use-package! consult-denote
   :config
   (consult-denote-mode)
+  (consult-customize consult-denote-find :state (consult--file-preview))
   :custom
   (consult-denote-grep-command #'consult-ripgrep)
+  (consult-denote-find-command #'consult-fd)
   :bind
   (:map doom-leader-notes-map
-        ("e f" . consult-denote-find)
-        ("e g" . consult-denote-grep)))
+        ("r f" . consult-denote-find)
+        ("r g" . consult-denote-grep)))
+
+(use-package! citar
+  ;; :hook ((LaTeX-mode org-mode) . citar-capf-setup)
+  :config
+  (require 'citar-denote)
+  :custom
+  ;; (org-cite-insert-processor 'citar)
+  ;; (org-cite-follow-processor 'citar)
+  ;; (org-cite-activate-processor 'citar)
+  ;;(citar-library-paths (concat org-directory "biblio"))
+  (citar-bibliography (concat org-directory "biblio/" "references.bib")))
+;; :bind
+;; ("C-c n c o" . citar-open)
+;; (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
+
+(use-package! citar-denote
+  :config
+  (citar-denote-mode)
+  :custom
+  (citar-open-always-create-notes nil)
+  (citar-denote-file-type 'org)
+  (citar-denote-subdir nil)
+  (citar-denote-signature nil)
+  (citar-denote-template nil)
+  (citar-denote-keyword "bib")
+  (citar-denote-use-bib-keywords nil)
+  (citar-denote-title-format "author-year-title")
+  (citar-denote-title-format-authors 1)
+  (citar-denote-title-format-andstr "and")
+  :bind
+  (:map doom-leader-notes-map
+        ("r c c" . citar-create-note)
+        ("r c n" . citar-denote-open-note)
+        ("r c d" . citar-denote-dwim)
+        ("r c e" . citar-denote-open-reference-entry)
+        ("r c a" . citar-denote-add-citekey)
+        ("r c k" . citar-denote-remove-citekey)
+        ("r c r" . citar-denote-find-reference)
+        ("r c l" . citar-denote-link-reference)
+        ("r c f" . citar-denote-find-citation)
+        ("r c x" . citar-denote-nocite)
+        ("r c y" . citar-denote-cite-nocite)))
