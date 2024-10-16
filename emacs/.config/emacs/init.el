@@ -65,7 +65,7 @@
   
   ;; User variables
   (defvar user-email-address "fabcontigiani@gmail.com")
-  (defvar fab/org-directory (expand-file-name "~/Documents/org/"))
+  (defvar fab/org-directory (expand-file-name "~/MEGA/org/"))
   (defvar fab/bibliography-dir (concat fab/org-directory "biblio/"))
   (defvar fab/bibliography-file (concat fab/bibliography-dir "references.bib"))
   
@@ -877,6 +877,7 @@
   (org-cite-follow-processor 'citar)
   (org-cite-activate-processor 'citar)
   (citar-bibliography fab/bibliography-file)
+  (citar-library-paths `(,fab/bibliography-dir))
   :bind
   ("C-c n c o" . citar-open)
   (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
