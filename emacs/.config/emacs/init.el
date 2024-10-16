@@ -130,6 +130,7 @@
   :config
 
   ;; Convenience
+  (delete-selection-mode 1) ;; Save a keystroke
   (electric-pair-mode t) ;; Tidy parenthesis
   (repeat-mode 1) ;; It bears repeating
   (save-place-mode t) ;; Remember and restore the last cursor location of opened files
@@ -662,6 +663,84 @@
   :custom
   (jinx-languages "es_AR en_US"))
 
+
+;;;; Better UI
+(use-package casual-calc
+  :bind (:map calc-mode-map ("C-o" . casual-calc-tmenu)))
+
+(use-package casual-info
+  :bind (:map Info-mode-map ("C-o" . casual-info-tmenu)))
+
+(use-package casual-dired
+  :bind (:map dired-mode-map ("C-o" . casual-dired-tmenu)))
+
+(use-package casual-avy
+  :bind ("M-g" . casual-avy-tmenu))
+
+(use-package casual-isearch
+  :bind (:map isearch-mode-map ("C-o" . casual-isearch-tmenu)))
+
+(use-package ibuffer
+  :ensure nil
+  :hook (ibuffer-mode . ibuffer-auto-mode)
+  :defer t)
+(use-package casual-ibuffer
+  :bind (:map
+         ibuffer-mode-map
+         ("C-o" . casual-ibuffer-tmenu)
+         ("F" . casual-ibuffer-filter-tmenu)
+         ("s" . casual-ibuffer-sortby-tmenu)
+         ("<double-mouse-1>" . ibuffer-visit-buffer) ; optional
+         ("M-<double-mouse-1>" . ibuffer-visit-buffer-other-window) ; optional
+         ("{" . ibuffer-backwards-next-marked) ; optional
+         ("}" . ibuffer-forward-next-marked)   ; optional
+         ("[" . ibuffer-backward-filter-group) ; optional
+         ("]" . ibuffer-forward-filter-group)  ; optional
+         ("$" . ibuffer-toggle-filter-group))  ; optional
+  :after (ibuffer))
+
+(use-package re-builder
+  :ensure nil
+  :defer t)
+(use-package casual-re-builder
+  :bind (:map
+         reb-mode-map ("C-o" . casual-re-builder-tmenu)
+         :map
+         reb-lisp-mode-map ("C-o" . casual-re-builder-tmenu))
+  :after (re-builder))
+
+(use-package bookmark
+  :ensure nil
+  :defer t)
+(use-package casual-bookmarks
+  :bind (:map bookmark-bmenu-mode-map
+              ("C-o" . casual-bookmarks-tmenu)
+              ("S" . casual-bookmarks-sortby-tmenu)
+              ("J" . bookmark-jump))
+  :after (bookmark))
+
+(use-package casual-agenda
+  :bind (:map
+         org-agenda-mode-map
+         ("C-o" . casual-agenda-tmenu)
+         ("M-j" . org-agenda-clock-goto) ; optional
+         ("J" . bookmark-jump))) ; optional
+
+(use-package casual-editkit
+  :bind (("M-o" . casual-editkit-main-tmenu)))
+
+(use-package symbol-overlay
+  :config
+  (symbol-overlay-mode 1)
+  :bind
+  ("M-I" . #'symbol-overlay-put)
+  ("M-n" . #'symbol-overlay-switch-forward)
+  ("M-p" . #'symbol-overlay-switch-backward))
+(use-package casual-symbol-overlay
+  :bind (:map
+         symbol-overlay-map
+         ("C-o" . casual-symbol-overlay-tmenu))
+  :after (symbol-overlay))
 ;;;; Better themes
 (use-package ef-themes
   :config
@@ -776,8 +855,8 @@
    ("C-c n b" . denote-find-backlink)
    ("C-c n r" . denote-rename-file)
    ("C-c n R" . denote-rename-file-using-front-matter)
-   ("C-c n k" . denote-keywords-add)
-   ("C-c n K" . denote-keywords-remove)))
+   ("C-c n k" . denote-rename-file-keywords)
+   ("C-c n j" . #'denote-journal-extras-new-or-existing-entry)))
 
 (use-package consult-denote
   :ensure (:fetcher github :repo "protesilaos/consult-denote")
@@ -885,6 +964,7 @@
     (define-key cdlatex-mode-map "$" nil)))
 
 (use-package auctex-latexmk
+  :disabled
   :after auctex
   :hook
   ;; Set LatexMk as the default.
@@ -1005,26 +1085,21 @@
   :init
   (load-file (concat user-emacs-directory "gemini-apikey.el"))
   :config
-  (setq
-   gptel-model "gemini-pro"
-   gptel-backend (gptel-make-gemini "Gemini"
-                   :key #'gemini-apikey
-                   :stream t)))
+  (setq gptel-model 'gemini-pro
+        gptel-backend (gptel-make-gemini "Gemini"
+                        :key #'gemini-apikey
+                        :stream t)))
+(use-package gptel-quick
+  :ensure (:fetcher github :repo "karthink/gptel-quick")
+  :after embark
+  :bind (:map embark-general-map
+              ("?" . #'gptel-quick)))
 
 ;;;; Languages
 (use-package markdown-mode
   :mode "\\.md\\'"
   :hook
   (markdown-mode . visual-line-mode))
-
-(use-package lua-mode
-  :mode "\\.lua\\'"
-  :interpreter "lua"
-  :custom
-  (lua-indent-level 4))
-
-(use-package nix-mode
-  :mode "\\.nix\\'")
 
 (provide 'init)
 ;; Local Variables:
