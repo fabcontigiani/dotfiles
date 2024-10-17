@@ -810,7 +810,7 @@
                                      ".*[^[:upper:][:lower:]0-5].*")))
 
 (use-package persid
-  :ensure (:fetcher github :repo "fabcontigiani/persid" :branch "main")
+  :ensure (:fetcher github :repo "fabcontigiani/persid" :branch "gbooks-api")
   :commands (persid-insert-bibtex)
   :custom
   (persid-isbn-generate-citekey 'user))
