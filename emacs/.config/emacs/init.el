@@ -826,10 +826,12 @@
   (bibtex-align-at-equal-sign t)
   (bibtex-comma-after-last-field t)
   (bibtex-autokey-edit-before-use t)
+  (bibtex-autokey-titleword-separator "-")
+  (bibtex-autokey-year-title-separator "--")
   (bibtex-autokey-titleword-length 7)
   (bibtex-autokey-titlewords nil)
   (bibtex-autokey-titleword-ignore '("A" "An" "On" "The"
-                                     "[^[:upper:]].*"
+                                     ;"[^[:upper:]].*"
                                      ".*[^[:upper:][:lower:]0-5].*")))
 
 (use-package persid
