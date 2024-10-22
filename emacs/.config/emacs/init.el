@@ -204,6 +204,15 @@
                 (auto-fill-mode)
                 (visual-line-mode)
                 (variable-pitch-mode)))
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (latex . t)
+     (C . t)
+     (python . t)
+     (lua . t)
+     (matlab . t)))
   :custom
   (org-directory fab/org-directory)
   (org-agenda-files `(,(concat fab/org-directory "tasks.org")))
@@ -235,15 +244,12 @@
   (org-cycle-hide-drawers t)
   (org-fontify-quote-and-verse-blocks t)
   (org-highlight-latex-and-related '(native scripts entities))
+  (org-latex-packages-alist '(("" "siunitx" t)
+                              ("" "circuitikz" t)))
   (org-src-preserve-indentation nil)
   (org-edit-src-content-indentation 0)
   (org-return-follows-link t)
   (org-use-speed-commands t)
-  (org-babel-load-languages '((emacs-lisp . t)
-                              (latex . t)
-                              (C . t)
-                              (python . t)
-                              (lua . t)))
   (org-attach-auto-tag nil)
   (org-attach-id-dir (concat fab/org-directory "attach"))
   (org-attach-id-to-path-function-list '(org-attach-id-ts-folder-format
