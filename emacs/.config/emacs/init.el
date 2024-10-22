@@ -1116,6 +1116,12 @@
   :hook
   (markdown-mode . visual-line-mode))
 
+(use-package matlab-mode
+  :ensure (:fetcher github :repo "mathworks/Emacs-MATLAB-Mode")
+  :mode "\\.m\\'"
+  :custom
+  (matlab-shell-command-switches '("-nodesktop" "-nosplash")))
+
 (provide 'init)
 ;; Local Variables:
 ;; no-byte-compile: t
