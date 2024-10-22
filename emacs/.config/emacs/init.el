@@ -665,19 +665,23 @@
 
 
 ;;;; Better UI
+(use-package casual
+  :ensure (:fetcher github :repo "kickingvegas/casual"))
+
 (use-package casual-calc
+  :ensure nil
   :bind (:map calc-mode-map ("C-o" . casual-calc-tmenu)))
 
 (use-package casual-info
+  :ensure nil
   :bind (:map Info-mode-map ("C-o" . casual-info-tmenu)))
 
 (use-package casual-dired
+  :ensure nil
   :bind (:map dired-mode-map ("C-o" . casual-dired-tmenu)))
 
-(use-package casual-avy
-  :bind ("M-g" . casual-avy-tmenu))
-
 (use-package casual-isearch
+  :ensure nil
   :bind (:map isearch-mode-map ("C-o" . casual-isearch-tmenu)))
 
 (use-package ibuffer
@@ -685,6 +689,7 @@
   :hook (ibuffer-mode . ibuffer-auto-mode)
   :defer t)
 (use-package casual-ibuffer
+  :ensure nil
   :bind (:map
          ibuffer-mode-map
          ("C-o" . casual-ibuffer-tmenu)
@@ -703,6 +708,7 @@
   :ensure nil
   :defer t)
 (use-package casual-re-builder
+  :ensure nil
   :bind (:map
          reb-mode-map ("C-o" . casual-re-builder-tmenu)
          :map
@@ -713,6 +719,7 @@
   :ensure nil
   :defer t)
 (use-package casual-bookmarks
+  :ensure nil
   :bind (:map bookmark-bmenu-mode-map
               ("C-o" . casual-bookmarks-tmenu)
               ("S" . casual-bookmarks-sortby-tmenu)
@@ -720,6 +727,7 @@
   :after (bookmark))
 
 (use-package casual-agenda
+  :ensure nil
   :bind (:map
          org-agenda-mode-map
          ("C-o" . casual-agenda-tmenu)
@@ -727,7 +735,11 @@
          ("J" . bookmark-jump))) ; optional
 
 (use-package casual-editkit
+  :ensure nil
   :bind (("M-o" . casual-editkit-main-tmenu)))
+
+(use-package casual-avy
+  :bind ("C-M-;" . casual-avy-tmenu))
 
 (use-package symbol-overlay
   :config
@@ -741,6 +753,7 @@
          symbol-overlay-map
          ("C-o" . casual-symbol-overlay-tmenu))
   :after (symbol-overlay))
+
 ;;;; Better themes
 (use-package ef-themes
   :config
