@@ -290,6 +290,10 @@
   ;; More immediate live-previews -- the default delay is 1 second
   (setq org-latex-preview-live-debounce 0.25))
 
+(use-package corg
+  :ensure (:host github :repo "isamert/corg.el")
+  :hook (org-mode . corg-setup))
+
 (use-package org-download
   :config
   (setq org-download-annotate-function (lambda (_)  "Return empty string" ""))
