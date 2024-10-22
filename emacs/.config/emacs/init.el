@@ -824,9 +824,7 @@
 
 (use-package persid
   :ensure (:fetcher github :repo "fabcontigiani/persid" :branch "gbooks-api")
-  :commands (persid-insert-bibtex)
-  :custom
-  (persid-isbn-generate-citekey 'user))
+  :commands (persid-insert-bibtex))
 
 (use-package pdf-tools
   :ensure (pdf-tools :pre-build ("./server/autobuild") :files (:defaults "server/epdfinfo"))
