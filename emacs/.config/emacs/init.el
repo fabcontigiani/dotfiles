@@ -5,7 +5,7 @@
 
 ;;; Code:
 ;;;; Bootstrap elpaca
-(defvar elpaca-installer-version 0.7)
+(defvar elpaca-installer-version 0.8)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
@@ -22,18 +22,18 @@
     (make-directory repo t)
     (when (< emacs-major-version 28) (require 'subr-x))
     (condition-case-unless-debug err
-        (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                 ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
-                                                 ,@(when-let ((depth (plist-get order :depth)))
-                                                     (list (format "--depth=%d" depth) "--no-single-branch"))
-                                                 ,(plist-get order :repo) ,repo))))
-                 ((zerop (call-process "git" nil buffer t "checkout"
-                                       (or (plist-get order :ref) "--"))))
-                 (emacs (concat invocation-directory invocation-name))
-                 ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                       "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                 ((require 'elpaca))
-                 ((elpaca-generate-autoloads "elpaca" repo)))
+        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                  ,@(when-let* ((depth (plist-get order :depth)))
+                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                  ,(plist-get order :repo) ,repo))))
+                  ((zerop (call-process "git" nil buffer t "checkout"
+                                        (or (plist-get order :ref) "--"))))
+                  (emacs (concat invocation-directory invocation-name))
+                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                  ((require 'elpaca))
+                  ((elpaca-generate-autoloads "elpaca" repo)))
             (progn (message "%s" (buffer-string)) (kill-buffer buffer))
           (error "%s" (with-current-buffer buffer (buffer-string))))
       ((error) (warn "%s" err) (delete-directory repo 'recursive))))
@@ -393,6 +393,7 @@
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings in `mode-specific-map'
          ("C-c M-x" . consult-mode-command)
+         ("C-c r" . consult-recent-file)
          ("C-c h" . consult-history)
          ("C-c k" . consult-kmacro)
          ("C-c m" . consult-man)
@@ -556,6 +557,12 @@
          ("C-c C-j" . avy-resume)
          ("C-;" . avy-goto-char-timer))))
 
+(use-package combobulate
+  :ensure (:fetcher github :repo "mickeynp/combobulate")
+  :hook ((prog-mode . combobulate-mode))
+  :custom
+  (combobulate-key-prefix "C-c o"))
+
 (use-package link-hint
   :bind
   ("C-c l o" . link-hint-open-link)
@@ -676,7 +683,8 @@
 
 ;;;; Better UI
 (use-package casual
-  :ensure (:fetcher github :repo "kickingvegas/casual"))
+  :ensure (:fetcher github :repo "kickingvegas/casual")
+  :defer t)
 
 (use-package casual-calc
   :ensure nil
@@ -774,12 +782,6 @@
   (ef-themes-mixed-fonts t)
   (ef-themes-to-toggle '(ef-dream
                          ef-reverie)))
-
-(use-package auto-dark
-  :config (auto-dark-mode t)
-  :custom
-  (auto-dark-dark-theme 'ef-dream)
-  (auto-dark-light-theme 'ef-reverie))
 
 (use-package spacious-padding
   :config
@@ -1131,6 +1133,66 @@
   :mode "\\.m\\'"
   :custom
   (matlab-shell-command-switches '("-nodesktop" "-nosplash")))
+
+;;;; FPGA Suite
+(use-package verilog-ext
+  :hook ((verilog-mode . verilog-ext-mode))
+  :custom
+  ;; Can also be set through `M-x RET customize-group RET verilog-ext':
+  ;; Comment out/remove the ones you do not need
+  (verilog-ext-feature-list
+   '(font-lock
+     xref
+     capf
+     hierarchy
+     eglot
+     beautify
+     navigation
+     template
+     formatter
+     compilation
+     imenu
+     which-func
+     hideshow
+     typedefs
+     time-stamp
+     block-end-comments
+     ports))
+  :config
+  (verilog-ext-mode-setup))
+
+(use-package verilog-ts-mode
+  :mode "\\.s?vh?\\'")
+
+(use-package vhdl-ext
+  :hook ((vhdl-mode . vhdl-ext-mode))
+  :custom
+  (vhdl-ext-feature-list
+   '(font-lock
+     xref
+     capf
+     hierarchy
+     eglot
+     beautify
+     navigation
+     template
+     compilation
+     imenu
+     which-func
+     hideshow
+     time-stamp
+     ports))
+  :config
+  (vhdl-ext-mode-setup))
+
+(use-package vhdl-ts-mode
+  :mode "\\.vhdl?\\'"
+  :custom
+  (vhdl-modify-date-on-saving nil))
+
+(use-package fpga
+  :custom
+  (fpga-feature-list '(altera)))
 
 (provide 'init)
 ;; Local Variables:
