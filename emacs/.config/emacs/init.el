@@ -696,7 +696,8 @@
 
 (use-package casual-dired
   :ensure nil
-  :bind (:map dired-mode-map ("C-o" . casual-dired-tmenu)))
+  :after dired
+  :bind (:map dired-mode-map ("M-O" . casual-dired-tmenu)))
 
 (use-package casual-isearch
   :ensure nil
@@ -1002,6 +1003,11 @@
   ;; Add LatexMk as a TeX target.
   (auctex-latexmk-setup))
 
+(use-package compile
+  :ensure nil
+  :custom
+  (compilation-auto-jump-to-first-error t))
+
 (use-package eglot
   :ensure nil ;; use built-in
   :defer t
@@ -1032,6 +1038,7 @@
   (lsp-snippet-tempel-eglot-init))
 
 (use-package breadcrumb
+  :hook (eglot-connect . breadcrumb-local-mode)
   :config
   (breadcrumb-mode))
 
@@ -1191,6 +1198,7 @@
   (vhdl-modify-date-on-saving nil))
 
 (use-package fpga
+  :after (:any verilog-ts-mode vhdl-ts-mode)
   :custom
   (fpga-feature-list '(altera)))
 
