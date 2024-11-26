@@ -108,7 +108,6 @@
   (mouse-wheel-progressive-speed nil "Disable mouse wheel acceleration during scrolling")
   (scroll-preserve-screen-position 1 "Prevent the cursor from moving during scrolling")
   (scroll-conservatively 101 "Scroll only one line at a time when cursor leaves view")
-  (scroll-margin 5 "Maintain margin of 5 lines around cursor during scrolling")
   (fast-but-imprecise-scrolling t "Improve redisplay performance while scrolling")
 
   ;; Performance tweaks
@@ -688,16 +687,23 @@
 
 (use-package casual-calc
   :ensure nil
+  :after calc
   :bind (:map calc-mode-map ("C-o" . casual-calc-tmenu)))
+
+(use-package casual-calendar
+  :ensure nil
+  :after calendar
+  :bind (:map calendar-mode-map ("C-o" . casual-calendar)))
 
 (use-package casual-info
   :ensure nil
+  :after info
   :bind (:map Info-mode-map ("C-o" . casual-info-tmenu)))
 
 (use-package casual-dired
   :ensure nil
   :after dired
-  :bind (:map dired-mode-map ("M-O" . casual-dired-tmenu)))
+  :bind (:map dired-mode-map ("M-o" . casual-dired-tmenu)))
 
 (use-package casual-isearch
   :ensure nil
@@ -797,7 +803,6 @@
   (indent-bars-mode)
   :custom
   (indent-bars-treesit-support t)
-  (indent-bars-display-on-blank-lines nil)
   (indent-bars-prefer-character t))
 
 (use-package goggles
@@ -1008,6 +1013,11 @@
   :custom
   (compilation-auto-jump-to-first-error t))
 
+(use-package treesit
+  :ensure nil
+  :custom
+  (treesit-font-lock-level 4))
+
 (use-package eglot
   :ensure nil ;; use built-in
   :defer t
@@ -1019,6 +1029,7 @@
   (eglot-autoshutdown t))
 
 (use-package eglot-booster
+  :disabled
   :ensure (:fetcher github :repo "jdtsmith/eglot-booster")
   :after eglot
   :config (eglot-booster-mode))
