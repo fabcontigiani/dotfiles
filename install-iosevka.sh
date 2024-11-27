@@ -6,3 +6,4 @@ curl -s 'https://api.github.com/repos/be5invis/Iosevka/releases/latest' | jq -r 
 unzip \*.zip
 sudo mkdir /usr/local/share/fonts/iosevka-font
 sudo mv *.ttc /usr/local/share/fonts/iosevka-font/
+fc-cache
