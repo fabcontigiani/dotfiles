@@ -139,20 +139,11 @@
   (global-auto-revert-mode 1) ;; Revert buffers when the underlying file has changed
   (pixel-scroll-precision-mode 1) ;; Native smooth scrolling
 
-  ;; UI
-  (scroll-bar-mode -1)
-  (horizontal-scroll-bar-mode -1)
-  (tool-bar-mode -1)
-  (tooltip-mode -1)
-  (menu-bar-mode -1)
-  (column-number-mode 1)
-
   ;; Font configuration
-  (set-face-attribute 'default nil :font "Iosevka" :height 140)
-  (set-face-attribute 'fixed-pitch nil :font "Iosevka" :height 140)
-  (set-face-attribute 'variable-pitch nil :font "Iosevka Aile" :height 140)
-  (set-face-attribute 'fixed-pitch-serif nil :font "Iosevka Slab" :height 140)
-  )
+  (set-face-attribute 'default nil :family "Iosevka" :height 140)
+  (set-face-attribute 'fixed-pitch nil :family "Iosevka" :height 1.0)
+  (set-face-attribute 'variable-pitch nil :family "Iosevka Aile" :height 1.0)
+  (set-face-attribute 'fixed-pitch-serif nil :family "Iosevka Slab" :height 1.0))
 
 (use-package isearch
   :ensure nil
@@ -171,6 +162,25 @@
   (dired-recursive-deletes 'always)
   (dired-dwim-target t)
   (dired-kill-when-opening-new-dired-buffer t))
+
+(use-package dired-subtree
+  :after dired
+  :bind (:map dired-mode-map
+    ("<tab>" . dired-subtree-toggle)
+    ("TAB" . dired-subtree-toggle)
+    ("<backtab>" . dired-subtree-remove)
+    ("S-TAB" . dired-subtree-remove))
+  :custom
+  (dired-subtree-use-backgrounds nil))
+
+(use-package trashed
+  :commands (trashed)
+  :custom
+  (trashed-action-confirmer 'y-or-n-p)
+  (trashed-use-header-line t)
+  (trashed-sort-key '("Date deleted" . t))
+  (trashed-date-format "%Y-%m-%d %H:%M:%S"))
+
 
 ;;;; Org-mode
 (use-package org
@@ -594,13 +604,17 @@
   ;; be used globally (M-/).  See also the customization variable
   ;; `global-corfu-modes' to exclude certain modes.
   :init
-  (global-corfu-mode))
+  (global-corfu-mode)
+  :custom
+  (corfu-min-width 20))
 
 (use-package corfu-popupinfo
   :ensure nil
   :after corfu
   :config
-  (corfu-popupinfo-mode))
+  (corfu-popupinfo-mode)
+  :custom
+  (corfu-popupinfo-delay '(1.25 . 0.5)))
 
 (use-package cape
   ;; Bind dedicated completion commands
@@ -790,6 +804,10 @@
   (ef-themes-to-toggle '(ef-dream
                          ef-reverie)))
 
+(use-package minions
+  :config
+  (minions-mode))
+
 (use-package spacious-padding
   :config
   (spacious-padding-mode))
@@ -817,6 +835,23 @@
 (use-package lin
   :config
   (lin-global-mode))
+
+(use-package nerd-icons)
+
+(use-package nerd-icons-completion
+  :after marginalia
+  :hook (minibuffer-setup . nerd-icons-completion-mode)
+  :config
+  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+
+(use-package nerd-icons-corfu
+  :after corfu
+  :config
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+
+(use-package nerd-icons-dired
+  :hook (dired-mode . nerd-icons-dired-mode))
+
 
 (use-package bibtex
   :ensure nil
@@ -1041,6 +1076,10 @@
   :after (embark consult-eglot)
   :config
   (consult-eglot-embark-mode 1))
+
+(use-package consult-xref-stack
+  :ensure (:fetcher github :repo "brett-lempereur/consult-xref-stack")
+  :bind ("C-," . consult-xref-stack-backward))
 
 (use-package lsp-snippet
   :ensure (:fetcher github :repo "svaante/lsp-snippet")

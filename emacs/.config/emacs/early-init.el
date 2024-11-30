@@ -25,6 +25,14 @@
 ;;; Maximize initial frame
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 
+;; UI
+(scroll-bar-mode -1)
+(horizontal-scroll-bar-mode -1)
+(tool-bar-mode -1)
+(tooltip-mode -1)
+(menu-bar-mode -1)
+(column-number-mode 1)
+
 ;; Local Variables:
 ;; no-byte-compile: t
 ;; no-native-compile: t
