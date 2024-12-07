@@ -1226,6 +1226,7 @@
 
 ;;;; FPGA Suite
 (use-package verilog-ext
+  :disabled
   :hook ((verilog-mode . verilog-ext-mode))
   :custom
   ;; Can also be set through `M-x RET customize-group RET verilog-ext':
@@ -1251,10 +1252,14 @@
   :config
   (verilog-ext-mode-setup))
 
+(use-package verilog-mode
+  :defer t)
+
 (use-package verilog-ts-mode
   :mode "\\.s?vh?\\'")
 
 (use-package vhdl-ext
+  :disabled
   :hook ((vhdl-mode . vhdl-ext-mode))
   :custom
   (vhdl-ext-feature-list
@@ -1281,6 +1286,7 @@
   (vhdl-modify-date-on-saving nil))
 
 (use-package fpga
+  :disabled
   :after (:any verilog-ts-mode vhdl-ts-mode)
   :custom
   (fpga-feature-list '(altera)))
