@@ -196,6 +196,7 @@
   (trashed-sort-key '("Date deleted" . t))
   (trashed-date-format "%Y-%m-%d %H:%M:%S"))
 
+(use-package on) ;; Aditional hooks for faster startup
 
 ;;;; Org-mode
 (use-package org
