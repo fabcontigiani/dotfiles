@@ -672,6 +672,7 @@
   )
 
 (use-package tempel
+  :disabled
   ;; Require trigger prefix before template name when completing.
   ;; :custom
   ;; (tempel-trigger-prefix "<")
@@ -1079,6 +1080,21 @@
   :custom
   (eglot-autoshutdown t))
 
+(use-package yasnippet
+  :hook (on-first-input . yas-global-mode))
+
+(use-package yasnippet-snippets
+  :defer t)
+
+(use-package yasnippet-capf
+  :after cape
+  :config
+  (add-to-list 'completion-at-point-functions #'yasnippet-capf))
+
+(use-package consult-yasnippet
+  :after yasnippet
+  :bind ("C-c s" . #'consult-yasnippet))
+
 (use-package eglot-booster
   :disabled
   :ensure (:fetcher github :repo "jdtsmith/eglot-booster")
@@ -1098,6 +1114,7 @@
   :bind ("C-," . consult-xref-stack-backward))
 
 (use-package lsp-snippet
+  :disabled
   :ensure (:fetcher github :repo "svaante/lsp-snippet")
   :after eglot
   :config
