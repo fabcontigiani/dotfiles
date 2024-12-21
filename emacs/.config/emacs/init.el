@@ -328,12 +328,6 @@
               ("C-c s p" . org-download-clipboard)
               ("C-c s s" . org-download-screenshot)))
 
-(use-package org-tree-slide
-  :bind (:map org-mode-map
-              ("<f8>" . org-tree-slide-mode))
-  :custom
-  (org-tree-slide-slide-in-effect nil))
-
 ;;;; Better undo-redo
 (use-package undo-fu
   :custom
@@ -449,7 +443,7 @@
          ("M-g i" . consult-imenu)
          ("M-g I" . consult-imenu-multi)
          ;; M-s bindings in `search-map'
-         ("M-s d" . consult-find)                  ;; Alternative: consult-fd
+         ("M-s d" . consult-fd)                  ;; Alternative: consult-find
          ("M-s c" . consult-locate)
          ("M-s g" . consult-grep)
          ("M-s G" . consult-git-grep)
@@ -852,6 +846,15 @@
 (use-package lin
   :config
   (lin-global-mode))
+
+(use-package logos
+  :bind
+  (([remap narrow-to-region] . #'logos-narrow-dwim)
+   ([remap forward-page] . #'logos-forward-page-dwim)
+   ([remap backward-page] . #'logos-backward-page-dwim)
+   ("<f9>" . #'logos-focus-mode))
+  :custom
+  (logos-outlines-are-pages t))
 
 (use-package nerd-icons)
 
