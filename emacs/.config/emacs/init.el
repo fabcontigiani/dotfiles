@@ -119,7 +119,6 @@
 
   (window-resize-pixelwise t)
   (frame-resize-pixelwise t)
-  (shell-kill-buffer-on-exit t)
   (global-auto-revert-non-file-buffers t "Revert Dired and other buffers")
   (tab-always-indent 'complete "Enable indentation+completion using the TAB key")
   (completion-cycle-threshold 3 "TAB cycle if there are only few candidates")
@@ -144,6 +143,19 @@
   (set-face-attribute 'fixed-pitch nil :family "Iosevka" :height 1.0)
   (set-face-attribute 'variable-pitch nil :family "Iosevka Aile" :height 1.0)
   (set-face-attribute 'fixed-pitch-serif nil :family "Iosevka Slab" :height 1.0))
+
+(use-package eshell
+  :ensure nil
+  :custom
+  (shell-kill-buffer-on-exit t))
+
+(use-package eat
+  :disabled ;; unmaintained?
+  :hook
+  (eshell-load . #'eat-eshell-mode)
+  (eshell-load . #'eat-eshell-visual-command-mode)
+  :custom
+  (eat-kill-buffer-on-exit t))
 
 (use-package isearch
   :ensure nil
@@ -792,28 +804,35 @@
   :bind ("C-M-;" . casual-avy-tmenu))
 
 (use-package symbol-overlay
-  :config
-  (symbol-overlay-mode 1)
+  :hook
+  (prog-mode . symbol-overlay-mode)
   :bind
   ("M-I" . #'symbol-overlay-put)
   ("M-n" . #'symbol-overlay-switch-forward)
   ("M-p" . #'symbol-overlay-switch-backward))
+
+(use-package symbol-overlay-mc
+  :after (symbol-overlay)
+  :commands (symbol-overlay-mc-mark-all))
+
 (use-package casual-symbol-overlay
   :bind (:map
          symbol-overlay-map
          ("C-o" . casual-symbol-overlay-tmenu))
-  :after (symbol-overlay))
+  :after (symbol-overlay)
+  :config
+  (symbol-overlay-mc-insert-into-casual-tmenu))
 
 ;;;; Better themes
-(use-package ef-themes
+(use-package modus-themes
   :config
-  (ef-themes-select 'ef-dream)
+  (setopt modus-themes-common-palette-overrides modus-themes-preset-overrides-faint)
+  (modus-themes-select 'modus-vivendi-tinted)
   :custom
-  (ef-themes-bold-constructs t)
-  (ef-themes-italic-constructs t)
-  (ef-themes-mixed-fonts t)
-  (ef-themes-to-toggle '(ef-dream
-                         ef-reverie)))
+  (modus-themes-bold-constructs t)
+  (modus-themes-italic-constructs t)
+  (modus-themes-mixed-fonts t)
+  (modus-themes-to-toggle '(modus-vivendi-tinted modus-operandi-tinted)))
 
 (use-package minions
   :config
