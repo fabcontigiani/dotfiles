@@ -921,7 +921,6 @@
   :commands (persid-insert-bibtex))
 
 (use-package pdf-tools
-  :ensure (pdf-tools :pre-build ("./server/autobuild") :files (:defaults "server/epdfinfo"))
   :mode ("\\.pdf\\'" . pdf-view-mode)
   :hook (pdf-view-mode . (lambda ()
                            ;;for fast i-search in pdf buffers
