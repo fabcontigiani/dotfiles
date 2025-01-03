@@ -105,12 +105,12 @@ def send_to_empty_group(qtile, switch_group: bool = False):
 @hook.subscribe.client_focus
 def bring_floating_to_front(window):
     if window.floating:
-        window.cmd_bring_to_front()
+        window.bring_to_front()
 
 
 @hook.subscribe.startup_once
 def autostart():
-    home = os.path.expanduser('~/.config/autostart.sh')
+    home = os.path.expanduser('~/.config/qtile/autostart.sh')
     subprocess.Popen([home])
 
 
@@ -165,20 +165,20 @@ keys = [
     # Application keybindings
     Key([mod, "shift"], "Return", lazy.spawn("firefox"),
         desc="Launch browser"),
-    Key([mod], "Return", lazy.spawn("alacritty"),
+    Key([mod], "Return", lazy.spawn("kitty"),
         desc="Launch terminal"),
     Key([mod], "space",
         lazy.spawn("rofi -modi drun,run -show drun -show-icons"),
         desc="Open application with rofi"),
     Key([mod, "control"], "space", lazy.spawn("rofi -show window -show-icons"),
         desc="Switch window with rofi"),
-    Key([mod], "n", lazy.spawn("alacritty --class ranger -e ranger"),
+    Key([mod], "e", lazy.spawn("kitty --class ranger -e ranger"),
         desc="Open ranger"),
-    Key([mod, "shift"], "n", lazy.spawn("thunar"),
+    Key([mod, "shift"], "e", lazy.spawn("thunar"),
         desc="Open thunar"),
-    Key([mod], "m", lazy.spawn("alacritty --class pulsemixer -e pulsemixer"),
+    Key([mod], "m", lazy.spawn("kitty --class pulsemixer -e pulsemixer"),
         desc="Open pulsemixer"),
-    Key([mod, "shift"], "slash", lazy.spawn("alacritty --class btop -e btop"),
+    Key([mod, "shift"], "slash", lazy.spawn("kitty --class btop -e btop"),
         desc="Open btop"),
 
     # Screenshot keybindings
@@ -216,11 +216,11 @@ keys = [
         desc="Decrement screen brightness"),
 
     # Dunst keybindings
-    Key(['control'], "space", lazy.spawn("dunstctl close-all"),
+    Key([mod, 'control'], "n", lazy.spawn("dunstctl close-all"),
         desc="Close all notifications"),
-    Key(['control'], "grave", lazy.spawn("dunstctl history-pop"),
+    Key([mod], "n", lazy.spawn("dunstctl history-pop"),
         desc="Show last notification"),
-    Key(['control', 'shift'], "grave", lazy.spawn("dunstctl context"),
+    Key([mod, 'shift'], "n", lazy.spawn("dunstctl context"),
         desc="Open notification context"),
 
     Key([mod, "shift"], "q", lazy.window.kill(),
@@ -257,7 +257,7 @@ layouts = [
 ]
 
 widget_defaults = {
-    "font": "Iosevka Term Nerd Font",
+    "font": "Iosevka Term",
     "fontsize": 16,
     "padding": 10,
 }
@@ -279,7 +279,6 @@ screens = [
                                 other_current_screen_border=colors["gray"],
                                 padding=8),
                 widget.Spacer(),
-                widget.Systray(padding=0),
                 widget.Net(foreground=colors["fg"],
                            format='{down} ↓↑ {up}'),
                 widget.CPU(foreground=colors["fg"],
@@ -291,32 +290,16 @@ screens = [
                                    fmt='󰕾 {}',
                                    step=5,
                                    limit_max_volume=True),
-                widget.Backlight(backlight_name='intel_backlight',
-                                 foreground=colors["fg"],
-                                 fmt='󰛨  {}',
-                                 step=5),
-                widget.UPowerWidget(foreground=colors["fg"],
-                                    border_charge_colour=colors["green_fg"],
-                                    border_colour=colors["fg"],
-                                    border_critical_colour=colors["red_fg"],
-                                    fill_charge=colors["fg"],
-                                    fill_critical=colors["red_fg"],
-                                    fill_low=colors["orange_fg"],
-                                    fill_normal=colors["fg"],
-                                    percentage_low=0.3,
-                                    margin=4),
-                widget.Battery(foreground=colors["fg"],
-                               low_foreground=colors["red_fg"],
-                               format='{percent:2.0%}',
-                               padding=4,
-                               unknown_char="",
-                               notify_below=10,
-                               notification_timeout=0),
+                # widget.Backlight(backlight_name='intel_backlight',
+                #                  foreground=colors["fg"],
+                #                  fmt='󰛨  {}',
+                #                  step=5) ,
+                widget.Systray(),
             ],
             26,
             background=colors["bg"],
         ),
-        wallpaper=os.path.expanduser('~/.config/wallpaper.png')
+        wallpaper=os.path.expanduser('~/Pictures/wallpaper.png')
     ),
     Screen(
         top=bar.Bar(
@@ -344,32 +327,15 @@ screens = [
                                    fmt='󰕾 {}',
                                    step=5,
                                    limit_max_volume=True),
-                widget.Backlight(backlight_name='intel_backlight',
-                                 foreground=colors["fg"],
-                                 fmt='󰛨  {}',
-                                 step=5),
-                widget.UPowerWidget(foreground=colors["fg"],
-                                    border_charge_colour=colors["green_fg"],
-                                    border_colour=colors["fg"],
-                                    border_critical_colour=colors["red_fg"],
-                                    fill_charge=colors["fg"],
-                                    fill_critical=colors["red_fg"],
-                                    fill_low=colors["orange_fg"],
-                                    fill_normal=colors["fg"],
-                                    percentage_low=0.3,
-                                    margin=4),
-                widget.Battery(foreground=colors["fg"],
-                               low_foreground=colors["red_fg"],
-                               format='{percent:2.0%}',
-                               padding=4,
-                               unknown_char="",
-                               notify_below=10,
-                               notification_timeout=0),
+                # widget.Backlight(backlight_name='intel_backlight',
+                #                  foreground=colors["fg"],
+                #                  fmt='󰛨  {}',
+                #                  step=5) ,
             ],
             26,
             background=colors["bg"],
         ),
-        wallpaper=os.path.expanduser('~/.config/wallpaper.png')),
+        wallpaper=os.path.expanduser('~/Pictures/wallpaper.png')),
 ]
 
 # Drag floating layouts.
