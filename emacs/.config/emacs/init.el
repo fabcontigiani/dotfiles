@@ -114,6 +114,7 @@
   (frame-resize-pixelwise t)
   (global-auto-revert-non-file-buffers t "Revert Dired and other buffers")
   (tab-always-indent 'complete "Enable indentation+completion using the TAB key")
+  (tab-first-completion 'word-or-paren-or-punct)
   (completion-cycle-threshold 3 "TAB cycle if there are only few candidates")
 
   (backup-directory-alist `(("." . ,(concat user-emacs-directory "backups"))))
@@ -142,12 +143,13 @@
   (shell-kill-buffer-on-exit t))
 
 (use-package eat
-  :disabled ;; unmaintained?
-  :hook
-  (eshell-load . #'eat-eshell-mode)
-  (eshell-load . #'eat-eshell-visual-command-mode)
+  :after eshell
+  :config
+  (eat-eshell-mode t)
+  (eat-eshell-visual-command-mode t)
   :custom
-  (eat-kill-buffer-on-exit t))
+  (eat-kill-buffer-on-exit t)
+  (eat-shell-prompt-annotation-success-margin-indicator ""))
 
 (use-package isearch
   :ensure nil
@@ -183,7 +185,6 @@
   (dired-kill-when-opening-new-dired-buffer t))
 
 (use-package dired-subtree
-  :after dired
   :bind (:map dired-mode-map
     ("<tab>" . dired-subtree-toggle)
     ("TAB" . dired-subtree-toggle)
@@ -191,6 +192,12 @@
     ("S-TAB" . dired-subtree-remove))
   :custom
   (dired-subtree-use-backgrounds nil))
+
+(use-package dired-sidebar
+  :bind
+  (("C-c t" . dired-sidebar-toggle-sidebar))
+  :custom
+  (dired-sidebar-theme 'nerd-icons))
 
 (use-package trashed
   :commands (trashed)
@@ -361,7 +368,7 @@
   :ensure nil
   :hook (prog-mode . outline-minor-mode)
   :custom
-  (outline-minor-mode-cycle t))
+  (outline-minor-mode-cycle nil))
 
 ;;;; Better help
 (use-package helpful
@@ -544,7 +551,9 @@
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
    ("M-." . embark-dwim)        ;; good alternative: M-.
-   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+   ("C-h B" . embark-bindings)  ;; alternative for `describe-bindings'
+   :map embark-collect-mode-map
+   ("m" . embark-select))
   :init
   ;; Optionally replace the key help with a completing-read interface
   (setq prefix-help-command #'embark-prefix-help-command)
@@ -581,7 +590,7 @@
          ("C-;" . avy-goto-char-timer))))
 
 (use-package combobulate
-  :ensure (:fetcher github :repo "mickeynp/combobulate")
+  :ensure (:host github :repo "mickeynp/combobulate")
   :hook ((prog-mode . combobulate-mode))
   :custom
   (combobulate-key-prefix "C-c o"))
@@ -725,7 +734,7 @@
 
 ;;;; Better UI
 (use-package casual
-  :ensure (:fetcher github :repo "kickingvegas/casual")
+  :ensure (:host github :repo "kickingvegas/casual")
   :defer t)
 
 (use-package casual-calc
@@ -888,12 +897,19 @@
   :hook prog-mode)
 
 (use-package indent-bars
-  :ensure (:fetcher github :repo "jdtsmith/indent-bars")
-  :commands
-  (indent-bars-mode)
   :custom
+  (indent-bars-no-descend-lists t) ; no extra bars in continued func arg lists
   (indent-bars-treesit-support t)
-  (indent-bars-prefer-character t))
+  (indent-bars-treesit-ignore-blank-lines-types '("module"))
+  ;; Add other languages as needed
+  (indent-bars-treesit-scope '((python function_definition class_definition for_statement
+	  if_statement with_statement while_statement)))
+  ;; Note: wrap may not be needed if no-descend-list is enough
+  ;;(indent-bars-treesit-wrap '((python argument_list parameters ; for python, as an example
+  ;;				      list list_comprehension
+  ;;				      dictionary dictionary_comprehension
+  ;;				      parenthesized_expression subscript)))
+  :hook (python-base-mode . indent-bars-mode))
 
 (use-package goggles
   :hook ((prog-mode text-mode) . goggles-mode)
@@ -959,7 +975,7 @@
                                      ".*[^[:upper:][:lower:]0-5].*")))
 
 (use-package persid
-  :ensure (:fetcher github :repo "fabcontigiani/persid" :branch "gbooks-api")
+  :ensure (:host github :repo "fabcontigiani/persid" :branch "gbooks-api")
   :commands (persid-insert-bibtex))
 
 (use-package pdf-tools
@@ -1005,7 +1021,7 @@
    ("C-c n j" . #'denote-journal-extras-new-or-existing-entry)))
 
 (use-package consult-denote
-  :ensure (:fetcher github :repo "protesilaos/consult-denote")
+  :ensure (:host github :repo "protesilaos/consult-denote")
   :config
   (consult-denote-mode)
   :custom
@@ -1091,7 +1107,7 @@
   (reftex-plug-into-AUCTeX t))
 
 (use-package consult-reftex
-  :ensure (:fetcher github :repo "karthink/consult-reftex")
+  :ensure (:host github :repo "karthink/consult-reftex")
   :after reftex)
 
 (use-package cdlatex
@@ -1100,7 +1116,7 @@
   (org-mode . turn-on-org-cdlatex))
 
 (use-package math-delimiters
-  :ensure (:fetcher github :repo "oantolin/math-delimiters")
+  :ensure (:host github :repo "oantolin/math-delimiters")
   :config
   (autoload 'math-delimiters-insert "math-delimiters")
   (with-eval-after-load 'org
@@ -1111,7 +1127,6 @@
     (define-key cdlatex-mode-map "$" nil)))
 
 (use-package auctex-latexmk
-  :disabled
   :after auctex
   :hook
   ;; Set LatexMk as the default.
@@ -1144,7 +1159,7 @@
   (eglot-autoshutdown t))
 
 (use-package yasnippet
-  :hook (on-first-input . yas-global-mode))
+  :hook (emacs-startup . yas-global-mode))
 
 (use-package yasnippet-snippets
   :defer t)
@@ -1158,12 +1173,6 @@
   :after yasnippet
   :bind ("C-c s" . #'consult-yasnippet))
 
-(use-package eglot-booster
-  :disabled
-  :ensure (:fetcher github :repo "jdtsmith/eglot-booster")
-  :after eglot
-  :config (eglot-booster-mode))
-
 (use-package consult-eglot
   :bind (:map eglot-mode-map ("M-g l" . consult-eglot-symbols)))
 
@@ -1173,12 +1182,12 @@
   (consult-eglot-embark-mode 1))
 
 (use-package consult-xref-stack
-  :ensure (:fetcher github :repo "brett-lempereur/consult-xref-stack")
+  :ensure (:host github :repo "brett-lempereur/consult-xref-stack")
   :bind ("C-," . consult-xref-stack-backward))
 
 (use-package lsp-snippet
   :disabled
-  :ensure (:fetcher github :repo "svaante/lsp-snippet")
+  :ensure (:host github :repo "svaante/lsp-snippet")
   :after eglot
   :config
   (lsp-snippet-tempel-eglot-init))
@@ -1242,7 +1251,6 @@
          ("C-x p t" . consult-todo-project)))
 
 (use-package magit-todos
-  :disabled
   :after magit
   :config (magit-todos-mode 1))
 
@@ -1255,7 +1263,7 @@
   (rainbow-mode))
 
 (use-package free-keys
-  :ensure (:fetcher github :repo "Fuco1/free-keys")
+  :ensure (:host github :repo "Fuco1/free-keys")
   :commands (free-keys))
 
 (use-package atomic-chrome
@@ -1293,7 +1301,7 @@
   (markdown-mode . visual-line-mode))
 
 (use-package matlab-mode
-  :ensure (:fetcher github :repo "mathworks/Emacs-MATLAB-Mode")
+  :ensure (:host github :repo "mathworks/Emacs-MATLAB-Mode")
   :mode "\\.m\\'"
   :custom
   (matlab-shell-command-switches '("-nodesktop" "-nosplash")))
