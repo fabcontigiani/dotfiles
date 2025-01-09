@@ -96,9 +96,8 @@ def go_to_empty_group(qtile):
 def send_to_empty_group(qtile, switch_group: bool = False):
     for group in qtile.groups:
         if not group.windows:
-            qtile.current_window.togroup(group.name)
-            if switch_group:
-                qtile.current_screen.set_group(group)
+            qtile.current_window.togroup(group.name,
+                                         switch_group=switch_group)
             break
 
 
@@ -165,7 +164,7 @@ keys = [
     # Application keybindings
     Key([mod, "shift"], "Return", lazy.spawn("firefox"),
         desc="Launch browser"),
-    Key([mod], "Return", lazy.spawn("kitty"),
+    Key([mod], "Return", lazy.spawn("""emacsclient -cne '(eat)' -a "" """),
         desc="Launch terminal"),
     Key([mod], "space",
         lazy.spawn("rofi -modi drun,run -show drun -show-icons"),
@@ -349,9 +348,9 @@ mouse = [
 
 dgroups_key_binder = None
 dgroups_app_rules = []  # type: list
-follow_mouse_focus = True
-bring_front_click = False
-cursor_warp = True
+follow_mouse_focus = False
+bring_front_click = True
+cursor_warp = False
 floating_layout = layout.Floating(
     float_rules=[
         # Run the utility of `xprop` to see the wm
@@ -368,8 +367,8 @@ floating_layout = layout.Floating(
     border_focus=colors["purple"],
     border_normal=colors["bg2"],
 )
-auto_fullscreen = False
-focus_on_window_activation = "smart"
+auto_fullscreen = True
+focus_on_window_activation = "focus"
 reconfigure_screens = True
 
 # If things like steam games want to auto-minimize themselves when losing
