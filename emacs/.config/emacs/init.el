@@ -1265,15 +1265,26 @@
   :init
   (load-file (concat user-emacs-directory "gemini-apikey.el"))
   :config
+  (gptel-make-openai "Github Models"
+    :host "models.inference.ai.azure.com"
+    :endpoint "/chat/completions"
+    :stream t
+    :key #'github-apikey
+    :models '(gpt-4o))
   (setq gptel-model 'gemini-pro
         gptel-backend (gptel-make-gemini "Gemini"
                         :key #'gemini-apikey
                         :stream t)))
+
 (use-package gptel-quick
-  :ensure (:fetcher github :repo "karthink/gptel-quick")
+  :ensure (:host github :repo "karthink/gptel-quick")
   :after embark
   :bind (:map embark-general-map
               ("?" . #'gptel-quick)))
+
+(use-package copilot
+  :ensure (:host github :repo "copilot-emacs/copilot.el")
+  :commands (copilot-mode))
 
 ;;;; Languages
 (use-package markdown-mode
