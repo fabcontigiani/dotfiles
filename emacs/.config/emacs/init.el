@@ -104,14 +104,7 @@
   (tab-width 4 "Use 4 spaces for indentation")
   (fill-column 80 "Set default line-wrap column to column 80")
 
-  ;; Scrolling
-  (mouse-wheel-progressive-speed nil "Disable mouse wheel acceleration during scrolling")
-  (scroll-preserve-screen-position 1 "Prevent the cursor from moving during scrolling")
-  (scroll-conservatively 101 "Scroll only one line at a time when cursor leaves view")
-  (fast-but-imprecise-scrolling t "Improve redisplay performance while scrolling")
-
   ;; Performance tweaks
-  (redisplay-skip-fontification-on-input t "Improve redisplay performance while scrolling")
   (inhibit-compacting-font-caches t)
   (jit-lock-defer-time 0 "Defer fontification while input is pending")
   (auto-window-vscroll nil "Prevent calcuation of arbitrary line heights while scrolling")
@@ -136,7 +129,6 @@
   (recentf-mode t) ;; Keep track of recently opened files
   (winner-mode 1) ;; Record changes to window configuration
   (global-auto-revert-mode 1) ;; Revert buffers when the underlying file has changed
-  (pixel-scroll-precision-mode 1) ;; Native smooth scrolling
 
   ;; Font configuration
   (set-face-attribute 'default nil :family "Iosevka" :height 140)
@@ -716,6 +708,20 @@
   :custom
   (jinx-languages "es_AR en_US"))
 
+;;;; Better Scrolling
+(use-package ultra-scroll
+  :ensure (:host github :repo "jdtsmith/ultra-scroll")
+  :custom
+  (scroll-conservatively 101)
+  (scroll-margin 0)
+  :config
+  (ultra-scroll-mode 1))
+  ;; :custom
+  ;; (mouse-wheel-progressive-speed nil "Disable mouse wheel acceleration during scrolling")
+  ;; (scroll-preserve-screen-position 1 "Prevent the cursor from moving during scrolling")
+  ;; (fast-but-imprecise-scrolling t "Improve redisplay performance while scrolling"))
+  ;; (pixel-scroll-precision-mode 1) ;; Native smooth scrolling
+  ;; (redisplay-skip-fontification-on-input t "Improve redisplay performance while scrolling")
 
 ;;;; Better UI
 (use-package casual
