@@ -829,6 +829,42 @@
   :config
   (symbol-overlay-mc-insert-into-casual-tmenu))
 
+(use-package bufferlo
+  :config
+  (defvar my-consult--source-buffer
+    `(:name "Other Buffers"
+            :narrow   ?b
+            :category buffer
+            :face     consult-buffer
+            :history  buffer-name-history
+            :state    ,#'consult--buffer-state
+            :items ,(lambda () (consult--buffer-query
+                                :predicate #'bufferlo-non-local-buffer-p
+                                :sort 'visibility
+                                :as #'buffer-name)))
+    "Non-local buffer candidate source for `consult-buffer'.")
+
+  (defvar my-consult--source-local-buffer
+    `(:name "Local Buffers"
+            :narrow   ?l
+            :category buffer
+            :face     consult-buffer
+            :history  buffer-name-history
+            :state    ,#'consult--buffer-state
+            :default  t
+            :items ,(lambda () (consult--buffer-query
+                                :predicate #'bufferlo-local-buffer-p
+                                :sort 'visibility
+                                :as #'buffer-name)))
+    "Local buffer candidate source for `consult-buffer'.")
+
+  (with-eval-after-load 'consult
+    (add-to-list 'consult-buffer-sources 'my-consult--source-buffer)
+    (add-to-list 'consult-buffer-sources 'my-consult--source-local-buffer)
+    (delete 'consult--source-buffer consult-buffer-sources))
+  (bufferlo-mode))
+
+
 ;;;; Better themes
 (use-package modus-themes
   :config
