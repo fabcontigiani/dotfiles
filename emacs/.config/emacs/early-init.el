@@ -33,6 +33,29 @@
 (menu-bar-mode -1)
 (column-number-mode 1)
 
+;; Bonus keys (GUI only)
+;; Credit: https://emacsnotes.wordpress.com/2022/09/11/three-bonus-keys-c-i-c-m-and-c-for-your-gui-emacs-all-with-zero-headache/
+(add-hook
+ 'after-make-frame-functions
+ (defun fab/setup-bonus-keys (frame)
+   "Reclaim keys for GUI Emacs.
+
+- When you type `Ctrl-i', Emacs sees it as `Bonus-i', and NOT as 'Tab'
+- When you type `Ctrl-m', Emacs sees it as `Bonus-m', and NOT as 'Return'
+- When you type `Ctrl-[', Emacs sees it as `Bonus-lsb', and not as 'Esc'
+
+That is,
+
+- `Ctrl-i' and 'Tab' keys are different
+- `Ctrl-m' and 'Return' keys are different
+- `Ctrl-[' and 'Esc' keys are different"
+   (with-selected-frame frame
+     (when (display-graphic-p) ; don't remove this condition, if you want
+                                        ; terminal Emacs to be usable
+       (define-key input-decode-map (kbd "C-i") [Bonus-i])
+       (define-key input-decode-map (kbd "C-[") [Bonus-lsb]) ; left square bracket
+       (define-key input-decode-map (kbd "C-m") [Bonus-m])))))
+
 ;; Local Variables:
 ;; no-byte-compile: t
 ;; no-native-compile: t
