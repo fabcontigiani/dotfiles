@@ -49,6 +49,7 @@
   ;; Enable use-package :ensure support for Elpaca.
   (elpaca-use-package-mode)
   (setq use-package-always-ensure t
+        ;; use-package-compute-statistics t
         use-package-expand-minimally t))
 
 ;;;;; Block until current queue processed.
@@ -65,7 +66,7 @@
   
   ;; User variables
   (defvar user-email-address "fabcontigiani@gmail.com")
-  (defvar fab/org-directory (expand-file-name "~/MEGA/org/"))
+  (defvar fab/org-directory (expand-file-name "~/Documents/org/"))
   (defvar fab/bibliography-dir (concat fab/org-directory "biblio/"))
   (defvar fab/bibliography-file (concat fab/bibliography-dir "references.bib"))
   
@@ -107,24 +108,19 @@
   ;; Performance tweaks
   (inhibit-compacting-font-caches t)
   (jit-lock-defer-time 0 "Defer fontification while input is pending")
-  (auto-window-vscroll nil "Prevent calcuation of arbitrary line heights while scrolling")
   (auto-mode-case-fold nil "Disable case-insensitive second pass over `auto-mode-alist'")
-
   (window-resize-pixelwise t)
   (frame-resize-pixelwise t)
   (global-auto-revert-non-file-buffers t "Revert Dired and other buffers")
   (tab-always-indent 'complete "Enable indentation+completion using the TAB key")
   (tab-first-completion 'word-or-paren-or-punct)
   (completion-cycle-threshold 3 "TAB cycle if there are only few candidates")
-
   (backup-directory-alist `(("." . ,(concat user-emacs-directory "backups"))))
 
   :config
-
   ;; Convenience
   (delete-selection-mode 1) ;; Save a keystroke
   (electric-pair-mode t) ;; Tidy parenthesis
-  (repeat-mode 1) ;; It bears repeating
   (save-place-mode t) ;; Remember and restore the last cursor location of opened files
   (savehist-mode t) ;; Save what you enter into minibuffer prompts
   (recentf-mode t) ;; Keep track of recently opened files
@@ -135,12 +131,83 @@
   (set-face-attribute 'default nil :family "Iosevka" :height 140)
   (set-face-attribute 'fixed-pitch nil :family "Iosevka" :height 1.0)
   (set-face-attribute 'variable-pitch nil :family "Iosevka Aile" :height 1.0)
-  (set-face-attribute 'fixed-pitch-serif nil :family "Iosevka Slab" :height 1.0))
+  (set-face-attribute 'fixed-pitch-serif nil :family "Iosevka Slab" :height 1.0)
+
+  ;; Make C-g a bit more helpful, credit to Prot:
+  ;; https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration
+  (defun fab/keyboard-quit-dwim ()
+    "Do-What-I-Mean behaviour for a general `keyboard-quit'.
+
+The generic `keyboard-quit' does not do the expected thing when
+the minibuffer is open.  Whereas we want it to close the
+minibuffer, even without explicitly focusing it.
+
+The DWIM behaviour of this command is as follows:
+
+- When the region is active, disable it.
+- When a minibuffer is open, but not focused, close the minibuffer.
+- When the Completions buffer is selected, close it.
+- In every other case use the regular `keyboard-quit'."
+    (interactive)
+    (cond
+     ((region-active-p)
+      (keyboard-quit))
+     ((derived-mode-p 'completion-list-mode)
+      (delete-completion-window))
+     ((> (minibuffer-depth) 0)
+      (abort-recursive-edit))
+     (t
+      (keyboard-quit))))
+
+  (keymap-global-unset "C-z")
+  (keymap-global-unset "C-x C-z")
+  (keymap-global-set "<Bonus-lsb>" #'previous-buffer)
+  (keymap-global-set "C-]" #'next-buffer)
+  :bind
+  (("C-x k" . #'kill-current-buffer)
+   ("C-g" . #'fab/keyboard-quit-dwim)))
+
+(use-package shell
+  :ensure nil
+  :custom
+  (comint-prompt-read-only t)
+  (shell-kill-buffer-on-exit t))
 
 (use-package eshell
   :ensure nil
+  :hook
+  (eshell-mode . fab/setup-eshell-outline-regexp)
+  (eshell-mode . completion-preview-mode)
+  :init
+  (defun fab/setup-eshell-outline-regexp () ""
+         (setq-local outline-regexp eshell-prompt-regexp))
+  :config
+  (ffap-bindings)
+  (add-to-list 'eshell-modules-list 'eshell-tramp)
   :custom
-  (shell-kill-buffer-on-exit t))
+  (eshell-kill-processes-on-exit t)
+  (eshell-scroll-to-bottom-on-input 'this)
+  (eshell-history-size 1024)
+  (eshell-hist-ignoredups t)
+  (eshell-pushd-dunique t))
+
+(use-package exec-path-from-shell
+  :config
+  (exec-path-from-shell-initialize))
+
+(use-package eshell-syntax-highlighting
+  :after eshell
+  :config
+  (eshell-syntax-highlighting-global-mode))
+
+(use-package bash-completion
+  :init
+  (defun fab/setup-eshell-bash-completion () ""
+         (add-hook 'completion-at-point-functions
+                   #'bash-completion-capf-nonexclusive nil t))
+  :hook
+  (eshell-mode . fab/setup-eshell-bash-completion)
+  (shell-dynamic-complete-functions . bash-completion-dynamic-complete))
 
 (use-package eat
   :after eshell
@@ -156,6 +223,7 @@
   :defer t
   :custom
   (isearch-lazy-count t)
+  (isearch-wrap-pause 'no)
   (search-whitespace-regexp ".?*"))
 
 (use-package popper
@@ -178,7 +246,7 @@
   :defer t
   :hook (dired-mode . dired-hide-details-mode)
   :custom
-  (delete-by-moving-to-trash t)
+  (dired-listing-switches "-alFh")
   (dired-recursive-copies 'always)
   (dired-recursive-deletes 'always)
   (dired-dwim-target t)
@@ -202,6 +270,7 @@
 (use-package trashed
   :commands (trashed)
   :custom
+  (delete-by-moving-to-trash t)
   (trashed-action-confirmer 'y-or-n-p)
   (trashed-use-header-line t)
   (trashed-sort-key '("Date deleted" . t))
@@ -250,6 +319,8 @@
      (lua . t)
      (matlab . t)))
   :custom
+  (org-M-RET-may-split-line '((default . nil)))
+  (org-insert-heading-respect-content t)
   (org-directory fab/org-directory)
   (org-agenda-files `(,(concat fab/org-directory "tasks.org")))
   (org-archive-location "::* Archived Tasks")
@@ -272,6 +343,9 @@
   (org-id-method 'ts)
   (org-id-ts-format "%Y%m%dT%H%M%S")
   (org-log-done 'time)
+  (org-log-into-drawer t)
+  (org-todo-keywords
+        '((sequence "TODO(t)" "WAIT(w!)" "|" "CANCEL(c!)" "DONE(d!)")))
   (org-pretty-entities t)
   (org-pretty-entities-include-sub-superscripts nil)
   (org-startup-with-latex-preview t)
@@ -291,7 +365,8 @@
   (org-attach-id-to-path-function-list '(org-attach-id-ts-folder-format
                                          org-attach-id-uuid-folder-format
                                          org-attach-id-fallback-folder-format))
-  )
+  :custom-face
+  (org-document-title ((t (:family "Iosevka Etoile" :height 1.5)))))
 
 (use-package org-latex-preview
   :ensure nil
@@ -368,7 +443,7 @@
   :ensure nil
   :hook (prog-mode . outline-minor-mode)
   :custom
-  (outline-minor-mode-cycle nil))
+  (outline-minor-mode-prefix (kbd "<Bonus-i>")))
 
 ;;;; Better help
 (use-package helpful
@@ -551,9 +626,7 @@
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
    ("M-." . embark-dwim)        ;; good alternative: M-.
-   ("C-h B" . embark-bindings)  ;; alternative for `describe-bindings'
-   :map embark-collect-mode-map
-   ("m" . embark-select))
+   ("C-h B" . embark-bindings))  ;; alternative for `describe-bindings'
   :init
   ;; Optionally replace the key help with a completing-read interface
   (setq prefix-help-command #'embark-prefix-help-command)
@@ -764,7 +837,8 @@
 (use-package ibuffer
   :ensure nil
   :hook (ibuffer-mode . ibuffer-auto-mode)
-  :defer t)
+  :bind ([remap list-buffers] . ibuffer))
+
 (use-package casual-ibuffer
   :ensure nil
   :bind (:map
@@ -823,20 +897,31 @@
   (prog-mode . symbol-overlay-mode)
   :bind
   ("M-I" . #'symbol-overlay-put)
-  ("M-n" . #'symbol-overlay-switch-forward)
-  ("M-p" . #'symbol-overlay-switch-backward))
-
-(use-package symbol-overlay-mc
-  :after (symbol-overlay)
-  :commands (symbol-overlay-mc-mark-all))
+  ("M-N" . #'symbol-overlay-switch-forward)
+  ("M-P" . #'symbol-overlay-switch-backward))
 
 (use-package casual-symbol-overlay
-  :bind (:map
-         symbol-overlay-map
-         ("C-o" . casual-symbol-overlay-tmenu))
   :after (symbol-overlay)
   :config
+  (keymap-set symbol-overlay-map "C-o" #'casual-symbol-overlay-tmenu))
+
+(use-package symbol-overlay-mc
+  :after (symbol-overlay casual-symbol-overlay)
+  :config
   (symbol-overlay-mc-insert-into-casual-tmenu))
+
+(use-package tab-bar
+  :ensure nil
+  :config
+  (tab-bar-mode)
+  :custom
+  (tab-bar-new-tab-choice "*scratch*")
+  (tab-bar-close-button-show nil))
+
+(use-package tabgo
+  :ensure (:host github :repo "isamert/tabgo.el")
+  :bind (:map tab-prefix-map
+              ("g" . #'tabgo-bar)))
 
 (use-package bufferlo
   :config
@@ -871,8 +956,37 @@
     (add-to-list 'consult-buffer-sources 'my-consult--source-buffer)
     (add-to-list 'consult-buffer-sources 'my-consult--source-local-buffer)
     (delete 'consult--source-buffer consult-buffer-sources))
-  (bufferlo-mode))
 
+  (defvar-keymap bufferlo-bookmark-tab-prefix-map
+    :doc "Manage tab bookmarks with Bufferlo."
+    "s" #'bufferlo-bookmark-tab-save
+    "l" #'bufferlo-bookmark-tab-load
+    "S" #'bufferlo-bookmark-tab-save-current
+    "L" #'bufferlo-bookmark-tab-load-current)
+
+  (defvar-keymap bufferlo-bookmark-frame-prefix-map
+    :doc "Manage frame bookmarks with Bufferlo."
+    "s" #'bufferlo-bookmark-frame-save
+    "l" #'bufferlo-bookmark-frame-load
+    "S" #'bufferlo-bookmark-frame-save-current
+    "L" #'bufferlo-bookmark-frame-load-current)
+
+  (defvar-keymap bufferlo-prefix-map
+    :doc "Bufferlo-mode prefix map."
+    "c" #'bufferlo-clear
+    "r" #'bufferlo-remove
+    "R" #'bufferlo-remove-non-exclusive-buffers
+    "b" #'bufferlo-bury
+    "k" #'bufferlo-kill-buffers
+    "K" #'bufferlo-kill-orphan-buffers
+    "F" #'bufferlo-delete-frame-kill-buffers
+    "T" #'bufferlo-tab-close-kill-buffers
+    "p" #'bufferlo-isolate-project
+    "t" bufferlo-bookmark-tab-prefix-map
+    "f" bufferlo-bookmark-frame-prefix-map)
+    
+  (keymap-set global-map "<Bonus-m>" bufferlo-prefix-map)
+  (bufferlo-mode))
 
 ;;;; Better themes
 (use-package modus-themes
@@ -883,7 +997,13 @@
   (modus-themes-bold-constructs t)
   (modus-themes-italic-constructs t)
   (modus-themes-mixed-fonts t)
-  (modus-themes-to-toggle '(modus-vivendi-tinted modus-operandi-tinted)))
+  (modus-themes-to-toggle '(modus-vivendi-tinted modus-operandi-tinted))
+  (modus-themes-headings
+   '((1 . (1.2))
+     (2 . (1.15))
+     (agenda-date . (variable-pitch 1.15))
+     (agenda-structure . (variable-pitch 1.2))
+     (t . (1.1)))))
 
 (use-package minions
   :config
@@ -924,6 +1044,9 @@
   :config
   (lin-global-mode))
 
+(use-package olivetti
+  :hook (org-mode markdown-mode))
+
 (use-package logos
   :bind
   (([remap narrow-to-region] . #'logos-narrow-dwim)
@@ -931,7 +1054,8 @@
    ([remap backward-page] . #'logos-backward-page-dwim)
    ("<f9>" . #'logos-focus-mode))
   :custom
-  (logos-outlines-are-pages t))
+  (logos-outlines-are-pages t)
+  (logos-olivetti t))
 
 (use-package nerd-icons)
 
@@ -964,7 +1088,6 @@
    '(("keywords" "Keywords to describe the entry" "")
      ("file" "Link to a document file." "")))
   (bibtex-align-at-equal-sign t)
-  (bibtex-comma-after-last-field t)
   (bibtex-autokey-edit-before-use t)
   (bibtex-autokey-titleword-separator "-")
   (bibtex-autokey-year-title-separator "--")
@@ -1032,7 +1155,10 @@
 
 (use-package citar
   :hook ((LaTeX-mode org-mode) . citar-capf-setup)
+  :init
+  (setq citar--multiple-setup (cons "<tab>"  "RET")) ; <C-i> workaround
   :config
+  (require 'bibtex)
   (require 'citar-denote)
   :custom
   (org-cite-insert-processor 'citar)
@@ -1138,15 +1264,64 @@
   ;; Add LatexMk as a TeX target.
   (auctex-latexmk-setup))
 
+(use-package cmake-mode
+  :defer t)
+
 (use-package compile
   :ensure nil
   :custom
   (compilation-auto-jump-to-first-error t))
 
+(use-package dape
+  :preface
+  ;; By default dape shares the same keybinding prefix as `gud'
+  ;; If you do not want to use any prefix, set it to nil.
+  ;; (setq dape-key-prefix "\C-x\C-a")
+
+  :hook
+  ;; Save breakpoints on quit
+  (kill-emacs . dape-breakpoint-save)
+  ;; Load breakpoints on startup
+  (after-init . dape-breakpoint-load)
+
+  :config
+  ;; Turn on global bindings for setting breakpoints with mouse
+  ;; (dape-breakpoint-global-mode)
+
+  ;; Info buffers to the right
+  ;; (setq dape-buffer-window-arrangement 'right)
+
+  ;; Info buffers like gud (gdb-mi)
+  ;; (setq dape-buffer-window-arrangement 'gud)
+  ;; (setq dape-info-hide-mode-line nil)
+
+  ;; Pulse source line (performance hit)
+  ;; (add-hook 'dape-display-source-hook 'pulse-momentary-highlight-one-line)
+
+  ;; Showing inlay hints
+  ;; (setq dape-inlay-hints t)
+
+  ;; Save buffers on startup, useful for interpreted languages
+  ;; (add-hook 'dape-start-hook (lambda () (save-some-buffers t t)))
+
+  ;; Kill compile buffer on build success
+  ;; (add-hook 'dape-compile-hook 'kill-buffer)
+  )
+
+;; Enable repeat mode for more ergonomic `dape' use
+(use-package repeat
+  :ensure nil
+  :config
+  (repeat-mode))
+
 (use-package treesit
   :ensure nil
   :custom
   (treesit-font-lock-level 4))
+
+(use-package treesit-fold
+  :ensure (:host github :repo "emacs-tree-sitter/treesit-fold")
+  :commands (treesit-fold-mode))
 
 (use-package eglot
   :ensure nil ;; use built-in
@@ -1193,17 +1368,19 @@
   (lsp-snippet-tempel-eglot-init))
 
 (use-package breadcrumb
-  :hook (eglot-connect . breadcrumb-local-mode)
-  :config
-  (breadcrumb-mode))
+  :hook (eglot-connect . breadcrumb-local-mode))
 
 (use-package flymake
   :ensure nil ;; use built-in
-  :defer t
   :custom
-  (flymake-no-changes-timeout 1.5))
+  (flymake-show-diagnostics-at-end-of-line 'short)
+  :bind
+  (:map flymake-mode-map
+        ("M-n" . #'flymake-goto-next-error)
+        ("M-p" . #'flymake-goto-prev-error)))
 
 (use-package flymake-popon ;; alternative flymake-cursor
+  :disabled
   :hook flymake-mode)
 
 (use-package eldoc
@@ -1217,16 +1394,23 @@
 (use-package eldoc-box
   :after eldoc
   :bind (:map eglot-mode-map
-              ([remap eldoc-doc-buffer] . eldoc-box-help-at-point))
+              ("C-h ." . eldoc-box-help-at-point))
   :custom
   (eldoc-box-only-multi-line t)
   (eldoc-box-clear-with-C-g t))
+
+(use-package ediff
+  :ensure nil
+  :custom
+  (ediff-split-window-function 'split-window-horizontally)
+  (ediff-window-setup-function 'ediff-setup-windows-plain))
 
 (use-package transient)
 
 (use-package magit-section)
 
-(use-package magit)
+(use-package magit
+  :defer t)
 
 (use-package diff-hl
   :hook
@@ -1275,9 +1459,9 @@
   :config
   (gptel-make-openai "Github Models"
     :host "models.inference.ai.azure.com"
-    :endpoint "/chat/completions"
+    :endpoint "/chat/completions?api-version=2024-05-01-preview"
     :stream t
-    :key #'github-apikey
+    :key #'github-token
     :models '(gpt-4o))
   (setq gptel-model 'gemini-pro
         gptel-backend (gptel-make-gemini "Gemini"
@@ -1291,7 +1475,6 @@
               ("?" . #'gptel-quick)))
 
 (use-package copilot
-  :ensure (:host github :repo "copilot-emacs/copilot.el")
   :commands (copilot-mode))
 
 ;;;; Languages

@@ -164,7 +164,7 @@ keys = [
     # Application keybindings
     Key([mod, "shift"], "Return", lazy.spawn("firefox"),
         desc="Launch browser"),
-    Key([mod], "Return", lazy.spawn("""emacsclient -cne '(eat)' -a "" """),
+    Key([mod], "Return", lazy.spawn("""emacsclient -cne '(eshell)' -a "" """),
         desc="Launch terminal"),
     Key([mod], "space",
         lazy.spawn("rofi -modi drun,run -show drun -show-icons"),
