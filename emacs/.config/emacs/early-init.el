@@ -22,8 +22,8 @@
 (fab/defer-garbage-collection)
 (add-hook 'elpaca-after-init-hook #'fab/restore-garbage-collection)
 
-;;; Maximize initial frame
-(add-to-list 'initial-frame-alist '(fullscreen . maximized))
+;;; Maximize frame by default
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 ;; UI
 (scroll-bar-mode -1)

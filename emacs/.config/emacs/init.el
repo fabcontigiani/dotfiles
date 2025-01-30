@@ -5,7 +5,7 @@
 
 ;;; Code:
 ;;;; Bootstrap elpaca
-(defvar elpaca-installer-version 0.8)
+(defvar elpaca-installer-version 0.9)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
@@ -49,7 +49,7 @@
   ;; Enable use-package :ensure support for Elpaca.
   (elpaca-use-package-mode)
   (setq use-package-always-ensure t
-        ;; use-package-compute-statistics t
+        use-package-compute-statistics t
         use-package-expand-minimally t))
 
 ;;;;; Block until current queue processed.
@@ -66,7 +66,7 @@
   
   ;; User variables
   (defvar user-email-address "fabcontigiani@gmail.com")
-  (defvar fab/org-directory (expand-file-name "~/Documents/org/"))
+  (defvar fab/org-directory (expand-file-name "~/MEGA/org/"))
   (defvar fab/bibliography-dir (concat fab/org-directory "biblio/"))
   (defvar fab/bibliography-file (concat fab/bibliography-dir "references.bib"))
   
@@ -116,6 +116,7 @@
   (tab-first-completion 'word-or-paren-or-punct)
   (completion-cycle-threshold 3 "TAB cycle if there are only few candidates")
   (backup-directory-alist `(("." . ,(concat user-emacs-directory "backups"))))
+  (pgtk-use-im-context-on-new-connection nil)
 
   :config
   ;; Convenience
@@ -200,6 +201,13 @@ The DWIM behaviour of this command is as follows:
   :config
   (eshell-syntax-highlighting-global-mode))
 
+(use-package eshell-prompt-extras
+  :after eshell
+  :custom
+  (eshell-prompt-function 'epe-theme-multiline-with-status)
+  (epe-path-style 'full)
+  (epe-show-git-status-extended t))
+
 (use-package bash-completion
   :init
   (defun fab/setup-eshell-bash-completion () ""
@@ -276,7 +284,8 @@ The DWIM behaviour of this command is as follows:
   (trashed-sort-key '("Date deleted" . t))
   (trashed-date-format "%Y-%m-%d %H:%M:%S"))
 
-(use-package on) ;; Aditional hooks for faster startup
+(use-package on ;; Aditional hooks for faster startup
+  :defer t)
 
 ;;;; Org-mode
 (use-package org
@@ -406,6 +415,7 @@ The DWIM behaviour of this command is as follows:
   :hook (org-mode . corg-setup))
 
 (use-package org-download
+  :disabled ; Emacs >= 29 -> `yank-media'
   :config
   (setq org-download-annotate-function (lambda (_)  "Return empty string" ""))
   :custom
@@ -490,6 +500,7 @@ The DWIM behaviour of this command is as follows:
 ;;;; Better completion-styles
 (use-package orderless
   :custom
+  (completion-ignore-case t)
   (completion-styles '(orderless basic))
   (completion-category-overrides '((file (styles basic partial-completion)))))
 
@@ -975,15 +986,15 @@ The DWIM behaviour of this command is as follows:
     :doc "Bufferlo-mode prefix map."
     "c" #'bufferlo-clear
     "r" #'bufferlo-remove
-    "R" #'bufferlo-remove-non-exclusive-buffers
-    "b" #'bufferlo-bury
+    "e" #'bufferlo-remove-non-exclusive-buffers
+    "q" #'bufferlo-bury
     "k" #'bufferlo-kill-buffers
-    "K" #'bufferlo-kill-orphan-buffers
+    "o" #'bufferlo-kill-orphan-buffers
     "F" #'bufferlo-delete-frame-kill-buffers
     "T" #'bufferlo-tab-close-kill-buffers
     "p" #'bufferlo-isolate-project
-    "t" bufferlo-bookmark-tab-prefix-map
-    "f" bufferlo-bookmark-frame-prefix-map)
+    "b t" bufferlo-bookmark-tab-prefix-map
+    "b f" bufferlo-bookmark-frame-prefix-map)
     
   (keymap-set global-map "<Bonus-m>" bufferlo-prefix-map)
   (bufferlo-mode))
@@ -1004,6 +1015,13 @@ The DWIM behaviour of this command is as follows:
      (agenda-date . (variable-pitch 1.15))
      (agenda-structure . (variable-pitch 1.2))
      (t . (1.1)))))
+
+(use-package auto-dark
+  :after modus-themes
+  :config (auto-dark-mode)
+  :custom
+  (auto-dark-dark-theme 'modus-vivendi-tinted)
+  (auto-dark-light-theme 'modus-operandi-tinted))
 
 (use-package minions
   :config
@@ -1091,9 +1109,11 @@ The DWIM behaviour of this command is as follows:
   (bibtex-autokey-edit-before-use t)
   (bibtex-autokey-titleword-separator "-")
   (bibtex-autokey-year-title-separator "--")
-  (bibtex-autokey-titleword-length 7)
+  (bibtex-autokey-titleword-length 8)
   (bibtex-autokey-titlewords nil)
-  (bibtex-autokey-titleword-ignore '("A" "An" "On" "The"
+  (bibtex-autokey-titleword-ignore '("A" "An" "On" "The" "and" "of"
+                                     "el" "la" "los" "de" "y" "a"
+                                     "con" "en" "al"
                                      ;"[^[:upper:]].*"
                                      ".*[^[:upper:][:lower:]0-5].*")))
 
@@ -1144,7 +1164,6 @@ The DWIM behaviour of this command is as follows:
    ("C-c n j" . #'denote-journal-extras-new-or-existing-entry)))
 
 (use-package consult-denote
-  :ensure (:host github :repo "protesilaos/consult-denote")
   :config
   (consult-denote-mode)
   :custom
@@ -1160,6 +1179,40 @@ The DWIM behaviour of this command is as follows:
   :config
   (require 'bibtex)
   (require 'citar-denote)
+  (defvar citar-indicator-notes-icons
+    (citar-indicator-create
+     :symbol (nerd-icons-mdicon
+              "nf-md-notebook"
+              :face 'nerd-icons-blue
+              :v-adjust -0.3)
+     :function #'citar-has-notes
+     :padding "  "
+     :tag "has:notes"))
+
+  (defvar citar-indicator-links-icons
+    (citar-indicator-create
+     :symbol (nerd-icons-octicon
+              "nf-oct-link"
+              :face 'nerd-icons-orange
+              :v-adjust -0.1)
+     :function #'citar-has-links
+     :padding "  "
+     :tag "has:links"))
+
+  (defvar citar-indicator-files-icons
+    (citar-indicator-create
+     :symbol (nerd-icons-faicon
+              "nf-fa-file"
+              :face 'nerd-icons-green
+              :v-adjust -0.1)
+     :function #'citar-has-files
+     :padding "  "
+     :tag "has:files"))
+
+  (setq citar-indicators
+        (list citar-indicator-files-icons
+              citar-indicator-notes-icons
+              citar-indicator-links-icons))
   :custom
   (org-cite-insert-processor 'citar)
   (org-cite-follow-processor 'citar)
@@ -1273,6 +1326,7 @@ The DWIM behaviour of this command is as follows:
   (compilation-auto-jump-to-first-error t))
 
 (use-package dape
+  :disabled
   :preface
   ;; By default dape shares the same keybinding prefix as `gud'
   ;; If you do not want to use any prefix, set it to nil.
@@ -1334,7 +1388,7 @@ The DWIM behaviour of this command is as follows:
   (eglot-autoshutdown t))
 
 (use-package yasnippet
-  :hook (emacs-startup . yas-global-mode))
+  :config (yas-global-mode))
 
 (use-package yasnippet-snippets
   :defer t)
@@ -1427,7 +1481,7 @@ The DWIM behaviour of this command is as follows:
 (use-package hl-todo
   :ensure (:depth nil)
   :config
-  (add-hook 'flymake-diagnostic-functions 'hl-todo-flymake)
+  ;; (add-hook 'flymake-diagnostic-functions 'hl-todo-flymake)
   (global-hl-todo-mode))
 
 (use-package consult-todo
@@ -1435,6 +1489,7 @@ The DWIM behaviour of this command is as follows:
          ("C-x p t" . consult-todo-project)))
 
 (use-package magit-todos
+  :disabled
   :after magit
   :config (magit-todos-mode 1))
 
@@ -1455,7 +1510,7 @@ The DWIM behaviour of this command is as follows:
 
 (use-package gptel
   :init
-  (load-file (concat user-emacs-directory "gemini-apikey.el"))
+  (load-file (concat user-emacs-directory "apis.el"))
   :config
   (gptel-make-openai "Github Models"
     :host "models.inference.ai.azure.com"
