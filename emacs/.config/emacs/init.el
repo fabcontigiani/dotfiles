@@ -927,12 +927,10 @@ The DWIM behaviour of this command is as follows:
   (tab-bar-mode)
   :custom
   (tab-bar-new-tab-choice "*scratch*")
-  (tab-bar-close-button-show nil))
-
-(use-package tabgo
-  :ensure (:host github :repo "isamert/tabgo.el")
-  :bind (:map tab-prefix-map
-              ("g" . #'tabgo-bar)))
+  (tab-bar-close-button-show nil)
+  :bind
+  (:map tab-prefix-map
+        ("s" . #'tab-bar-select-tab)))
 
 (use-package bufferlo
   :config
