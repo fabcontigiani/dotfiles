@@ -1272,6 +1272,7 @@ The DWIM behaviour of this command is as follows:
   (TeX-view-program-selection '((output-pdf "PDF Tools")))
   (TeX-source-correlate-start-server t)
   (TeX-electric-sub-and-superscript t)
+  (TeX-command-default "LaTeXMk")
   )
 
 (use-package reftex
@@ -1302,18 +1303,6 @@ The DWIM behaviour of this command is as follows:
     (define-key TeX-mode-map "$" #'math-delimiters-insert))
   (with-eval-after-load 'cdlatex
     (define-key cdlatex-mode-map "$" nil)))
-
-(use-package auctex-latexmk
-  :after auctex
-  :hook
-  ;; Set LatexMk as the default.
-  (LaTeX-mode . (lambda () (setq-local TeX-command-default "LatexMk")))
-  :init
-  ;; Pass the -pdf flag when TeX-PDF-mode is active.
-  (setq auctex-latexmk-inherit-TeX-PDF-mode t)
-  :config
-  ;; Add LatexMk as a TeX target.
-  (auctex-latexmk-setup))
 
 (use-package cmake-mode
   :defer t)
