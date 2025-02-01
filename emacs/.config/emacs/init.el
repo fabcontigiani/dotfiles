@@ -116,7 +116,6 @@
   (tab-first-completion 'word-or-paren-or-punct)
   (completion-cycle-threshold 3 "TAB cycle if there are only few candidates")
   (backup-directory-alist `(("." . ,(concat user-emacs-directory "backups"))))
-  (pgtk-use-im-context-on-new-connection nil)
 
   :config
   ;; Convenience
@@ -125,7 +124,6 @@
   (save-place-mode t) ;; Remember and restore the last cursor location of opened files
   (savehist-mode t) ;; Save what you enter into minibuffer prompts
   (recentf-mode t) ;; Keep track of recently opened files
-  (winner-mode 1) ;; Record changes to window configuration
   (global-auto-revert-mode 1) ;; Revert buffers when the underlying file has changed
 
   ;; Font configuration
@@ -466,6 +464,11 @@ The DWIM behaviour of this command is as follows:
   ([remap display-local-help] . helpful-at-point)
   :commands
   (helpful-callable helpful-macro))
+
+(use-package elisp-demos
+  :after helpful
+  :config
+  (advice-add 'helpful-update :after #'elisp-demos-advice-helpful-update))
 
 ;;;; Better minibuffer
 (use-package vertico
@@ -866,6 +869,11 @@ The DWIM behaviour of this command is as follows:
          ("$" . ibuffer-toggle-filter-group))  ; optional
   :after (ibuffer))
 
+(use-package casual-image
+  :ensure nil
+  :bind (:map image-mode-map
+              ("C-o" . #'casual-image-tmenu)))
+
 (use-package re-builder
   :ensure nil
   :defer t)
@@ -923,14 +931,25 @@ The DWIM behaviour of this command is as follows:
 
 (use-package tab-bar
   :ensure nil
+  :init
+  (defun fab/tab-bar-format-white-space ()
+    " ")
   :config
   (tab-bar-mode)
+  (tab-bar-history-mode)
   :custom
+  (tab-bar-show 1)
+  (tab-bar-format '(fab/tab-bar-format-white-space
+                    tab-bar-format-menu-bar
+                    tab-bar-format-history
+                    tab-bar-format-tabs-groups
+                    tab-bar-separator
+                    tab-bar-format-add-tab))
   (tab-bar-new-tab-choice "*scratch*")
   (tab-bar-close-button-show nil)
-  :bind
-  (:map tab-prefix-map
-        ("s" . #'tab-bar-select-tab)))
+  (tab-bar-tab-hints t)
+  (tab-bar-select-tab-modifiers '(meta))
+  (tab-bar-history-limit 100))
 
 (use-package bufferlo
   :config
@@ -1133,9 +1152,11 @@ The DWIM behaviour of this command is as follows:
 (use-package org-noter
   :custom
   (org-noter-always-create-frame nil)
+  (org-noter-kill-frame-at-session-end nil)
   (org-noter-use-indirect-buffer nil)
   (org-noter-auto-save-last-location t)
   (org-noter-disable-narrowing t)
+  (org-noter-highlight-selected-text t)
   :bind ("C-c n p" . org-noter))
 
 (use-package denote
