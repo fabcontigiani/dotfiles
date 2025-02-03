@@ -451,7 +451,9 @@ The DWIM behaviour of this command is as follows:
   :ensure nil
   :hook (prog-mode . outline-minor-mode)
   :custom
-  (outline-minor-mode-prefix (kbd "<Bonus-i>")))
+  (outline-minor-mode-prefix (kbd "<Bonus-i>"))
+  (outline-minor-mode-cycle t)
+  (outline-minor-mode-cycle-filter 'bolp))
 
 ;;;; Better help
 (use-package helpful
@@ -871,6 +873,7 @@ The DWIM behaviour of this command is as follows:
 
 (use-package casual-image
   :ensure nil
+  :after image-mode
   :bind (:map image-mode-map
               ("C-o" . #'casual-image-tmenu)))
 
@@ -1013,8 +1016,9 @@ The DWIM behaviour of this command is as follows:
     "b t" bufferlo-bookmark-tab-prefix-map
     "b f" bufferlo-bookmark-frame-prefix-map)
     
-  (keymap-set global-map "<Bonus-m>" bufferlo-prefix-map)
-  (bufferlo-mode))
+  (bufferlo-mode)
+  :bind-keymap
+  ("<Bonus-m>" . bufferlo-prefix-map))
 
 ;;;; Better themes
 (use-package modus-themes
@@ -1385,6 +1389,10 @@ The DWIM behaviour of this command is as follows:
   :ensure (:host github :repo "emacs-tree-sitter/treesit-fold")
   :commands (treesit-fold-mode))
 
+(use-package treesit-jump
+  :ensure (:host github :repo "abougouffa/treesit-jump"
+                 :branch "enhancements" :files ("*.el" "treesit-queries")))
+
 (use-package eglot
   :ensure nil ;; use built-in
   :defer t
@@ -1450,13 +1458,13 @@ The DWIM behaviour of this command is as follows:
   :defer t
   :custom
   (eldoc-echo-area-display-truncation-message nil)
-  ;; (eldoc-print-after-edit t)
-  (eldoc-echo-area-prefer-doc-buffer 'maybe))
+  (eldoc-print-after-edit t)
+  (eldoc-echo-area-prefer-doc-buffer nil))
 
 (use-package eldoc-box
-  :after eldoc
+  :hook (eglot-managed-mode . eldoc-box-hover-at-point-mode)
   :bind (:map eglot-mode-map
-              ("C-h ." . eldoc-box-help-at-point))
+              ([remap display-local-help] . #'eldoc-box-help-at-point))
   :custom
   (eldoc-box-only-multi-line t)
   (eldoc-box-clear-with-C-g t))
@@ -1473,6 +1481,11 @@ The DWIM behaviour of this command is as follows:
 
 (use-package magit
   :defer t)
+
+(use-package magit-file-icons
+  :after magit
+  :config
+  (magit-file-icons-mode))
 
 (use-package diff-hl
   :hook
