@@ -127,10 +127,10 @@
   (global-auto-revert-mode 1) ;; Revert buffers when the underlying file has changed
 
   ;; Font configuration
-  (set-face-attribute 'default nil :family "Iosevka" :height 140)
-  (set-face-attribute 'fixed-pitch nil :family "Iosevka" :height 1.0)
-  (set-face-attribute 'variable-pitch nil :family "Iosevka Aile" :height 1.0)
-  (set-face-attribute 'fixed-pitch-serif nil :family "Iosevka Slab" :height 1.0)
+  (set-face-attribute 'default nil :family "Aporetic Sans Mono" :height 140)
+  (set-face-attribute 'fixed-pitch nil :family "Aporetic Sans Mono" :height 1.0)
+  (set-face-attribute 'variable-pitch nil :family "Aporetic Sans" :height 1.0)
+  (set-face-attribute 'fixed-pitch-serif nil :family "Aporetic Serif Mono" :height 1.0)
 
   ;; Make C-g a bit more helpful, credit to Prot:
   ;; https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration
@@ -373,7 +373,7 @@ The DWIM behaviour of this command is as follows:
                                          org-attach-id-uuid-folder-format
                                          org-attach-id-fallback-folder-format))
   :custom-face
-  (org-document-title ((t (:family "Iosevka Etoile" :height 1.5)))))
+  (org-document-title ((t (:family "Aporetic Serif" :height 1.5)))))
 
 (use-package org-latex-preview
   :ensure nil
@@ -1035,7 +1035,9 @@ The DWIM behaviour of this command is as follows:
      (2 . (1.15))
      (agenda-date . (variable-pitch 1.15))
      (agenda-structure . (variable-pitch 1.2))
-     (t . (1.1)))))
+     (t . (1.1))))
+  :bind
+  ("<f9>" . #'modus-themes-toggle))
 
 (use-package auto-dark
   :after modus-themes
@@ -1081,7 +1083,9 @@ The DWIM behaviour of this command is as follows:
 
 (use-package lin
   :config
-  (lin-global-mode))
+  (lin-global-mode)
+  :custom
+  (lin-face nil "Do not override hl-line-face"))
 
 (use-package olivetti
   :hook (org-mode markdown-mode))
@@ -1091,7 +1095,7 @@ The DWIM behaviour of this command is as follows:
   (([remap narrow-to-region] . #'logos-narrow-dwim)
    ([remap forward-page] . #'logos-forward-page-dwim)
    ([remap backward-page] . #'logos-backward-page-dwim)
-   ("<f9>" . #'logos-focus-mode))
+   ("<f8>" . #'logos-focus-mode))
   :custom
   (logos-outlines-are-pages t)
   (logos-olivetti t))
@@ -1442,8 +1446,8 @@ The DWIM behaviour of this command is as follows:
 
 (use-package flymake
   :ensure nil ;; use built-in
-  :custom
-  (flymake-show-diagnostics-at-end-of-line 'short)
+  ;; :custom
+  ;; (flymake-show-diagnostics-at-end-of-line 'short)
   :bind
   (:map flymake-mode-map
         ("M-n" . #'flymake-goto-next-error)
@@ -1480,12 +1484,9 @@ The DWIM behaviour of this command is as follows:
 (use-package magit-section)
 
 (use-package magit
-  :defer t)
-
-(use-package magit-file-icons
-  :after magit
-  :config
-  (magit-file-icons-mode))
+  :after nerd-icons
+  :custom
+  (magit-format-file-function #'magit-format-file-nerd-icons))
 
 (use-package diff-hl
   :hook
