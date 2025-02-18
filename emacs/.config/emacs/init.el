@@ -117,6 +117,9 @@
   (completion-cycle-threshold 3 "TAB cycle if there are only few candidates")
   (backup-directory-alist `(("." . ,(concat user-emacs-directory "backups"))))
 
+  ;; Fix S-SPC on pgtk
+  (pgtk-use-im-context-on-new-connection nil)
+
   :config
   ;; Convenience
   (delete-selection-mode 1) ;; Save a keystroke
@@ -915,6 +918,7 @@ The DWIM behaviour of this command is as follows:
   :bind ("C-M-;" . casual-avy-tmenu))
 
 (use-package symbol-overlay
+  :disabled
   :hook
   (prog-mode . symbol-overlay-mode)
   :bind
@@ -923,11 +927,13 @@ The DWIM behaviour of this command is as follows:
   ("M-P" . #'symbol-overlay-switch-backward))
 
 (use-package casual-symbol-overlay
+  :disabled
   :after (symbol-overlay)
   :config
   (keymap-set symbol-overlay-map "C-o" #'casual-symbol-overlay-tmenu))
 
 (use-package symbol-overlay-mc
+  :disabled
   :after (symbol-overlay casual-symbol-overlay)
   :config
   (symbol-overlay-mc-insert-into-casual-tmenu))
@@ -1083,6 +1089,12 @@ The DWIM behaviour of this command is as follows:
   (lin-global-mode)
   :custom
   (lin-face nil "Do not override hl-line-face"))
+
+(use-package hl-line
+  :ensure nil
+  :defer t
+  :custom
+  (hl-line-sticky-flag nil))
 
 (use-package olivetti
   :hook (org-mode markdown-mode))
