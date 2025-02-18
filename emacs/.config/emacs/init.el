@@ -1021,30 +1021,27 @@ The DWIM behaviour of this command is as follows:
   ("<Bonus-m>" . bufferlo-prefix-map))
 
 ;;;; Better themes
-(use-package modus-themes
+(use-package ef-themes
   :config
-  (setopt modus-themes-common-palette-overrides modus-themes-preset-overrides-faint)
-  (modus-themes-select 'modus-vivendi-tinted)
+  (ef-themes-select 'ef-owl)
   :custom
-  (modus-themes-bold-constructs t)
-  (modus-themes-italic-constructs t)
-  (modus-themes-mixed-fonts t)
-  (modus-themes-to-toggle '(modus-vivendi-tinted modus-operandi-tinted))
-  (modus-themes-headings
+  (ef-themes-mixed-fonts t)
+  (ef-themes-to-toggle '(ef-owl ef-eagle))
+  (ef-themes-headings
    '((1 . (1.2))
      (2 . (1.15))
      (agenda-date . (variable-pitch 1.15))
      (agenda-structure . (variable-pitch 1.2))
      (t . (1.1))))
   :bind
-  ("<f9>" . #'modus-themes-toggle))
+  ("<f9>" . #'ef-themes-toggle))
 
 (use-package auto-dark
-  :after modus-themes
+  :after ef-themes
   :config (auto-dark-mode)
   :custom
-  (auto-dark-dark-theme 'modus-vivendi-tinted)
-  (auto-dark-light-theme 'modus-operandi-tinted))
+  (auto-dark-dark-theme 'ef-owl)
+  (auto-dark-light-theme 'ef-eagle))
 
 (use-package minions
   :config
