@@ -5,12 +5,12 @@
 
 ;;; Code:
 ;;;; Bootstrap elpaca
-(defvar elpaca-installer-version 0.9)
+(defvar elpaca-installer-version 0.10)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
 (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                              :ref nil :depth 1
+                              :ref nil :depth 1 :inherit ignore
                               :files (:defaults "elpaca-test.el" (:exclude "extensions"))
                               :build (:not elpaca--activate-package)))
 (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
@@ -20,7 +20,7 @@
   (add-to-list 'load-path (if (file-exists-p build) build repo))
   (unless (file-exists-p repo)
     (make-directory repo t)
-    (when (< emacs-major-version 28) (require 'subr-x))
+    (when (<= emacs-major-version 28) (require 'subr-x))
     (condition-case-unless-debug err
         (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
                   ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
@@ -114,7 +114,7 @@
   (global-auto-revert-non-file-buffers t "Revert Dired and other buffers")
   (tab-always-indent 'complete "Enable indentation+completion using the TAB key")
   (tab-first-completion 'word-or-paren-or-punct)
-  (completion-cycle-threshold 3 "TAB cycle if there are only few candidates")
+  ;; (completion-cycle-threshold 3 "TAB cycle if there are only few candidates")
   (backup-directory-alist `(("." . ,(concat user-emacs-directory "backups"))))
 
   ;; Fix S-SPC on pgtk
@@ -285,35 +285,14 @@ The DWIM behaviour of this command is as follows:
   (trashed-sort-key '("Date deleted" . t))
   (trashed-date-format "%Y-%m-%d %H:%M:%S"))
 
-(use-package on ;; Aditional hooks for faster startup
+(use-package on ;; Additional hooks for faster startup
   :defer t)
 
 ;;;; Org-mode
 (use-package org
   :defer
-  :ensure `(org
-            :remotes ("tecosaur"
-                      :repo "https://git.tecosaur.net/tec/org-mode.git"
-                      :branch "dev")
-            :files (:defaults "etc")
-            :build t
-            :pre-build
-            (with-temp-file "org-version.el"
-              (require 'lisp-mnt)
-              (let ((version
-                     (with-temp-buffer
-                       (insert-file-contents "lisp/org.el")
-                       (lm-header "version")))
-                    (git-version
-                     (string-trim
-                      (with-temp-buffer
-			            (call-process "git" nil t nil "rev-parse" "--short" "HEAD")
-			            (buffer-string)))))
-		        (insert
-		         (format "(defun org-release () \"The release version of Org.\" %S)\n" version)
-		         (format "(defun org-git-version () \"The truncate git commit hash of Org mode.\" %S)\n" git-version)
-		         "(provide 'org-version)\n")))
-            :pin nil)
+  :ensure `(org :repo "https://code.tecosaur.net/tec/org-mode.git/"
+		:branch "dev")
   :hook
   (org-mode . (lambda ()
                 (auto-fill-mode)
@@ -514,6 +493,7 @@ The DWIM behaviour of this command is as follows:
 
 ;;;; Better completing-read
 (use-package consult
+  :demand t
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings in `mode-specific-map'
          ("C-c M-x" . consult-mode-command)
@@ -855,6 +835,7 @@ The DWIM behaviour of this command is as follows:
 
 (use-package ibuffer
   :ensure nil
+  :demand t
   :hook (ibuffer-mode . ibuffer-auto-mode)
   :bind ([remap list-buffers] . ibuffer))
 
@@ -960,71 +941,185 @@ The DWIM behaviour of this command is as follows:
   (tab-bar-select-tab-modifiers '(meta))
   (tab-bar-history-limit 100))
 
-(use-package bufferlo
-  :config
-  (defvar my-consult--source-buffer
-    `(:name "Other Buffers"
-            :narrow   ?b
-            :category buffer
-            :face     consult-buffer
-            :history  buffer-name-history
-            :state    ,#'consult--buffer-state
-            :items ,(lambda () (consult--buffer-query
-                                :predicate #'bufferlo-non-local-buffer-p
-                                :sort 'visibility
-                                :as #'buffer-name)))
-    "Non-local buffer candidate source for `consult-buffer'.")
+(global-unset-key (kbd "C-z")) ; free C-z to use as a prefix key
 
-  (defvar my-consult--source-local-buffer
-    `(:name "Local Buffers"
-            :narrow   ?l
-            :category buffer
-            :face     consult-buffer
-            :history  buffer-name-history
-            :state    ,#'consult--buffer-state
-            :default  t
-            :items ,(lambda () (consult--buffer-query
+(use-package bufferlo
+  :ensure (:host github :repo "florommel/bufferlo" :branch "xp-sess")
+  :demand t
+  :after (ibuffer consult) ; also mark these :demand t or use explicit require
+  :bind
+  (
+   ;; buffer / ibuffer
+   ("C-z C-b" . bufferlo-ibuffer)
+   ("C-z M-C-b" . bufferlo-ibuffer-orphans)
+   ("C-z b -" . bufferlo-remove)
+   ;; general bookmark (interactive)
+   ("C-z b l" . bufferlo-bms-load)
+   ("C-z b s" . bufferlo-bms-save)
+   ("C-z b c" . bufferlo-bms-close)
+   ("C-z b r" . bufferlo-bm-raise)
+   ;; dwim frame or tab bookmarks
+   ("C-z d s" . bufferlo-bm-save)
+   ("C-z d l" . bufferlo-bm-load)
+   ("C-z d 0" . bufferlo-bm-close)
+   ;; tabs
+   ("C-z t s" . bufferlo-bm-tab-save)               ; save
+   ("C-z t u" . bufferlo-bm-tab-save-curr)          ; update
+   ("C-z t l" . bufferlo-bm-tab-load)               ; load
+   ("C-z t r" . bufferlo-bm-tab-load-curr)          ; reload
+   ("C-z t 0" . bufferlo-bm-tab-close-curr)         ; kill
+   ;; frames
+   ("C-z f s" . bufferlo-bm-frame-save)             ; save
+   ("C-z f u" . bufferlo-bm-frame-save-curr)        ; update
+   ("C-z f l" . bufferlo-bm-frame-load)             ; load
+   ("C-z f r" . bufferlo-bm-frame-load-curr)        ; reload
+   ("C-z f m" . bufferlo-bm-frame-load-merge)       ; merge
+   ("C-z f 0" . bufferlo-bm-frame-close-curr)       ; kill
+   ;; sets
+   ("C-z s s" . bufferlo-set-save)                  ; save
+   ("C-z s u" . bufferlo-set-save-curr)             ; update
+   ("C-z s l" . bufferlo-set-load)                  ; load
+   ("C-z s 0" . bufferlo-set-close)                 ; kill
+   ("C-z s c" . bufferlo-set-clear)                 ; clear
+   ("C-z s L" . bufferlo-set-list)                  ; list contents of selected active sets
+   )
+  :init
+  ;; these must be set before the bufferlo package is loaded
+  (setq bufferlo-menu-bar-show t)
+  (setq bufferlo-menu-bar-list-buffers 'ibuffer)
+  (setq bufferlo-prefer-local-buffers 'tabs)
+  (setq bufferlo-ibuffer-bind-local-buffer-filter t)
+  (setq bufferlo-ibuffer-bind-keys t)
+  :config
+  (setq bufferlo-mode-line-prefix "🐃") ; "🐮"
+  (setq bufferlo-mode-line-set-active-prefix "Ⓢ")
+  (setq bufferlo-mode-line-frame-prefix "Ⓕ")
+  (setq bufferlo-mode-line-tab-prefix "Ⓣ")
+  (setq bufferlo-mode-line-left-prefix nil)
+  (setq bufferlo-mode-line-right-suffix nil)
+  (setq switch-to-prev-buffer-skip-regexp
+        (concat "\\` *"
+                "\\(\\*\\(" ; earmuffs
+                (mapconcat #'identity
+                           '("Messages"
+                             "Buffer List"
+                             "Ibuffer"
+                             "Local Buffer List" ; bufferlo
+                             "scratch"
+                             "Occur"
+                             "Completions"
+                             "Help"
+                             "Warnings"
+                             "Apropos"
+                             "Bookmark List"
+                             "Async-native-compile-log"
+                             "Flymake log"
+                             "ruff-format errors"
+                             "vc-diff")
+                           "\\|")
+                "\\)\\*\\)"
+                "\\|" (rx "*" (1+ anything) " Ibuffer*")
+                "\\|" (rx "*helpful " (1+ anything) "*")
+                "\\|" (rx "*tramp" (1+ anything) "*")
+                "\\|" (rx "magit" (* anything) ": " (1+ anything))
+                "\\'"))
+  (setq bufferlo-kill-buffers-prompt t)
+  (setq bufferlo-kill-modified-buffers-policy 'retain-modified-kill-without-file-name) ; nil 'retain-modified 'retain-modified-kill-without-file-name 'kill-modified
+  (setq bufferlo-bookmark-inhibit-bookmark-point t)
+  (setq bufferlo-delete-frame-kill-buffers-prompt t)
+  (setq bufferlo-bookmark-frame-save-on-delete 'when-bookmarked)
+  (setq bufferlo-bookmark-tab-save-on-close 'when-bookmarked)
+  (setq bufferlo-close-tab-kill-buffers-prompt t)
+  (setq bufferlo-bookmark-frame-load-make-frame 'restore-geometry)
+  (setq bufferlo-bookmark-frame-load-policy 'prompt)
+  (setq bufferlo-bookmark-frame-duplicate-policy 'prompt)
+  (setq bufferlo-bookmark-tab-replace-policy 'new)
+  (setq bufferlo-bookmark-tab-duplicate-policy 'prompt)
+  (setq bufferlo-bookmark-tab-in-bookmarked-frame-policy 'prompt)
+  (setq bufferlo-bookmarks-save-duplicates-policy 'prompt)
+  (setq bufferlo-bookmarks-save-frame-policy 'all)
+  (setq bufferlo-bookmarks-load-tabs-make-frame t)
+  (setq bufferlo-bookmarks-save-at-emacs-exit-policy 'all)
+  (setq bufferlo-bookmarks-load-at-emacs-startup 'pred)
+  (setq bufferlo-bookmarks-load-at-emacs-startup-tabs-make-frame nil)
+  (setopt bufferlo-bookmarks-auto-save-idle-interval (* 60 5)) ; 5 minutes
+  (setq bufferlo-bookmarks-auto-save-messages 'saved)
+  (setq bufferlo-set-restore-geometry-policy 'all)
+  (setq bufferlo-set-restore-tabs-reuse-init-frame 'reuse) ; nil 'reuse 'reuse-reset-geometry
+  (setq bufferlo-frameset-restore-geometry 'bufferlo)
+  (setq bufferlo-frame-geometry-function #'bufferlo-frame-geometry-default)
+  (setq bufferlo-frame-sleep-for 0.3)
+
+  (setq bufferlo-bookmark-buffers-exclude-filters
+        (list
+         (rx bos " " (1+ anything)) ; ignores "invisible" buffers; e.g., " *Minibuf...", " markdown-code-fontification:..."
+         (rx bos "*" (1+ anything) "*") ; ignores "special" buffers; e.g;, "*Messages*", "*scratch*", "*occur*"
+         ))
+
+  (setq bufferlo-bookmark-buffers-include-filters
+        (list
+         (rx bos "*shell*") ; comment out shells if you do not have bookmark support
+         (rx bos "*" (1+ anything) "-shell*") ; project.el shell buffers
+         (rx bos "*eshell*")
+         (rx bos "*" (1+ anything) "-eshell*") ; project.el eshell buffers
+         ))
+
+  (defun my/bufferlo-bookmarks-save-p (bookmark-name)
+    (string-match-p (rx "=as") bookmark-name))
+  (setq bufferlo-bookmarks-save-predicate-functions nil) ; clear the save-all predicate
+  (add-hook 'bufferlo-bookmarks-save-predicate-functions #'my/bufferlo-bookmarks-save-p)
+
+  (defun my/bufferlo-bookmarks-load-p (bookmark-name)
+    (string-match-p (rx "=al") bookmark-name))
+  (add-hook 'bufferlo-bookmarks-load-predicate-functions #'my/bufferlo-bookmarks-load-p)
+
+  (defvar my:bufferlo-consult--source-local-buffers
+    (list :name "Bufferlo Local Buffers"
+          :narrow   ?l
+          :category 'buffer
+          :face     'consult-buffer
+          :history  'buffer-name-history
+          :state    #'consult--buffer-state
+          :default  t
+          :items    (lambda () (consult--buffer-query
                                 :predicate #'bufferlo-local-buffer-p
                                 :sort 'visibility
                                 :as #'buffer-name)))
-    "Local buffer candidate source for `consult-buffer'.")
+    "Local Bufferlo buffer candidate source for `consult-buffer'.")
 
-  (with-eval-after-load 'consult
-    (add-to-list 'consult-buffer-sources 'my-consult--source-buffer)
-    (add-to-list 'consult-buffer-sources 'my-consult--source-local-buffer)
-    (delete 'consult--source-buffer consult-buffer-sources))
+  (defvar my:bufferlo-consult--source-other-buffers
+    (list :name "Bufferlo Other Buffers"
+          :narrow   ?o
+          :category 'buffer
+          :face     'consult-buffer
+          :history  'buffer-name-history
+          :state    #'consult--buffer-state
+          :items    (lambda () (consult--buffer-query
+                                :predicate #'bufferlo-non-local-buffer-p
+                                :sort 'visibility
+                                :as #'buffer-name)))
+    "Non-local Bufferlo buffer candidate source for `consult-buffer'.")
 
-  (defvar-keymap bufferlo-bookmark-tab-prefix-map
-    :doc "Manage tab bookmarks with Bufferlo."
-    "s" #'bufferlo-bookmark-tab-save
-    "l" #'bufferlo-bookmark-tab-load
-    "S" #'bufferlo-bookmark-tab-save-current
-    "L" #'bufferlo-bookmark-tab-load-current)
+  (defvar my:bufferlo-consult--source-all-buffers
+    (list :name "Bufferlo All Buffers"
+          :narrow   ?a
+          :hidden   t
+          :category 'buffer
+          :face     'consult-buffer
+          :history  'buffer-name-history
+          :state    #'consult--buffer-state
+          :items    (lambda () (consult--buffer-query
+                                :sort 'visibility
+                                :as #'buffer-name)))
+    "All Bufferlo buffer candidate source for `consult-buffer'.")
 
-  (defvar-keymap bufferlo-bookmark-frame-prefix-map
-    :doc "Manage frame bookmarks with Bufferlo."
-    "s" #'bufferlo-bookmark-frame-save
-    "l" #'bufferlo-bookmark-frame-load
-    "S" #'bufferlo-bookmark-frame-save-current
-    "L" #'bufferlo-bookmark-frame-load-current)
+  ;; add in the reverse order of display preference
+  (add-to-list 'consult-buffer-sources 'my:bufferlo-consult--source-all-buffers)
+  (add-to-list 'consult-buffer-sources 'my:bufferlo-consult--source-other-buffers)
+  (add-to-list 'consult-buffer-sources 'my:bufferlo-consult--source-local-buffers)
 
-  (defvar-keymap bufferlo-prefix-map
-    :doc "Bufferlo-mode prefix map."
-    "c" #'bufferlo-clear
-    "r" #'bufferlo-remove
-    "e" #'bufferlo-remove-non-exclusive-buffers
-    "q" #'bufferlo-bury
-    "k" #'bufferlo-kill-buffers
-    "o" #'bufferlo-kill-orphan-buffers
-    "F" #'bufferlo-delete-frame-kill-buffers
-    "T" #'bufferlo-tab-close-kill-buffers
-    "p" #'bufferlo-isolate-project
-    "b t" bufferlo-bookmark-tab-prefix-map
-    "b f" bufferlo-bookmark-frame-prefix-map)
-    
   (bufferlo-mode)
-  :bind-keymap
-  ("<Bonus-m>" . bufferlo-prefix-map))
+  (bufferlo-anywhere-mode))
 
 ;;;; Better themes
 (use-package ef-themes
@@ -1178,9 +1273,7 @@ The DWIM behaviour of this command is as follows:
 
 (use-package denote
   :config
-  (require 'denote-journal-extras)
   (require 'consult-denote)
-  (denote-rename-buffer-mode t)
   :custom
   (denote-directory (concat fab/org-directory "denote/"))
   :hook
@@ -1198,6 +1291,12 @@ The DWIM behaviour of this command is as follows:
    ("C-c n R" . denote-rename-file-using-front-matter)
    ("C-c n k" . denote-rename-file-keywords)
    ("C-c n j" . #'denote-journal-extras-new-or-existing-entry)))
+
+(use-package denote-journal
+  :config
+  (denote-rename-buffer-mode t))
+
+(use-package denote-org)
 
 (use-package consult-denote
   :config
