@@ -1292,6 +1292,8 @@ The DWIM behaviour of this command is as follows:
    ("C-c n k" . denote-rename-file-keywords)))
 
 (use-package denote-journal
+  :hook
+  (calendar-mode . denote-journal-calendar-mode)
   :config
   (denote-rename-buffer-mode t)
   :bind
