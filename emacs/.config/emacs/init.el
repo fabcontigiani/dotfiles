@@ -1670,6 +1670,19 @@ The DWIM behaviour of this command is as follows:
   :hook
   (markdown-mode . visual-line-mode))
 
+(use-package yaml-ts-mode
+  :ensure nil
+  :mode "\\.yaml\\'")
+
+(use-package yaml-pro
+  :hook
+  (yaml-ts-mode . yaml-pro-ts-mode))
+
+(use-package outline-yaml
+  :ensure (:host github :repo "jamescherti/outline-yaml.el")
+  :hook
+  (yaml-ts-mode . outline-yaml-minor-mode))
+
 (use-package matlab-mode
   :ensure (:host github :repo "mathworks/Emacs-MATLAB-Mode")
   :mode "\\.m\\'"
