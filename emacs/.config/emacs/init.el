@@ -1289,14 +1289,16 @@ The DWIM behaviour of this command is as follows:
    ("C-c n b" . denote-find-backlink)
    ("C-c n r" . denote-rename-file)
    ("C-c n R" . denote-rename-file-using-front-matter)
-   ("C-c n k" . denote-rename-file-keywords)
-   ("C-c n j" . #'denote-journal-extras-new-or-existing-entry)))
+   ("C-c n k" . denote-rename-file-keywords)))
 
 (use-package denote-journal
   :config
-  (denote-rename-buffer-mode t))
+  (denote-rename-buffer-mode t)
+  :bind
+  ("C-c n j" . #'denote-journal-new-or-existing-entry))
 
-(use-package denote-org)
+(use-package denote-org
+  :after denote)
 
 (use-package consult-denote
   :config
