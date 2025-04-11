@@ -895,6 +895,11 @@ The DWIM behaviour of this command is as follows:
   :ensure nil
   :bind (("M-o" . casual-editkit-main-tmenu)))
 
+(use-package casual-make
+  :ensure nil
+  :bind (:map makefile-mode-map
+         ("M-m" . #'casual-make-tmenu)))
+
 (use-package casual-avy
   :bind ("C-M-;" . casual-avy-tmenu))
 
