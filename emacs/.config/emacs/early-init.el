@@ -41,7 +41,7 @@
    "Reclaim keys for GUI Emacs.
 
 - When you type `Ctrl-i', Emacs sees it as `Bonus-i', and NOT as 'Tab'
-- When you type `Ctrl-m', Emacs sees it as `Bonus-m', and NOT as 'Return'
+- When you type `Ctrl-m', Emacs sees it as `C-m', and NOT as 'Return'
 - When you type `Ctrl-[', Emacs sees it as `Bonus-lsb', and not as 'Esc'
 
 That is,
@@ -54,7 +54,7 @@ That is,
                                         ; terminal Emacs to be usable
        (define-key input-decode-map (kbd "C-i") [Bonus-i])
        (define-key input-decode-map (kbd "C-[") [Bonus-lsb]) ; left square bracket
-       (define-key input-decode-map (kbd "C-m") [Bonus-m])))))
+       (define-key input-decode-map (kbd "C-m") [C-m])))))
 
 ;; Local Variables:
 ;; no-byte-compile: t

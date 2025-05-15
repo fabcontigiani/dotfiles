@@ -5,7 +5,7 @@
 
 ;;; Code:
 ;;;; Bootstrap elpaca
-(defvar elpaca-installer-version 0.10)
+(defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
@@ -40,7 +40,7 @@
   (unless (require 'elpaca-autoloads nil t)
     (require 'elpaca)
     (elpaca-generate-autoloads "elpaca" repo)
-    (load "./elpaca-autoloads")))
+    (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 
@@ -171,7 +171,9 @@ The DWIM behaviour of this command is as follows:
 
 (use-package shell
   :ensure nil
+  :defer t
   :custom
+  (explicit-shell-file-name "/bin/bash")
   (comint-prompt-read-only t)
   (shell-kill-buffer-on-exit t))
 
@@ -897,8 +899,9 @@ The DWIM behaviour of this command is as follows:
 
 (use-package casual-make
   :ensure nil
-  :bind (:map makefile-mode-map
-         ("M-m" . #'casual-make-tmenu)))
+  :after make-mode
+  :config
+  (define-key makefile-mode-map (kbd "<C-m>") #'casual-make-tmenu))
 
 (use-package casual-avy
   :bind ("C-M-;" . casual-avy-tmenu))
@@ -946,12 +949,8 @@ The DWIM behaviour of this command is as follows:
   (tab-bar-select-tab-modifiers '(meta))
   (tab-bar-history-limit 100))
 
-(global-unset-key (kbd "C-z")) ; free C-z to use as a prefix key
-
 (use-package bufferlo
-  :ensure (:host github :repo "florommel/bufferlo" :branch "xp-sess")
   :demand t
-  :after (ibuffer consult) ; also mark these :demand t or use explicit require
   :bind
   (
    ;; buffer / ibuffer
@@ -1041,19 +1040,23 @@ The DWIM behaviour of this command is as follows:
   (setq bufferlo-bookmark-tab-replace-policy 'new)
   (setq bufferlo-bookmark-tab-duplicate-policy 'prompt)
   (setq bufferlo-bookmark-tab-in-bookmarked-frame-policy 'prompt)
+  (setq bufferlo-bookmark-tab-failed-buffer-policy 'placeholder)
   (setq bufferlo-bookmarks-save-duplicates-policy 'prompt)
   (setq bufferlo-bookmarks-save-frame-policy 'all)
   (setq bufferlo-bookmarks-load-tabs-make-frame t)
-  (setq bufferlo-bookmarks-save-at-emacs-exit-policy 'all)
+  (setq bufferlo-bookmarks-save-at-emacs-exit 'all)
   (setq bufferlo-bookmarks-load-at-emacs-startup 'pred)
   (setq bufferlo-bookmarks-load-at-emacs-startup-tabs-make-frame nil)
-  (setopt bufferlo-bookmarks-auto-save-idle-interval (* 60 5)) ; 5 minutes
+  (setopt bufferlo-bookmarks-auto-save-interval (* 60 5)) ; 5 minutes
   (setq bufferlo-bookmarks-auto-save-messages 'saved)
   (setq bufferlo-set-restore-geometry-policy 'all)
   (setq bufferlo-set-restore-tabs-reuse-init-frame 'reuse) ; nil 'reuse 'reuse-reset-geometry
+  (setq bufferlo-set-restore-ignore-already-active 'prompt) ; nil 'prompt 'ignore
   (setq bufferlo-frameset-restore-geometry 'bufferlo)
   (setq bufferlo-frame-geometry-function #'bufferlo-frame-geometry-default)
   (setq bufferlo-frame-sleep-for 0.3)
+
+  (setq bookmark-bmenu-type-column-width 12) ; supported in Emacs 31 (innocuous on earlier versions)
 
   (setq bufferlo-bookmark-buffers-exclude-filters
         (list
@@ -1154,8 +1157,8 @@ The DWIM behaviour of this command is as follows:
   (minions-mode))
 
 (use-package spacious-padding
-  :config
-  (spacious-padding-mode))
+  :bind
+  ("<f7>" . #'spacious-padding-mode))
 
 (use-package rainbow-delimiters
   :hook prog-mode)
@@ -1513,6 +1516,15 @@ The DWIM behaviour of this command is as follows:
 (use-package treesit-jump
   :ensure (:host github :repo "abougouffa/treesit-jump"
                  :branch "enhancements" :files ("*.el" "treesit-queries")))
+
+(use-package tramp
+  :ensure nil
+  :defer t
+  :config
+  (add-to-list 'tramp-remote-path "~/.local/bin")
+  (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+  :custom
+  (tramp-default-remote-shell "/bin/bash"))
 
 (use-package eglot
   :ensure nil ;; use built-in
