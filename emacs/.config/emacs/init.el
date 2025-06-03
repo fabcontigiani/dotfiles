@@ -1150,7 +1150,7 @@ The DWIM behaviour of this command is as follows:
   :config (auto-dark-mode)
   :custom
   (auto-dark-dark-theme 'ef-owl)
-  (auto-dark-light-theme 'ef-eagle))
+  (auto-dark-light-theme 'ef-light))
 
 (use-package minions
   :config
