@@ -66,7 +66,7 @@
   
   ;; User variables
   (defvar user-email-address "fabcontigiani@gmail.com")
-  (defvar fab/org-directory (expand-file-name "~/MEGA/org/"))
+  (defvar fab/org-directory (expand-file-name "~/Nextcloud/org/"))
   (defvar fab/bibliography-dir (concat fab/org-directory "biblio/"))
   (defvar fab/bibliography-file (concat fab/bibliography-dir "references.bib"))
   
@@ -118,7 +118,7 @@
   (backup-directory-alist `(("." . ,(concat user-emacs-directory "backups"))))
 
   ;; Fix S-SPC on pgtk
-  (pgtk-use-im-context-on-new-connection nil)
+  ;; (pgtk-use-im-context-on-new-connection nil)
 
   :config
   ;; Convenience
@@ -1135,7 +1135,7 @@ The DWIM behaviour of this command is as follows:
   (ef-themes-select 'ef-owl)
   :custom
   (ef-themes-mixed-fonts t)
-  (ef-themes-to-toggle '(ef-owl ef-eagle))
+  (ef-themes-to-toggle '(ef-owl ef-light))
   (ef-themes-headings
    '((1 . (1.2))
      (2 . (1.15))
@@ -1157,6 +1157,9 @@ The DWIM behaviour of this command is as follows:
   (minions-mode))
 
 (use-package spacious-padding
+  :demand t
+  :after ef-themes
+  :config (spacious-padding-mode)
   :bind
   ("<f7>" . #'spacious-padding-mode))
 
