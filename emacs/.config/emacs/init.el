@@ -386,6 +386,10 @@ The DWIM behaviour of this command is as follows:
   ;; Enable consistent equation numbering
   (setq org-latex-preview-numbered t)
 
+  ;; Temp: Use temp dir instead of org-persist (until bug fix)
+  (setq org-latex-preview-cache 'temp
+        org-latex-preview-process-precompiled nil)
+
   ;; Bonus: Turn on live previews.  This shows you a live preview of a LaTeX
   ;; fragment and updates the preview in real-time as you edit it.
   ;; To preview only environments, set it to '(block edit-special) instead
@@ -1665,19 +1669,11 @@ The DWIM behaviour of this command is as follows:
   :commands (atomic-chrome-start-server))
 
 (use-package gptel
-  :init
-  (load-file (concat user-emacs-directory "apis.el"))
+  :commands (gptel)
   :config
-  (gptel-make-openai "Github Models"
-    :host "models.inference.ai.azure.com"
-    :endpoint "/chat/completions?api-version=2024-05-01-preview"
-    :stream t
-    :key #'github-token
-    :models '(gpt-4o))
-  (setq gptel-model 'gemini-pro
-        gptel-backend (gptel-make-gemini "Gemini"
-                        :key #'gemini-apikey
-                        :stream t)))
+  (delete (assoc "ChatGPT" gptel--known-backends) gptel--known-backends)
+  (setq gptel-model 'gpt-4.1
+        gptel-backend (gptel-make-gh-copilot "Copilot")))
 
 (use-package gptel-quick
   :ensure (:host github :repo "karthink/gptel-quick")
