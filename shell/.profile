@@ -26,6 +26,8 @@ if [ -d "$HOME/.local/bin" ] ; then
     PATH="$HOME/.local/bin:$PATH"
 fi
 
-export EDITOR=emacs
-export PATH="$HOME/.cargo/bin:$PATH"
+export QSYS_ROOTDIR="/opt/intelFPGA_lite/24.1std/quartus/sopc_builder/bin"
+export MGLS_LICENSE_FILE="/opt/intelFPGA_lite/24.1std/licenses/questa/LR-239671_License.dat" 
 
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
