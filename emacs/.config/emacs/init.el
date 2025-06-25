@@ -130,10 +130,10 @@
   (global-auto-revert-mode 1) ;; Revert buffers when the underlying file has changed
 
   ;; Font configuration
-  (set-face-attribute 'default nil :family "Aporetic Sans Mono" :height 140)
-  (set-face-attribute 'fixed-pitch nil :family "Aporetic Sans Mono" :height 1.0)
-  (set-face-attribute 'variable-pitch nil :family "Aporetic Sans" :height 1.0)
-  (set-face-attribute 'fixed-pitch-serif nil :family "Aporetic Serif Mono" :height 1.0)
+  (set-face-attribute 'default nil :family "IBM Plex Mono" :height 110)
+  (set-face-attribute 'fixed-pitch nil :family "IBM Plex Mono" :height 1.0)
+  (set-face-attribute 'variable-pitch nil :family "IBM Plex Sans" :height 1.0)
+  (set-face-attribute 'fixed-pitch-serif nil :family "IBM Plex Mono" :height 1.0)
 
   ;; Make C-g a bit more helpful, credit to Prot:
   ;; https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration
@@ -357,7 +357,9 @@ The DWIM behaviour of this command is as follows:
                                          org-attach-id-uuid-folder-format
                                          org-attach-id-fallback-folder-format))
   :custom-face
-  (org-document-title ((t (:family "Aporetic Serif" :height 1.5)))))
+  (org-block ((t (:background nil))))
+  (org-document-title ((t (:family "IBM Plex Serif" :height 1.5))))
+  )
 
 (use-package org-latex-preview
   :ensure nil
