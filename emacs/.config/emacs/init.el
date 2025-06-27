@@ -1577,9 +1577,9 @@ The DWIM behaviour of this command is as follows:
 
 (use-package tempel-collection)
 
-(use-package lsp-snippet-tempel
-  :after eglot
+(use-package lsp-snippet
   :ensure (:host github :repo "svaante/lsp-snippet")
+  :after eglot
   :config
   (lsp-snippet-tempel-eglot-init))
 
@@ -1595,13 +1595,6 @@ The DWIM behaviour of this command is as follows:
 (use-package consult-xref-stack
   :ensure (:host github :repo "brett-lempereur/consult-xref-stack")
   :bind ("C-," . consult-xref-stack-backward))
-
-(use-package lsp-snippet
-  :disabled
-  :ensure (:host github :repo "svaante/lsp-snippet")
-  :after eglot
-  :config
-  (lsp-snippet-tempel-eglot-init))
 
 (use-package breadcrumb
   :hook (eglot-connect . breadcrumb-local-mode))
