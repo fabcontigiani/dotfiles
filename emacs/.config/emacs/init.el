@@ -104,6 +104,7 @@
   (indent-tabs-mode nil "Use spaces for indentation")
   (tab-width 4 "Use 4 spaces for indentation")
   (fill-column 80 "Set default line-wrap column to column 80")
+  (show-trailing-whitespace t "Hightlight spaces at ends of lines")
 
   ;; Performance tweaks
   (inhibit-compacting-font-caches t)
@@ -166,8 +167,9 @@ The DWIM behaviour of this command is as follows:
   (keymap-global-set "<Bonus-lsb>" #'previous-buffer)
   (keymap-global-set "C-]" #'next-buffer)
   :bind
-  (("C-x k" . #'kill-current-buffer)
-   ("C-g" . #'fab/keyboard-quit-dwim)))
+  ("M-\"" . #'fixup-whitespace)
+  ("C-x k" . #'kill-current-buffer)
+  ("C-g" . #'fab/keyboard-quit-dwim))
 
 (use-package shell
   :ensure nil
@@ -197,7 +199,9 @@ The DWIM behaviour of this command is as follows:
 
 (use-package exec-path-from-shell
   :config
-  (exec-path-from-shell-initialize))
+  (exec-path-from-shell-initialize)
+  :custom
+  (exec-path-from-shell-arguments nil))
 
 (use-package eshell-syntax-highlighting
   :after eshell
@@ -221,13 +225,17 @@ The DWIM behaviour of this command is as follows:
   (shell-dynamic-complete-functions . bash-completion-dynamic-complete))
 
 (use-package eat
-  :after eshell
+  :after (:any eshell project)
+  :hook ((eshell-load . eat-eshell-mode)
+         (eshell-load . eat-eshell-visual-command-mode))
   :config
-  (eat-eshell-mode t)
-  (eat-eshell-visual-command-mode t)
+  (add-to-list 'project-switch-commands '(eat-project "Eat" "t") t)
   :custom
   (eat-kill-buffer-on-exit t)
-  (eat-shell-prompt-annotation-success-margin-indicator ""))
+  (eat-shell-prompt-annotation-success-margin-indicator "")
+  :bind (:map project-prefix-map
+              ("t" . #'eat-project)
+              ("T" . #'eat-project-other-window)))
 
 (use-package isearch
   :ensure nil
@@ -250,7 +258,9 @@ The DWIM behaviour of this command is as follows:
           compilation-mode))
   :init
   (popper-mode 1)
-  (popper-echo-mode 1))
+  (popper-tab-line-mode 1)
+  :custom
+  (popper-window-height 16))
 
 (use-package dired
   :ensure nil
@@ -292,7 +302,7 @@ The DWIM behaviour of this command is as follows:
 
 ;;;; Org-mode
 (use-package org
-  :defer
+  :defer t
   :ensure `(org :repo "https://code.tecosaur.net/tec/org-mode.git/"
 		:branch "dev")
   :hook
@@ -758,35 +768,6 @@ The DWIM behaviour of this command is as follows:
   ;;(add-to-list 'completion-at-point-functions #'cape-line)
   )
 
-(use-package tempel
-  :disabled
-  ;; Require trigger prefix before template name when completing.
-  ;; :custom
-  ;; (tempel-trigger-prefix "<")
-  :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
-         ("M-*" . tempel-insert))
-  :init
-  ;; Setup completion at point
-  (defun tempel-setup-capf ()
-    ;; Add the Tempel Capf to `completion-at-point-functions'.
-    ;; `tempel-expand' only triggers on exact matches. Alternatively use
-    ;; `tempel-complete' if you want to see all matches, but then you
-    ;; should also configure `tempel-trigger-prefix', such that Tempel
-    ;; does not trigger too often when you don't expect it. NOTE: We add
-    ;; `tempel-expand' *before* the main programming mode Capf, such
-    ;; that it will be tried first.
-    (setq-local completion-at-point-functions
-                (cons #'tempel-expand
-                      completion-at-point-functions)))
-  (add-hook 'conf-mode-hook 'tempel-setup-capf)
-  (add-hook 'prog-mode-hook 'tempel-setup-capf)
-  (add-hook 'text-mode-hook 'tempel-setup-capf)
-  ;; Optionally make the Tempel templates available to Abbrev,
-  ;; either locally or globally. `expand-abbrev' is bound to C-x '.
-  ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
-  ;; (global-tempel-abbrev-mode)
-  )
-
 (use-package jinx
   :hook (org-mode LaTeX-mode)
   :bind (("M-$" . jinx-correct)
@@ -935,16 +916,12 @@ The DWIM behaviour of this command is as follows:
 
 (use-package tab-bar
   :ensure nil
-  :init
-  (defun fab/tab-bar-format-white-space ()
-    " ")
   :config
   (tab-bar-mode)
   (tab-bar-history-mode)
   :custom
   (tab-bar-show 1)
-  (tab-bar-format '(fab/tab-bar-format-white-space
-                    tab-bar-format-menu-bar
+  (tab-bar-format '(tab-bar-format-menu-bar
                     tab-bar-format-history
                     tab-bar-format-tabs-groups
                     tab-bar-separator
@@ -1468,7 +1445,8 @@ The DWIM behaviour of this command is as follows:
 (use-package compile
   :ensure nil
   :custom
-  (compilation-auto-jump-to-first-error t))
+  (compilation-auto-jump-to-first-error 'if-location-known)
+  (compilation-scroll-output t))
 
 (use-package dape
   :disabled
@@ -1546,19 +1524,65 @@ The DWIM behaviour of this command is as follows:
   (eglot-autoshutdown t))
 
 (use-package yasnippet
+  :disabled
   :config (yas-global-mode))
 
 (use-package yasnippet-snippets
+  :disabled
   :defer t)
 
 (use-package yasnippet-capf
+  :disabled
   :after cape
   :config
   (add-to-list 'completion-at-point-functions #'yasnippet-capf))
 
 (use-package consult-yasnippet
+  :disabled
   :after yasnippet
   :bind ("C-c s" . #'consult-yasnippet))
+
+(use-package tempel
+  ;; Require trigger prefix before template name when completing.
+  ;; :custom
+  ;; (tempel-trigger-prefix "<")
+  :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
+         ("M-*" . tempel-insert)
+         :map tempel-map
+         ("M-n" . tempel-next)
+         ("TAB" . tempel-next)
+         ("<backtab>" . tempel-previous)
+         ("M-p" . tempel-previous))
+  :init
+  ;; Setup completion at point
+  (defun tempel-setup-capf ()
+    ;; Add the Tempel Capf to `completion-at-point-functions'.
+    ;; `tempel-expand' only triggers on exact matches. Alternatively use
+    ;; `tempel-complete' if you want to see all matches, but then you
+    ;; should also configure `tempel-trigger-prefix', such that Tempel
+    ;; does not trigger too often when you don't expect it. NOTE: We add
+    ;; `tempel-expand' *before* the main programming mode Capf, such
+    ;; that it will be tried first.
+    (setq-local completion-at-point-functions
+                (cons #'tempel-expand
+                      completion-at-point-functions)))
+  (add-hook 'conf-mode-hook 'tempel-setup-capf)
+  (add-hook 'prog-mode-hook 'tempel-setup-capf)
+  (add-hook 'text-mode-hook 'tempel-setup-capf)
+  ;; Optionally make the Tempel templates available to Abbrev,
+  ;; either locally or globally. `expand-abbrev' is bound to C-x '.
+  (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
+  ;; (global-tempel-abbrev-mode)
+)
+
+(use-package tempel-collection)
+
+(use-package lsp-snippet-tempel
+  :after eglot
+  :ensure (:host github :repo "svaante/lsp-snippet")
+  :config
+  (lsp-snippet-tempel-eglot-init))
+
 
 (use-package consult-eglot
   :bind (:map eglot-mode-map ("M-g l" . consult-eglot-symbols)))
@@ -1604,11 +1628,13 @@ The DWIM behaviour of this command is as follows:
   (eldoc-echo-area-prefer-doc-buffer nil))
 
 (use-package eldoc-box
-  :hook (eglot-managed-mode . eldoc-box-hover-at-point-mode)
+  :after eglot
   :bind (:map eglot-mode-map
-              ([remap display-local-help] . #'eldoc-box-help-at-point))
+              ([remap display-local-help] . #'eldoc-box-help-at-point)
+              ([remap eldoc-doc-buffer] . #'eldoc-box-help-at-point))
   :custom
-  (eldoc-box-only-multi-line t)
+  ;; (eldoc-box-only-multi-line t)
+  (eldoc-box-max-pixel-height 500)
   (eldoc-box-clear-with-C-g t))
 
 (use-package ediff
@@ -1622,7 +1648,7 @@ The DWIM behaviour of this command is as follows:
 (use-package magit-section)
 
 (use-package magit
-  :after nerd-icons
+  :defer t
   :custom
   (magit-format-file-function #'magit-format-file-nerd-icons))
 
@@ -1646,7 +1672,7 @@ The DWIM behaviour of this command is as follows:
 
 (use-package consult-todo
   :bind (("M-s t" . consult-todo)
-         ("C-x p t" . consult-todo-project)))
+         ("C-x p C-t" . consult-todo-project)))
 
 (use-package magit-todos
   :disabled
