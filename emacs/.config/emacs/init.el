@@ -1,7 +1,7 @@
 ;;; init.el --- Emacs configuration file -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;; 
+;;
 
 ;;; Code:
 ;;;; Bootstrap elpaca
@@ -63,13 +63,13 @@
   (setq custom-file (locate-user-emacs-file "custom.el"))
   (when (file-exists-p custom-file)
     (load custom-file))
-  
+
   ;; User variables
   (defvar user-email-address "fabcontigiani@gmail.com")
   (defvar fab/org-directory (expand-file-name "~/Nextcloud/org/"))
   (defvar fab/bibliography-dir (concat fab/org-directory "biblio/"))
   (defvar fab/bibliography-file (concat fab/bibliography-dir "references.bib"))
-  
+
   :custom
   (user-full-name "Fabrizio Contigiani")
 
@@ -304,7 +304,7 @@ The DWIM behaviour of this command is as follows:
 (use-package org
   :defer t
   :ensure `(org :repo "https://code.tecosaur.net/tec/org-mode.git/"
-		:branch "dev")
+        :branch "dev")
   :hook
   (org-mode . (lambda ()
                 (auto-fill-mode)
@@ -1156,12 +1156,12 @@ The DWIM behaviour of this command is as follows:
   (indent-bars-treesit-ignore-blank-lines-types '("module"))
   ;; Add other languages as needed
   (indent-bars-treesit-scope '((python function_definition class_definition for_statement
-	  if_statement with_statement while_statement)))
+      if_statement with_statement while_statement)))
   ;; Note: wrap may not be needed if no-descend-list is enough
   ;;(indent-bars-treesit-wrap '((python argument_list parameters ; for python, as an example
-  ;;				      list list_comprehension
-  ;;				      dictionary dictionary_comprehension
-  ;;				      parenthesized_expression subscript)))
+  ;;                      list list_comprehension
+  ;;                      dictionary dictionary_comprehension
+  ;;                      parenthesized_expression subscript)))
   :hook (python-base-mode . indent-bars-mode))
 
 (use-package goggles
@@ -1582,7 +1582,6 @@ The DWIM behaviour of this command is as follows:
   :after eglot
   :config
   (lsp-snippet-tempel-eglot-init))
-
 
 (use-package consult-eglot
   :bind (:map eglot-mode-map ("M-g l" . consult-eglot-symbols)))
