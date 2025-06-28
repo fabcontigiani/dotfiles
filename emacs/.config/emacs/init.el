@@ -65,13 +65,15 @@
     (load custom-file))
 
   ;; User variables
-  (defvar user-email-address "fabcontigiani@gmail.com")
+  (defvar fab/dark-theme 'modus-vivendi-tinted)
+  (defvar fab/light-theme 'modus-operandi-tinted)
   (defvar fab/org-directory (expand-file-name "~/Nextcloud/org/"))
   (defvar fab/bibliography-dir (concat fab/org-directory "biblio/"))
   (defvar fab/bibliography-file (concat fab/bibliography-dir "references.bib"))
 
   :custom
   (user-full-name "Fabrizio Contigiani")
+  (user-mail-address "fabcontigiani@gmail.com")
 
   ;; Elisp compilation warnings
   (native-comp-async-report-warnings-errors 'silent "Don't report errors from async native compilation")
@@ -79,6 +81,8 @@
 
   ;; General configuration
   (use-short-answers t "Use y-or-n prompts by default")
+  (confirm-kill-emacs 'y-or-n-p "Ask for confirmation when quitting")
+  (warning-minimum-level :error)
   (truncate-lines t "Truncate lines instead of wrapping")
   (kill-whole-line t "Include newline character when killing a line.")
   (context-menu-mode t "Enable global context menu support")
@@ -104,7 +108,6 @@
   (indent-tabs-mode nil "Use spaces for indentation")
   (tab-width 4 "Use 4 spaces for indentation")
   (fill-column 80 "Set default line-wrap column to column 80")
-  (show-trailing-whitespace t "Hightlight spaces at ends of lines")
 
   ;; Performance tweaks
   (inhibit-compacting-font-caches t)
@@ -233,9 +236,11 @@ The DWIM behaviour of this command is as follows:
   :custom
   (eat-kill-buffer-on-exit t)
   (eat-shell-prompt-annotation-success-margin-indicator "")
-  :bind (:map project-prefix-map
-              ("t" . #'eat-project)
-              ("T" . #'eat-project-other-window)))
+  :bind (("C-c o t" . #'eat)
+         ("C-c o T" . #'eat-other-window)
+         :map project-prefix-map
+         ("t" . #'eat-project)
+         ("T" . #'eat-project-other-window)))
 
 (use-package isearch
   :ensure nil
@@ -683,7 +688,7 @@ The DWIM behaviour of this command is as follows:
   :ensure (:host github :repo "mickeynp/combobulate")
   :hook ((prog-mode . combobulate-mode))
   :custom
-  (combobulate-key-prefix "C-c o"))
+  (combobulate-key-prefix "C-c C-o"))
 
 (use-package link-hint
   :bind
@@ -882,7 +887,36 @@ The DWIM behaviour of this command is as follows:
 
 (use-package casual-editkit
   :ensure nil
-  :bind (("M-o" . casual-editkit-main-tmenu)))
+  :bind ("M-o" . casual-editkit-main-tmenu))
+
+(use-package casual-help
+  :disabled
+  :ensure nil
+  :after elisp-demos
+  :bind (:map help-mode-map
+              ("C-o" . #'casual-help-tmenu)
+              ("M-[" . #'help-go-back)
+              ("M-]" . #'help-go-forward)
+              ("p" . #'casual-lib-browse-backward-paragraph)
+              ("n" . #'casual-lib-browse-forward-paragraph)
+              ("P" . #'help-goto-previous-page)
+              ("N" . #'help-goto-next-page)
+              ("j" . #'forward-button)
+              ("k" . #'backward-button)))
+
+(use-package casual-man
+  :ensure nil
+  :after man
+  :bind (:map Man-mode-map
+              ("C-o" . #'casual-man-tmenu)
+              ("n" . #'casual-lib-browse-forward-paragraph)
+              ("p" . #'casual-lib-browse-backward-paragraph)
+              ("[" . #'Man-previous-section)
+              ("]" . #'Man-next-section)
+              ("j" . #'next-line)
+              ("k" . #'previous-line)
+              ("K" . #'Man-kill)
+              ("o" . #'casual-man-occur-options)))
 
 (use-package casual-make
   :ensure nil
@@ -894,22 +928,19 @@ The DWIM behaviour of this command is as follows:
   :bind ("C-M-;" . casual-avy-tmenu))
 
 (use-package symbol-overlay
-  :disabled
   :hook
   (prog-mode . symbol-overlay-mode)
   :bind
-  ("M-I" . #'symbol-overlay-put)
-  ("M-N" . #'symbol-overlay-switch-forward)
-  ("M-P" . #'symbol-overlay-switch-backward))
+  ("C-c ." . #'symbol-overlay-put)
+  ("M-[" . #'symbol-overlay-switch-forward)
+  ("M-]" . #'symbol-overlay-switch-backward))
 
 (use-package casual-symbol-overlay
-  :disabled
   :after (symbol-overlay)
   :config
   (keymap-set symbol-overlay-map "C-o" #'casual-symbol-overlay-tmenu))
 
 (use-package symbol-overlay-mc
-  :disabled
   :after (symbol-overlay casual-symbol-overlay)
   :config
   (symbol-overlay-mc-insert-into-casual-tmenu))
@@ -1113,12 +1144,31 @@ The DWIM behaviour of this command is as follows:
   (bufferlo-anywhere-mode))
 
 ;;;; Better themes
-(use-package ef-themes
+(use-package modus-themes
   :config
-  (ef-themes-select 'ef-owl)
+  (setopt modus-themes-common-palette-overrides modus-themes-preset-overrides-faint)
+  (modus-themes-select fab/dark-theme)
+  :custom
+  (modus-themes-mixed-fonts t)
+  (modus-themes-bold-constructs t)
+  (modus-themes-italic-constructs t)
+  (modus-themes-to-toggle `(,fab/dark-theme ,fab/light-theme))
+  (modus-themes-headings
+   '((1 . (1.2))
+     (2 . (1.15))
+     (agenda-date . (variable-pitch 1.15))
+     (agenda-structure . (variable-pitch 1.2))
+     (t . (1.1))))
+  :bind
+  ("<f9>" . #'modus-themes-toggle))
+
+(use-package ef-themes
+  :disabled
+  :config
+  (ef-themes-select fab/dark-theme)
   :custom
   (ef-themes-mixed-fonts t)
-  (ef-themes-to-toggle '(ef-owl ef-light))
+  (ef-themes-to-toggle `(,fab/dark-theme ,fab/light-theme))
   (ef-themes-headings
    '((1 . (1.2))
      (2 . (1.15))
@@ -1129,19 +1179,18 @@ The DWIM behaviour of this command is as follows:
   ("<f9>" . #'ef-themes-toggle))
 
 (use-package auto-dark
-  :after ef-themes
+  :after (:any modus-themes ef-themes)
   :config (auto-dark-mode)
   :custom
-  (auto-dark-dark-theme 'ef-owl)
-  (auto-dark-light-theme 'ef-light))
+  (auto-dark-dark-theme fab/dark-theme)
+  (auto-dark-light-theme fab/light-theme))
 
 (use-package minions
   :config
   (minions-mode))
 
 (use-package spacious-padding
-  :demand t
-  :after ef-themes
+  :after (:any modus-themes ef-themes)
   :config (spacious-padding-mode)
   :bind
   ("<f7>" . #'spacious-padding-mode))
@@ -1687,20 +1736,42 @@ The DWIM behaviour of this command is as follows:
   :commands (atomic-chrome-start-server))
 
 (use-package gptel
-  :commands (gptel)
   :config
   (delete (assoc "ChatGPT" gptel--known-backends) gptel--known-backends)
   (setq gptel-model 'gpt-4.1
-        gptel-backend (gptel-make-gh-copilot "Copilot")))
+        gptel-backend (gptel-make-gh-copilot "Copilot"))
+  :bind
+  ("C-c g g" . #'gptel)
+  ("C-c g a" . #'gptel-add) ; region
+  ("C-c g f" . #'gptel-add-file))
 
 (use-package gptel-quick
   :ensure (:host github :repo "karthink/gptel-quick")
-  :after embark
-  :bind (:map embark-general-map
-              ("?" . #'gptel-quick)))
+  :after (embark gptel)
+  :bind (("C-c g q" . #'gptel-quick)
+         :map embark-general-map
+         ("?" . #'gptel-quick)))
 
 (use-package copilot
-  :commands (copilot-mode))
+  :init
+  (defun fab/toggle-copilot-mode ()
+    "Toggle copilot-mode."
+    (interactive)
+    (if (copilot-mode 'toggle)
+        (message "Copilot mode enabled")
+      (message "Copilot mode disabled")))
+  :bind
+  (("C-c g t" . #'fab/toggle-copilot-mode)
+   :map copilot-mode-map
+   ("C-c g c" . #'copilot-complete)
+   ("C-c g k" . #'copilot-clear-overlay)
+   ("C-M-i" . #'copilot-accept-completion)
+   ("C-c g b" . #'copilot-panel-complete)
+   ("C-c g l" . #'copilot-accept-completion-by-line)
+   ("C-c g w" . #'copilot-accept-completion-by-word)
+   ("C-c g h" . #'copilot-accept-completion-by-paragraph)
+   ("C-c g n" . #'copilot-next-completion)
+   ("C-c g p" . #'copilot-previous-completion)))
 
 ;;;; Languages
 (use-package markdown-mode
