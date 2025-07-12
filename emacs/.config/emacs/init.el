@@ -65,8 +65,8 @@
     (load custom-file))
 
   ;; User variables
-  (defvar fab/dark-theme 'modus-vivendi-tinted)
-  (defvar fab/light-theme 'modus-operandi-tinted)
+  (defvar fab/dark-theme 'ef-dark)
+  (defvar fab/light-theme 'ef-light)
   (defvar fab/org-directory (expand-file-name "~/Nextcloud/org/"))
   (defvar fab/bibliography-dir (concat fab/org-directory "biblio/"))
   (defvar fab/bibliography-file (concat fab/bibliography-dir "references.bib"))
@@ -89,10 +89,12 @@
   (message-truncate-lines nil "Don't truncate messages in the echo area")
   (cursor-in-non-selected-windows nil "Hide cursor in inactive windows")
   (ring-bell-function 'ignore "Disable terminal bell")
-  (max-mini-window-height 10 "Limit minibuffer height to 10 lines")
+  (max-mini-window-height 16 "Limit minibuffer height to 16 lines")
+  (next-screen-context-lines 16 "Keep 16 visible lines when scrolling")
   (enable-recursive-minibuffers t "Allow minibuffer commands to be called in the minibuffer")
   (use-dialog-box nil "Don't pop up UI dialogs when prompting")
   (load-prefer-newer t "Load from source files if they are newer than bytecode files")
+  (text-mode-ispell-word-completion nil "Disable Ispell completion function.")
   (read-extended-command-predicate #'command-completion-default-include-p "Hide commands in M-x which do not work in the current mode.")
   (large-file-warning-threshold (* 100 (expt 2 20)) "Warn about 100MB+ files")
 
@@ -117,7 +119,7 @@
   (frame-resize-pixelwise t)
   (global-auto-revert-non-file-buffers t "Revert Dired and other buffers")
   (tab-always-indent 'complete "Enable indentation+completion using the TAB key")
-  (tab-first-completion 'word-or-paren-or-punct)
+  (tab-first-completion 'word)
   ;; (completion-cycle-threshold 3 "TAB cycle if there are only few candidates")
   (backup-directory-alist `(("." . ,(concat user-emacs-directory "backups"))))
 
@@ -170,7 +172,6 @@ The DWIM behaviour of this command is as follows:
   (keymap-global-set "<Bonus-lsb>" #'previous-buffer)
   (keymap-global-set "C-]" #'next-buffer)
   :bind
-  ("M-\"" . #'fixup-whitespace)
   ("C-x k" . #'kill-current-buffer)
   ("C-g" . #'fab/keyboard-quit-dwim))
 
@@ -186,7 +187,6 @@ The DWIM behaviour of this command is as follows:
   :ensure nil
   :hook
   (eshell-mode . fab/setup-eshell-outline-regexp)
-  (eshell-mode . completion-preview-mode)
   :init
   (defun fab/setup-eshell-outline-regexp () ""
          (setq-local outline-regexp eshell-prompt-regexp))
@@ -198,13 +198,20 @@ The DWIM behaviour of this command is as follows:
   (eshell-scroll-to-bottom-on-input 'this)
   (eshell-history-size 1024)
   (eshell-hist-ignoredups t)
-  (eshell-pushd-dunique t))
+  (eshell-pushd-dunique t)
+  :bind
+  ("C-c o e" . eshell))
 
 (use-package exec-path-from-shell
   :config
   (exec-path-from-shell-initialize)
   :custom
   (exec-path-from-shell-arguments nil))
+
+(use-package load-bash-alias
+  :commands (load-bash-alias-into-eshell)
+  :custom
+  (load-bash-alias-additional-aliases-files "~/.bash_aliases"))
 
 (use-package eshell-syntax-highlighting
   :after eshell
@@ -214,9 +221,14 @@ The DWIM behaviour of this command is as follows:
 (use-package eshell-prompt-extras
   :after eshell
   :custom
-  (eshell-prompt-function 'epe-theme-multiline-with-status)
-  (epe-path-style 'full)
+  (eshell-prompt-function 'epe-theme-lambda)
+  (epe-path-style 'fish)
   (epe-show-git-status-extended t))
+
+(use-package esh-help
+  :after eshell
+  :config
+  (setup-esh-help-eldoc))
 
 (use-package bash-completion
   :init
@@ -237,10 +249,8 @@ The DWIM behaviour of this command is as follows:
   (eat-kill-buffer-on-exit t)
   (eat-shell-prompt-annotation-success-margin-indicator "")
   :bind (("C-c o t" . #'eat)
-         ("C-c o T" . #'eat-other-window)
          :map project-prefix-map
-         ("t" . #'eat-project)
-         ("T" . #'eat-project-other-window)))
+         ("t" . #'eat-project)))
 
 (use-package isearch
   :ensure nil
@@ -260,7 +270,9 @@ The DWIM behaviour of this command is as follows:
           "Output\\*$"
           "\\*Async Shell Command\\*"
           help-mode
-          compilation-mode))
+          compilation-mode
+          eat-mode
+          "\\*eshell\\*"))
   :init
   (popper-mode 1)
   (popper-tab-line-mode 1)
@@ -289,7 +301,7 @@ The DWIM behaviour of this command is as follows:
 
 (use-package dired-sidebar
   :bind
-  (("C-c t" . dired-sidebar-toggle-sidebar))
+  (("C-c t b" . dired-sidebar-toggle-sidebar))
   :custom
   (dired-sidebar-theme 'nerd-icons))
 
@@ -354,7 +366,7 @@ The DWIM behaviour of this command is as follows:
         '((sequence "TODO(t)" "WAIT(w!)" "|" "CANCEL(c!)" "DONE(d!)")))
   (org-pretty-entities t)
   (org-pretty-entities-include-sub-superscripts nil)
-  (org-startup-with-latex-preview t)
+  ;; (org-startup-with-latex-preview t)
   (org-startup-indented t)
   (org-startup-folded nil)
   (org-cycle-hide-drawers t)
@@ -372,8 +384,10 @@ The DWIM behaviour of this command is as follows:
                                          org-attach-id-uuid-folder-format
                                          org-attach-id-fallback-folder-format))
   :custom-face
-  (org-block ((t (:background nil))))
+  (org-block ((t (:background unspecified))))
   (org-document-title ((t (:family "Iosevka Etoile" :height 1.5))))
+  :bind
+  ("C-c a" . #'org-agenda)
   )
 
 (use-package org-latex-preview
@@ -417,16 +431,6 @@ The DWIM behaviour of this command is as follows:
   :ensure (:host github :repo "isamert/corg.el")
   :hook (org-mode . corg-setup))
 
-(use-package org-download
-  :disabled ; Emacs >= 29 -> `yank-media'
-  :config
-  (setq org-download-annotate-function (lambda (_)  "Return empty string" ""))
-  :custom
-  (org-download-method 'attach)
-  :bind (:map org-mode-map
-              ("C-c s p" . org-download-clipboard)
-              ("C-c s s" . org-download-screenshot)))
-
 ;;;; Better undo-redo
 (use-package undo-fu
   :custom
@@ -462,6 +466,7 @@ The DWIM behaviour of this command is as follows:
 
 ;;;; Better help
 (use-package helpful
+  :disabled
   :bind
   ([remap describe-function] . helpful-function)
   ([remap describe-command] . helpful-command)
@@ -473,9 +478,8 @@ The DWIM behaviour of this command is as follows:
   (helpful-callable helpful-macro))
 
 (use-package elisp-demos
-  :after helpful
   :config
-  (advice-add 'helpful-update :after #'elisp-demos-advice-helpful-update))
+  (advice-add 'describe-function-1 :after #'elisp-demos-advice-describe-function-1))
 
 ;;;; Better minibuffer
 (use-package vertico
@@ -635,7 +639,7 @@ The DWIM behaviour of this command is as follows:
   (add-to-list 'consult-preview-variables '(org-startup-indented . nil))
 
   ;; Disable automatic latex preview when using consult live preview
-  (add-to-list 'consult-preview-variables '(org-startup-with-latex-preview . nil))
+  ;; (add-to-list 'consult-preview-variables '(org-startup-with-latex-preview . nil))
   )
 
 (use-package consult-dir
@@ -685,10 +689,11 @@ The DWIM behaviour of this command is as follows:
          ("C-;" . avy-goto-char-timer))))
 
 (use-package combobulate
+  :disabled
   :ensure (:host github :repo "mickeynp/combobulate")
-  :hook ((prog-mode . combobulate-mode))
+  :hook prog-mode
   :custom
-  (combobulate-key-prefix "C-c C-o"))
+  (combobulate-key-prefix "C-c c"))
 
 (use-package link-hint
   :bind
@@ -701,12 +706,16 @@ The DWIM behaviour of this command is as follows:
 (use-package multiple-cursors
   :bind
   ("C->" . mc/mark-next-like-this)
-  ("C-<" . mc/mark-previous-line-this)
+  ("C-<" . mc/mark-previous-like-this)
   ("C-c C-<" . mc/mark-all-like-this)
   ("C-S-c C-S-c" . mc/edit-lines))
 
 (use-package corfu
   ;; Optional customizations
+  :hook
+  (eshell-mode . (lambda ()
+                   (setq-local corfu-auto nil)
+                   (corfu-mode)))
   ;; :custom
   ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   ;; (corfu-auto t)                 ;; Enable auto completion
@@ -737,23 +746,7 @@ The DWIM behaviour of this command is as follows:
 (use-package cape
   ;; Bind dedicated completion commands
   ;; Alternative prefix keys: C-c p, M-p, M-+, ...
-  :bind (("C-c p p" . completion-at-point) ;; capf
-         ("C-c p t" . complete-tag)        ;; etags
-         ("C-c p d" . cape-dabbrev)        ;; or dabbrev-completion
-         ("C-c p h" . cape-history)
-         ("C-c p f" . cape-file)
-         ("C-c p k" . cape-keyword)
-         ("C-c p s" . cape-elisp-symbol)
-         ("C-c p e" . cape-elisp-block)
-         ("C-c p a" . cape-abbrev)
-         ("C-c p l" . cape-line)
-         ("C-c p w" . cape-dict)
-         ("C-c p :" . cape-emoji)
-         ("C-c p \\" . cape-tex)
-         ("C-c p _" . cape-tex)
-         ("C-c p ^" . cape-tex)
-         ("C-c p &" . cape-sgml)
-         ("C-c p r" . cape-rfc1345))
+  :bind (("C-c p" . cape-prefix-map))
   :init
   ;; Add to the global default value of `completion-at-point-functions' which is
   ;; used by `completion-at-point'.  The order of the functions matters, the
@@ -762,9 +755,9 @@ The DWIM behaviour of this command is as follows:
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-elisp-block)
-  ;;(add-to-list 'completion-at-point-functions #'cape-history)
-  ;;(add-to-list 'completion-at-point-functions #'cape-keyword)
-  ;;(add-to-list 'completion-at-point-functions #'cape-tex)
+  (add-to-list 'completion-at-point-functions #'cape-history)
+  (add-to-list 'completion-at-point-functions #'cape-keyword)
+  (add-to-list 'completion-at-point-functions #'cape-tex)
   ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
   ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
   ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
@@ -879,18 +872,23 @@ The DWIM behaviour of this command is as follows:
 
 (use-package casual-agenda
   :ensure nil
-  :bind (:map
-         org-agenda-mode-map
-         ("C-o" . casual-agenda-tmenu)
-         ("M-j" . org-agenda-clock-goto) ; optional
-         ("J" . bookmark-jump))) ; optional
+  :after org
+  :bind (:map org-agenda-mode-map
+              ("C-o" . casual-agenda-tmenu)
+              ("M-j" . org-agenda-clock-goto) ; optional
+              ("J" . bookmark-jump))) ; optional
 
 (use-package casual-editkit
   :ensure nil
   :bind ("M-o" . casual-editkit-main-tmenu))
 
+(use-package casual-eshell
+  :ensure nil
+  :after eshell
+  :bind (:map eshell-mode-map
+              ("C-o" . casual-eshell-tmenu)))
+
 (use-package casual-help
-  :disabled
   :ensure nil
   :after elisp-demos
   :bind (:map help-mode-map
@@ -931,7 +929,7 @@ The DWIM behaviour of this command is as follows:
   :hook
   (prog-mode . symbol-overlay-mode)
   :bind
-  ("C-c ." . #'symbol-overlay-put)
+  ("M-\"" . #'symbol-overlay-put)
   ("M-[" . #'symbol-overlay-switch-forward)
   ("M-]" . #'symbol-overlay-switch-backward))
 
@@ -944,6 +942,17 @@ The DWIM behaviour of this command is as follows:
   :after (symbol-overlay casual-symbol-overlay)
   :config
   (symbol-overlay-mc-insert-into-casual-tmenu))
+
+(use-package symbols-outline
+  :bind
+  ("C-c t s" . #'symbols-outline-show)
+  :hook
+  (symbols-outline-mode . symbols-outline-follow-mode)
+  :custom
+  (symbols-outline-fetch-fn #'symbols-outline-lsp-fetch)
+  (symbols-outline-window-position 'left)
+  (symbols-outline-no-other-window nil)
+  (symbols-outline-no-delete-other-window nil))
 
 (use-package tab-bar
   :ensure nil
@@ -1145,6 +1154,7 @@ The DWIM behaviour of this command is as follows:
 
 ;;;; Better themes
 (use-package modus-themes
+  :disabled
   :config
   (setopt modus-themes-common-palette-overrides modus-themes-preset-overrides-faint)
   (modus-themes-select fab/dark-theme)
@@ -1163,8 +1173,26 @@ The DWIM behaviour of this command is as follows:
   ("<f9>" . #'modus-themes-toggle))
 
 (use-package ef-themes
-  :disabled
   :config
+  (defun fab/ef-themes-custom-faces ()
+    "My customizations on top of the Ef themes.
+This function is added to the `ef-themes-post-load-hook'."
+    (ef-themes-with-colors
+      (custom-set-faces
+       `(symbol-overlay-default-face ((,c :background ,bg-inactive)))
+       `(symbol-overlay-face-1 ((,c :background ,bg-blue-subtle :foreground ,fg-main)))
+       `(symbol-overlay-face-2 ((,c :background ,bg-magenta-subtle :foreground ,fg-main)))
+       `(symbol-overlay-face-3 ((,c :background ,bg-yellow-subtle :foreground ,fg-main)))
+       `(symbol-overlay-face-4 ((,c :background ,bg-cyan-subtle :foreground ,fg-main)))
+       `(symbol-overlay-face-5 ((,c :background ,bg-blue-intense :foreground ,fg-main)))
+       `(symbol-overlay-face-6 ((,c :background ,bg-magenta-intense :foreground ,fg-main)))
+       `(symbol-overlay-face-7 ((,c :background ,bg-yellow-intense :foreground ,fg-main)))
+       `(symbol-overlay-face-8 ((,c :background ,bg-cyan-intense :foreground ,fg-main)))
+       )))
+  (add-hook 'ef-themes-post-load-hook #'fab/ef-themes-custom-faces)
+  ;; Slightly less dark background
+  (setq ef-dark-palette-overrides
+        '((bg-main "#090909")))
   (ef-themes-select fab/dark-theme)
   :custom
   (ef-themes-mixed-fonts t)
@@ -1235,7 +1263,8 @@ The DWIM behaviour of this command is as follows:
   (hl-line-sticky-flag nil))
 
 (use-package olivetti
-  :hook (org-mode markdown-mode))
+  :bind
+  ("C-c t o" . olivetti-mode))
 
 (use-package logos
   :bind
@@ -1302,7 +1331,8 @@ The DWIM behaviour of this command is as follows:
                            (pdf-outline-minor-mode)
                            (pdf-outline-imenu-enable)
                            (pdf-annot-minor-mode)
-                           (pdf-view-themed-minor-mode))))
+                           (pdf-view-themed-minor-mode)
+                           (pdf-sync-minor-mode))))
 
 (use-package org-noter
   :custom
@@ -1317,6 +1347,7 @@ The DWIM behaviour of this command is as follows:
 (use-package denote
   :config
   (require 'consult-denote)
+  (denote-rename-buffer-mode)
   :custom
   (denote-directory (concat fab/org-directory "denote/"))
   :hook
@@ -1449,7 +1480,7 @@ The DWIM behaviour of this command is as follows:
                   :version (lambda (_) (require 'tex-site) AUCTeX-version))
   :mode ("\\.tex\\'" . LaTeX-mode)
   :hook
-  (TeX-after-compilation-finished-functions . TeX-revert-document-buffer)
+  ;; (TeX-after-compilation-finished-functions . TeX-revert-document-buffer)
   (LaTeX-mode . prettify-symbols-mode)
   :custom
   ;; (font-latex-fontify-script nil)
@@ -1487,6 +1518,11 @@ The DWIM behaviour of this command is as follows:
     (define-key TeX-mode-map "$" #'math-delimiters-insert))
   (with-eval-after-load 'cdlatex
     (define-key cdlatex-mode-map "$" nil)))
+
+(use-package auctex-cont-latexmk
+  :after auctex
+  :bind (:map LaTeX-mode-map
+              ("C-c k" . auctex-cont-latexmk-toggle)))
 
 (use-package cmake-mode
   :defer t)
@@ -1559,8 +1595,23 @@ The DWIM behaviour of this command is as follows:
   :config
   (add-to-list 'tramp-remote-path "~/.local/bin")
   (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+  (connection-local-set-profile-variables
+   'remote-direct-async-process
+   '((tramp-direct-async-process . t)))
+  (connection-local-set-profiles
+   '(:application tramp :protocol "rsync")
+   'remote-direct-async-process)
+  (with-eval-after-load 'compile
+    (remove-hook 'compilation-mode-hook
+                 #'tramp-compile-disable-ssh-controlmaster-options))
   :custom
-  (tramp-default-remote-shell "/bin/bash"))
+  (tramp-default-remote-shell "/bin/bash")
+  (remote-file-name-inhibit-locks t)
+  (tramp-use-scp-direct-remote-copying t)
+  (remote-file-name-inhibit-auto-save-visited t)
+  (tramp-copy-size-limit (* 1024 1024)) ; 1 MB
+  (tramp-verbose 2)
+  (tramp-default-method "rsync"))
 
 (use-package eglot
   :ensure nil ;; use built-in
@@ -1656,6 +1707,13 @@ The DWIM behaviour of this command is as follows:
         ("M-n" . #'flymake-goto-next-error)
         ("M-p" . #'flymake-goto-prev-error)))
 
+(use-package flyover
+  :disabled
+  :hook (flymake-mode)
+  :custom
+  (flyover-checkers '(flymake))
+  (flyover-use-theme-colors t))
+
 (use-package flymake-popon ;; alternative flymake-cursor
   :disabled
   :hook flymake-mode)
@@ -1691,7 +1749,14 @@ The DWIM behaviour of this command is as follows:
 (use-package magit
   :defer t
   :custom
+  (magit-tramp-pipe-stty-settings 'pty)
   (magit-format-file-function #'magit-format-file-nerd-icons))
+
+(use-package vc
+  :ensure nil
+  :defer t
+  :custom
+  (vc-follow-symlinks t))
 
 (use-package diff-hl
   :hook
@@ -1733,6 +1798,7 @@ The DWIM behaviour of this command is as follows:
   :commands (free-keys))
 
 (use-package atomic-chrome
+  :ensure (:host github :repo "KarimAziev/atomic-chrome")
   :commands (atomic-chrome-start-server))
 
 (use-package gptel
@@ -1752,6 +1818,15 @@ The DWIM behaviour of this command is as follows:
          :map embark-general-map
          ("?" . #'gptel-quick)))
 
+(use-package macher
+  :disabled
+  :after gptel
+  :ensure (:host github :repo "kmontag/macher")
+  :custom
+  (macher-action-buffer-ui 'org)
+  :config
+  (macher-install))
+
 (use-package copilot
   :init
   (defun fab/toggle-copilot-mode ()
@@ -1761,11 +1836,11 @@ The DWIM behaviour of this command is as follows:
         (message "Copilot mode enabled")
       (message "Copilot mode disabled")))
   :bind
-  (("C-c g t" . #'fab/toggle-copilot-mode)
+  (("C-c t g" . #'fab/toggle-copilot-mode)
    :map copilot-mode-map
    ("C-c g c" . #'copilot-complete)
    ("C-c g k" . #'copilot-clear-overlay)
-   ("C-M-i" . #'copilot-accept-completion)
+   ("M-<return>" . #'copilot-accept-completion)
    ("C-c g b" . #'copilot-panel-complete)
    ("C-c g l" . #'copilot-accept-completion-by-line)
    ("C-c g w" . #'copilot-accept-completion-by-word)
@@ -1797,6 +1872,10 @@ The DWIM behaviour of this command is as follows:
   :mode "\\.m\\'"
   :custom
   (matlab-shell-command-switches '("-nodesktop" "-nosplash")))
+
+(use-package rust-mode
+  :mode "\\.rs\\'"
+  :hook (rust-mode . eglot-ensure))
 
 ;;;; FPGA Suite
 (use-package verilog-ext
