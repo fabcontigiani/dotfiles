@@ -31,3 +31,5 @@ export MGLS_LICENSE_FILE="/opt/intelFPGA_lite/24.1std/licenses/questa/LR-239671_
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+
+. "$HOME/.cargo/env"
