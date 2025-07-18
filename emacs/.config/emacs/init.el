@@ -55,6 +55,9 @@
 ;;;;; Block until current queue processed.
 (elpaca-wait)
 
+(use-package on ;; Additional hooks for faster startup
+  :demand t)
+
 ;;;; Better Defaults
 (use-package emacs
   :ensure nil
@@ -65,11 +68,23 @@
     (load custom-file))
 
   ;; User variables
-  (defvar fab/dark-theme 'ef-dark)
+  (defvar fab/dark-theme 'ef-owl)
   (defvar fab/light-theme 'ef-light)
   (defvar fab/org-directory (expand-file-name "~/Nextcloud/org/"))
   (defvar fab/bibliography-dir (concat fab/org-directory "biblio/"))
   (defvar fab/bibliography-file (concat fab/bibliography-dir "references.bib"))
+
+  ;; User keymaps
+  (defvar-keymap fab/toggle-prefix-map :doc "My toggle prefix map.")
+  (defvar-keymap fab/open-prefix-map :doc "My open prefix map.")
+  (defvar-keymap fab/notes-prefix-map :doc "My notes prefix map.")
+  (defvar-keymap fab/gpt-prefix-map :doc "My GPT and LLM-related prefix map.")
+
+  :bind-keymap
+  ("C-c t" . fab/toggle-prefix-map)
+  ("C-c o" . fab/open-prefix-map)
+  ("C-c n" . fab/notes-prefix-map)
+  ("C-c g" . fab/gpt-prefix-map)
 
   :custom
   (user-full-name "Fabrizio Contigiani")
@@ -136,9 +151,10 @@
   (global-auto-revert-mode 1) ;; Revert buffers when the underlying file has changed
 
   ;; Font configuration
-  (set-face-attribute 'default nil :family "Iosevka" :height 130)
+  (set-face-attribute 'default nil :family "Iosevka" :height 120)
   (set-face-attribute 'fixed-pitch nil :family "Iosevka" :height 1.0)
   (set-face-attribute 'variable-pitch nil :family "Iosevka Aile" :height 1.0)
+  (set-face-attribute 'variable-pitch-text nil :family "Iosevka Aile" :height 1.0)
   (set-face-attribute 'fixed-pitch-serif nil :family "Iosevka Slab" :height 1.0)
 
   ;; Make C-g a bit more helpful, credit to Prot:
@@ -200,7 +216,7 @@ The DWIM behaviour of this command is as follows:
   (eshell-hist-ignoredups t)
   (eshell-pushd-dunique t)
   :bind
-  ("C-c o e" . eshell))
+  (:map fab/open-prefix-map ("e" . eshell)))
 
 (use-package exec-path-from-shell
   :config
@@ -248,7 +264,8 @@ The DWIM behaviour of this command is as follows:
   :custom
   (eat-kill-buffer-on-exit t)
   (eat-shell-prompt-annotation-success-margin-indicator "")
-  :bind (("C-c o t" . #'eat)
+  :bind (:map fab/open-prefix-map
+         ("t" . #'eat)
          :map project-prefix-map
          ("t" . #'eat-project)))
 
@@ -301,7 +318,8 @@ The DWIM behaviour of this command is as follows:
 
 (use-package dired-sidebar
   :bind
-  (("C-c t b" . dired-sidebar-toggle-sidebar))
+  (:map fab/toggle-prefix-map
+        ("b" . dired-sidebar-toggle-sidebar))
   :custom
   (dired-sidebar-theme 'nerd-icons))
 
@@ -313,9 +331,6 @@ The DWIM behaviour of this command is as follows:
   (trashed-use-header-line t)
   (trashed-sort-key '("Date deleted" . t))
   (trashed-date-format "%Y-%m-%d %H:%M:%S"))
-
-(use-package on ;; Additional hooks for faster startup
-  :defer t)
 
 ;;;; Org-mode
 (use-package org
@@ -366,7 +381,7 @@ The DWIM behaviour of this command is as follows:
         '((sequence "TODO(t)" "WAIT(w!)" "|" "CANCEL(c!)" "DONE(d!)")))
   (org-pretty-entities t)
   (org-pretty-entities-include-sub-superscripts nil)
-  ;; (org-startup-with-latex-preview t)
+  (org-startup-with-latex-preview t)
   (org-startup-indented t)
   (org-startup-folded nil)
   (org-cycle-hide-drawers t)
@@ -415,10 +430,6 @@ The DWIM behaviour of this command is as follows:
   ;; Enable consistent equation numbering
   (setq org-latex-preview-numbered t)
 
-  ;; Temp: Use temp dir instead of org-persist (until bug fix)
-  (setq org-latex-preview-cache 'temp
-        org-latex-preview-process-precompiled nil)
-
   ;; Bonus: Turn on live previews.  This shows you a live preview of a LaTeX
   ;; fragment and updates the preview in real-time as you edit it.
   ;; To preview only environments, set it to '(block edit-special) instead
@@ -445,7 +456,7 @@ The DWIM behaviour of this command is as follows:
 
 ;;;;; Undo tree
 (use-package vundo
-  :commands (vundo))
+  :bind ("C-c u" . #'vundo))
 
 ;;;; Line numbers
 (use-package display-line-numbers
@@ -480,6 +491,12 @@ The DWIM behaviour of this command is as follows:
 (use-package elisp-demos
   :config
   (advice-add 'describe-function-1 :after #'elisp-demos-advice-describe-function-1))
+
+(use-package whitespace
+  :ensure nil
+  :bind
+  (:map fab/toggle-prefix-map
+        ("w" . whitespace-mode)))
 
 ;;;; Better minibuffer
 (use-package vertico
@@ -639,7 +656,7 @@ The DWIM behaviour of this command is as follows:
   (add-to-list 'consult-preview-variables '(org-startup-indented . nil))
 
   ;; Disable automatic latex preview when using consult live preview
-  ;; (add-to-list 'consult-preview-variables '(org-startup-with-latex-preview . nil))
+  (add-to-list 'consult-preview-variables '(org-startup-with-latex-preview . nil))
   )
 
 (use-package consult-dir
@@ -652,7 +669,9 @@ The DWIM behaviour of this command is as follows:
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
    ("M-." . embark-dwim)        ;; good alternative: M-.
-   ("C-h B" . embark-bindings))  ;; alternative for `describe-bindings'
+   ("C-h B" . embark-bindings)  ;; alternative for `describe-bindings'
+   :map embark-symbol-map
+   ("%" . #'xref-find-references-and-replace))
   :init
   ;; Optionally replace the key help with a completing-read interface
   (setq prefix-help-command #'embark-prefix-help-command)
@@ -746,7 +765,7 @@ The DWIM behaviour of this command is as follows:
 (use-package cape
   ;; Bind dedicated completion commands
   ;; Alternative prefix keys: C-c p, M-p, M-+, ...
-  :bind (("C-c p" . cape-prefix-map))
+  :bind-keymap ("C-c p" . cape-prefix-map)
   :init
   ;; Add to the global default value of `completion-at-point-functions' which is
   ;; used by `completion-at-point'.  The order of the functions matters, the
@@ -778,7 +797,6 @@ The DWIM behaviour of this command is as follows:
 
 ;;;; Better Scrolling
 (use-package ultra-scroll
-  :ensure (:host github :repo "jdtsmith/ultra-scroll")
   :custom
   (scroll-conservatively 101)
   (scroll-margin 0)
@@ -945,7 +963,8 @@ The DWIM behaviour of this command is as follows:
 
 (use-package symbols-outline
   :bind
-  ("C-c t s" . #'symbols-outline-show)
+  (:map fab/toggle-prefix-map
+        ("s" . #'symbols-outline-show))
   :hook
   (symbols-outline-mode . symbols-outline-follow-mode)
   :custom
@@ -1178,21 +1197,20 @@ The DWIM behaviour of this command is as follows:
     "My customizations on top of the Ef themes.
 This function is added to the `ef-themes-post-load-hook'."
     (ef-themes-with-colors
-      (custom-set-faces
-       `(symbol-overlay-default-face ((,c :background ,bg-inactive)))
-       `(symbol-overlay-face-1 ((,c :background ,bg-blue-subtle :foreground ,fg-main)))
-       `(symbol-overlay-face-2 ((,c :background ,bg-magenta-subtle :foreground ,fg-main)))
-       `(symbol-overlay-face-3 ((,c :background ,bg-yellow-subtle :foreground ,fg-main)))
-       `(symbol-overlay-face-4 ((,c :background ,bg-cyan-subtle :foreground ,fg-main)))
-       `(symbol-overlay-face-5 ((,c :background ,bg-blue-intense :foreground ,fg-main)))
-       `(symbol-overlay-face-6 ((,c :background ,bg-magenta-intense :foreground ,fg-main)))
-       `(symbol-overlay-face-7 ((,c :background ,bg-yellow-intense :foreground ,fg-main)))
-       `(symbol-overlay-face-8 ((,c :background ,bg-cyan-intense :foreground ,fg-main)))
-       )))
+     (custom-set-faces
+      `(gptel-context-highlight-face ((,c :background ,bg-alt)))
+      `(gptel-context-deletion-face ((,c :background ,bg-removed)))
+      `(symbol-overlay-default-face ((,c :background ,bg-dim)))
+      `(symbol-overlay-face-1 ((,c :background ,bg-blue-subtle :foreground ,fg-main)))
+      `(symbol-overlay-face-2 ((,c :background ,bg-magenta-subtle :foreground ,fg-main)))
+      `(symbol-overlay-face-3 ((,c :background ,bg-yellow-subtle :foreground ,fg-main)))
+      `(symbol-overlay-face-4 ((,c :background ,bg-cyan-subtle :foreground ,fg-main)))
+      `(symbol-overlay-face-5 ((,c :background ,bg-blue-intense :foreground ,fg-main)))
+      `(symbol-overlay-face-6 ((,c :background ,bg-magenta-intense :foreground ,fg-main)))
+      `(symbol-overlay-face-7 ((,c :background ,bg-yellow-intense :foreground ,fg-main)))
+      `(symbol-overlay-face-8 ((,c :background ,bg-cyan-intense :foreground ,fg-main)))
+      )))
   (add-hook 'ef-themes-post-load-hook #'fab/ef-themes-custom-faces)
-  ;; Slightly less dark background
-  (setq ef-dark-palette-overrides
-        '((bg-main "#090909")))
   (ef-themes-select fab/dark-theme)
   :custom
   (ef-themes-mixed-fonts t)
@@ -1218,8 +1236,8 @@ This function is added to the `ef-themes-post-load-hook'."
   (minions-mode))
 
 (use-package spacious-padding
-  :after (:any modus-themes ef-themes)
-  :config (spacious-padding-mode)
+  :config
+  (spacious-padding-mode)
   :bind
   ("<f7>" . #'spacious-padding-mode))
 
@@ -1263,8 +1281,8 @@ This function is added to the `ef-themes-post-load-hook'."
   (hl-line-sticky-flag nil))
 
 (use-package olivetti
-  :bind
-  ("C-c t o" . olivetti-mode))
+  :bind (:map fab/toggle-prefix-map
+         ("o" . olivetti-mode)))
 
 (use-package logos
   :bind
@@ -1334,6 +1352,12 @@ This function is added to the `ef-themes-post-load-hook'."
                            (pdf-view-themed-minor-mode)
                            (pdf-sync-minor-mode))))
 
+(use-package nov
+  :mode ("\\.epub\\'" . nov-mode)
+  :hook (nov-mode . olivetti-mode)
+  :config
+  (setopt nov-text-width fill-column))
+
 (use-package org-noter
   :custom
   (org-noter-always-create-frame nil)
@@ -1342,7 +1366,8 @@ This function is added to the `ef-themes-post-load-hook'."
   (org-noter-auto-save-last-location t)
   (org-noter-disable-narrowing t)
   (org-noter-highlight-selected-text t)
-  :bind ("C-c n p" . org-noter))
+  :bind (:map fab/notes-prefix-map
+              ("p" . org-noter)))
 
 (use-package denote
   :config
@@ -1355,23 +1380,24 @@ This function is added to the `ef-themes-post-load-hook'."
   :custom-face
   (denote-faces-link ((t (:slant italic))))
   :bind
-  (("C-c n n" . denote-create-note)
-   ("C-c n o" . denote-open-or-create)
-   ("C-c n d" . denote-date)
-   ("C-c n i" . denote-link-or-create)
-   ("C-c n l" . denote-find-link)
-   ("C-c n b" . denote-find-backlink)
-   ("C-c n r" . denote-rename-file)
-   ("C-c n R" . denote-rename-file-using-front-matter)
-   ("C-c n k" . denote-rename-file-keywords)))
+  (:map fab/notes-prefix-map
+        ("n" . denote-create-note)
+        ("o" . denote-open-or-create)
+        ("d" . denote-date)
+        ("i" . denote-link-or-create)
+        ("l" . denote-find-link)
+        ("b" . denote-find-backlink)
+        ("r" . denote-rename-file)
+        ("R" . denote-rename-file-using-front-matter)
+        ("k" . denote-rename-file-keywords)))
 
 (use-package denote-journal
   :hook
   (calendar-mode . denote-journal-calendar-mode)
   :config
   (denote-rename-buffer-mode t)
-  :bind
-  ("C-c n j" . #'denote-journal-new-or-existing-entry))
+  :bind (:map fab/notes-prefix-map
+              ("j" . #'denote-journal-new-or-existing-entry)))
 
 (use-package denote-org
   :after denote)
@@ -1381,9 +1407,9 @@ This function is added to the `ef-themes-post-load-hook'."
   (consult-denote-mode)
   :custom
   (consult-denote-grep-command #'consult-ripgrep)
-  :bind
-  (("C-c n f" . consult-denote-find)
-   ("C-c n g" . consult-denote-grep)))
+  :bind (:map fab/notes-prefix-map
+              ("f" . consult-denote-find)
+              ("g" . consult-denote-grep)))
 
 (use-package citar
   :hook ((LaTeX-mode org-mode) . citar-capf-setup)
@@ -1432,9 +1458,10 @@ This function is added to the `ef-themes-post-load-hook'."
   (org-cite-activate-processor 'citar)
   (citar-bibliography fab/bibliography-file)
   (citar-library-paths `(,fab/bibliography-dir))
-  :bind
-  ("C-c n c o" . citar-open)
-  (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
+  :bind (:map fab/notes-prefix-map
+         ("c o" . citar-open)
+         :map org-mode-map
+         ("C-c b" . #'org-cite-insert)))
 
 (use-package citar-embark
   :after (citar embark)
@@ -1456,17 +1483,18 @@ This function is added to the `ef-themes-post-load-hook'."
   (citar-denote-title-format-authors 1)
   (citar-denote-title-format-andstr "and")
   :bind
-  (("C-c n c c" . citar-create-note)
-   ("C-c n c n" . citar-denote-open-note)
-   ("C-c n c d" . citar-denote-dwim)
-   ("C-c n c e" . citar-denote-open-reference-entry)
-   ("C-c n c a" . citar-denote-add-citekey)
-   ("C-c n c k" . citar-denote-remove-citekey)
-   ("C-c n c r" . citar-denote-find-reference)
-   ("C-c n c l" . citar-denote-link-reference)
-   ("C-c n c f" . citar-denote-find-citation)
-   ("C-c n c x" . citar-denote-nocite)
-   ("C-c n c y" . citar-denote-cite-nocite)))
+  (:map fab/notes-prefix-map
+   ("c c" . citar-create-note)
+   ("c n" . citar-denote-open-note)
+   ("c d" . citar-denote-dwim)
+   ("c e" . citar-denote-open-reference-entry)
+   ("c a" . citar-denote-add-citekey)
+   ("c k" . citar-denote-remove-citekey)
+   ("c r" . citar-denote-find-reference)
+   ("c l" . citar-denote-link-reference)
+   ("c f" . citar-denote-find-citation)
+   ("c x" . citar-denote-nocite)
+   ("c y" . citar-denote-cite-nocite)))
 
 (use-package auctex
   :ensure (auctex :pre-build (("./autogen.sh")
@@ -1522,7 +1550,7 @@ This function is added to the `ef-themes-post-load-hook'."
 (use-package auctex-cont-latexmk
   :after auctex
   :bind (:map LaTeX-mode-map
-              ("C-c k" . auctex-cont-latexmk-toggle)))
+              ("C-c t k" . auctex-cont-latexmk-toggle)))
 
 (use-package cmake-mode
   :defer t)
@@ -1573,13 +1601,18 @@ This function is added to the `ef-themes-post-load-hook'."
 ;; Enable repeat mode for more ergonomic `dape' use
 (use-package repeat
   :ensure nil
-  :config
-  (repeat-mode))
+  :hook on-first-input)
 
 (use-package treesit
   :ensure nil
   :custom
-  (treesit-font-lock-level 4))
+  (major-mode-remap-alist
+   '((c++-mode . c++-ts-mode)))
+  (treesit-language-source-alist
+   '((c "https://github.com/tree-sitter/tree-sitter-c")
+     (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
+	 (python "https://github.com/tree-sitter/tree-sitter-python")))
+  (treesit-font-lock-level 3))
 
 (use-package treesit-fold
   :ensure (:host github :repo "emacs-tree-sitter/treesit-fold")
@@ -1612,6 +1645,11 @@ This function is added to the `ef-themes-post-load-hook'."
   (tramp-copy-size-limit (* 1024 1024)) ; 1 MB
   (tramp-verbose 2)
   (tramp-default-method "rsync"))
+
+(use-package project
+  :ensure nil
+  :custom
+  (project-mode-line t))
 
 (use-package eglot
   :ensure nil ;; use built-in
@@ -1806,20 +1844,20 @@ This function is added to the `ef-themes-post-load-hook'."
   (delete (assoc "ChatGPT" gptel--known-backends) gptel--known-backends)
   (setq gptel-model 'gpt-4.1
         gptel-backend (gptel-make-gh-copilot "Copilot"))
-  :bind
-  ("C-c g g" . #'gptel)
-  ("C-c g a" . #'gptel-add) ; region
-  ("C-c g f" . #'gptel-add-file))
+  :bind (:map fab/gpt-prefix-map
+              ("g" . #'gptel)
+              ("a" . #'gptel-add) ; region
+              ("f" . #'gptel-add-file)))
 
 (use-package gptel-quick
   :ensure (:host github :repo "karthink/gptel-quick")
   :after (embark gptel)
-  :bind (("C-c g q" . #'gptel-quick)
+  :bind (:map fab/gpt-prefix-map
+         ("q" . #'gptel-quick)
          :map embark-general-map
          ("?" . #'gptel-quick)))
 
 (use-package macher
-  :disabled
   :after gptel
   :ensure (:host github :repo "kmontag/macher")
   :custom
@@ -1835,18 +1873,18 @@ This function is added to the `ef-themes-post-load-hook'."
     (if (copilot-mode 'toggle)
         (message "Copilot mode enabled")
       (message "Copilot mode disabled")))
-  :bind
-  (("C-c t g" . #'fab/toggle-copilot-mode)
-   :map copilot-mode-map
-   ("C-c g c" . #'copilot-complete)
-   ("C-c g k" . #'copilot-clear-overlay)
-   ("M-<return>" . #'copilot-accept-completion)
-   ("C-c g b" . #'copilot-panel-complete)
-   ("C-c g l" . #'copilot-accept-completion-by-line)
-   ("C-c g w" . #'copilot-accept-completion-by-word)
-   ("C-c g h" . #'copilot-accept-completion-by-paragraph)
-   ("C-c g n" . #'copilot-next-completion)
-   ("C-c g p" . #'copilot-previous-completion)))
+  :bind (:map fab/toggle-prefix-map
+        ("g" . #'fab/toggle-copilot-mode)
+        :map copilot-completion-map
+        ("C-g" . #'copilot-clear-overlay)
+        ("<tab>" . #'copilot-accept-completion)
+        ("M-<return>" . #'copilot-accept-completion)
+        ("C-M-g" . #'copilot-panel-complete)
+        ("C-e" . #'copilot-accept-completion-by-line)
+        ("M-f" . #'copilot-accept-completion-by-word)
+        ("M-}" . #'copilot-accept-completion-by-paragraph)
+        ("M-n" . #'copilot-next-completion)
+        ("M-p" . #'copilot-previous-completion)))
 
 ;;;; Languages
 (use-package markdown-mode
