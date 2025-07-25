@@ -26,6 +26,10 @@ if [ -d "$HOME/.local/bin" ] ; then
     PATH="$HOME/.local/bin:$PATH"
 fi
 
+if [ -d "/opt/adb-fastboot/platform-tools" ] ; then
+ export PATH="/opt/adb-fastboot/platform-tools:$PATH"
+fi
+
 export QSYS_ROOTDIR="/opt/intelFPGA_lite/24.1std/quartus/sopc_builder/bin"
 export MGLS_LICENSE_FILE="/opt/intelFPGA_lite/24.1std/licenses/questa/LR-239671_License.dat" 
 
