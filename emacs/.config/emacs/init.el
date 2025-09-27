@@ -151,11 +151,11 @@
   (global-auto-revert-mode 1) ;; Revert buffers when the underlying file has changed
 
   ;; Font configuration
-  (set-face-attribute 'default nil :family "Iosevka" :height 120)
-  (set-face-attribute 'fixed-pitch nil :family "Iosevka" :height 1.0)
-  (set-face-attribute 'variable-pitch nil :family "Iosevka Aile" :height 1.0)
-  (set-face-attribute 'variable-pitch-text nil :family "Iosevka Aile" :height 1.0)
-  (set-face-attribute 'fixed-pitch-serif nil :family "Iosevka Slab" :height 1.0)
+  (set-face-attribute 'default nil :family "IBM Plex Mono" :height 110)
+  (set-face-attribute 'fixed-pitch nil :family "IBM Plex Mono" :height 1.0)
+  (set-face-attribute 'variable-pitch nil :family "IBM Plex Sans" :height 1.0)
+  (set-face-attribute 'variable-pitch-text nil :family "IBM Plex Sans" :height 1.0)
+  (set-face-attribute 'fixed-pitch-serif nil :family "IBM Plex Mono" :height 1.0)
 
   ;; Make C-g a bit more helpful, credit to Prot:
   ;; https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration
@@ -400,7 +400,7 @@ The DWIM behaviour of this command is as follows:
                                          org-attach-id-fallback-folder-format))
   :custom-face
   (org-block ((t (:background unspecified))))
-  (org-document-title ((t (:family "Iosevka Etoile" :height 1.5))))
+  (org-document-title ((t (:family "IBM Plex Serif" :height 1.5))))
   :bind
   (:map fab/open-prefix-map
         ("a" . #'org-agenda)
@@ -1512,15 +1512,12 @@ This function is added to the `ef-themes-post-load-hook'."
         ("c y" . citar-denote-cite-nocite)))
 
 (use-package auctex
-  :ensure (auctex :pre-build (("./autogen.sh")
-                              ("./configure"
-                               "--without-texmf-dir"
-                               "--with-packagelispdir=./"
-                               "--with-packagedatadir=./")
-                              ("make"))
-                  :build (:not elpaca--compile-info) ;; Make will take care of this step
-                  :files ("*.el" "doc/*.info*" "etc" "images" "latex" "style")
-                  :version (lambda (_) (require 'tex-site) AUCTeX-version))
+  :ensure
+  (auctex :repo "https://git.savannah.gnu.org/git/auctex.git" :branch "main"
+        :pre-build (("make" "elpa"))
+        :build (:not elpaca--compile-info) ;; Make will take care of this step
+        :files ("*.el" "doc/*.info*" "etc" "images" "latex" "style")
+        :version (lambda (_) (require 'auctex) AUCTeX-version))
   :mode ("\\.tex\\'" . LaTeX-mode)
   :hook
   ;; (TeX-after-compilation-finished-functions . TeX-revert-document-buffer)
