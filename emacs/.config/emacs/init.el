@@ -68,9 +68,9 @@
     (load custom-file))
 
   ;; User variables
-  (defvar fab/dark-theme 'ef-owl)
-  (defvar fab/light-theme 'ef-light)
-  (defvar fab/org-directory (expand-file-name "~/Nextcloud/org/"))
+  (defvar fab/dark-theme 'modus-vivendi-tinted)
+  (defvar fab/light-theme 'modus-operandi)
+  (defvar fab/org-directory (expand-file-name "~/MEGA/org/"))
   (defvar fab/bibliography-dir (concat fab/org-directory "biblio/"))
   (defvar fab/bibliography-file (concat fab/bibliography-dir "references.bib"))
 
@@ -335,8 +335,9 @@ The DWIM behaviour of this command is as follows:
 ;;;; Org-mode
 (use-package org
   :defer t
-  :ensure `(org :repo "https://code.tecosaur.net/tec/org-mode.git/"
-                :branch "dev")
+  :ensure nil
+  ;; :ensure `(org :repo "https://code.tecosaur.net/tec/org-mode.git/"
+                ;; :branch "dev")
   :hook
   (org-mode . (lambda ()
                 (auto-fill-mode)
@@ -407,6 +408,7 @@ The DWIM behaviour of this command is as follows:
         ))
 
 (use-package org-latex-preview
+  :disabled
   :ensure nil
   :after org
   :config
@@ -1188,7 +1190,6 @@ The DWIM behaviour of this command is as follows:
 
 ;;;; Better themes
 (use-package modus-themes
-  :disabled
   :config
   (setopt modus-themes-common-palette-overrides modus-themes-preset-overrides-faint)
   (modus-themes-select fab/dark-theme)
@@ -1206,38 +1207,38 @@ The DWIM behaviour of this command is as follows:
   :bind
   ("<f9>" . #'modus-themes-toggle))
 
-(use-package ef-themes
-  :config
-  (defun fab/ef-themes-custom-faces ()
-    "My customizations on top of the Ef themes.
-This function is added to the `ef-themes-post-load-hook'."
-    (ef-themes-with-colors
-      (custom-set-faces
-       `(gptel-context-highlight-face ((,c :background ,bg-alt)))
-       `(gptel-context-deletion-face ((,c :background ,bg-removed)))
-       `(symbol-overlay-default-face ((,c :background ,bg-dim)))
-       `(symbol-overlay-face-1 ((,c :background ,bg-blue-subtle :foreground ,fg-main)))
-       `(symbol-overlay-face-2 ((,c :background ,bg-magenta-subtle :foreground ,fg-main)))
-       `(symbol-overlay-face-3 ((,c :background ,bg-yellow-subtle :foreground ,fg-main)))
-       `(symbol-overlay-face-4 ((,c :background ,bg-cyan-subtle :foreground ,fg-main)))
-       `(symbol-overlay-face-5 ((,c :background ,bg-blue-intense :foreground ,fg-main)))
-       `(symbol-overlay-face-6 ((,c :background ,bg-magenta-intense :foreground ,fg-main)))
-       `(symbol-overlay-face-7 ((,c :background ,bg-yellow-intense :foreground ,fg-main)))
-       `(symbol-overlay-face-8 ((,c :background ,bg-cyan-intense :foreground ,fg-main)))
-       )))
-  (add-hook 'ef-themes-post-load-hook #'fab/ef-themes-custom-faces)
-  (ef-themes-select fab/dark-theme)
-  :custom
-  (ef-themes-mixed-fonts t)
-  (ef-themes-to-toggle `(,fab/dark-theme ,fab/light-theme))
-  (ef-themes-headings
-   '((1 . (1.2))
-     (2 . (1.15))
-     (agenda-date . (variable-pitch 1.15))
-     (agenda-structure . (variable-pitch 1.2))
-     (t . (1.1))))
-  :bind
-  ("<f9>" . #'ef-themes-toggle))
+;; (use-package ef-themes
+;;   :config
+;; ;;   (defun fab/ef-themes-custom-faces ()
+;; ;;     "My customizations on top of the Ef themes.
+;; ;; This function is added to the `ef-themes-post-load-hook'."
+;; ;;     (ef-themes-with-colors
+;; ;;       (custom-set-faces
+;; ;;        `(gptel-context-highlight-face ((,c :background ,bg-alt)))
+;; ;;        `(gptel-context-deletion-face ((,c :background ,bg-removed)))
+;; ;;        `(symbol-overlay-default-face ((,c :background ,bg-dim)))
+;; ;;        `(symbol-overlay-face-1 ((,c :background ,bg-blue-subtle :foreground ,fg-main)))
+;; ;;        `(symbol-overlay-face-2 ((,c :background ,bg-magenta-subtle :foreground ,fg-main)))
+;; ;;        `(symbol-overlay-face-3 ((,c :background ,bg-yellow-subtle :foreground ,fg-main)))
+;; ;;        `(symbol-overlay-face-4 ((,c :background ,bg-cyan-subtle :foreground ,fg-main)))
+;; ;;        `(symbol-overlay-face-5 ((,c :background ,bg-blue-intense :foreground ,fg-main)))
+;; ;;        `(symbol-overlay-face-6 ((,c :background ,bg-magenta-intense :foreground ,fg-main)))
+;; ;;        `(symbol-overlay-face-7 ((,c :background ,bg-yellow-intense :foreground ,fg-main)))
+;; ;;        `(symbol-overlay-face-8 ((,c :background ,bg-cyan-intense :foreground ,fg-main)))
+;; ;;        )))
+;; ;;   (add-hook 'ef-themes-post-load-hook #'fab/ef-themes-custom-faces)
+;;   (ef-themes-select 'ef-owl)
+;;   :custom
+;;   (ef-themes-mixed-fonts t)
+;;   (ef-themes-to-toggle '(ef-owl ef-eagle))
+;;   (ef-themes-headings
+;;    '((1 . (1.2))
+;;      (2 . (1.15))
+;;      (agenda-date . (variable-pitch 1.15))
+;;      (agenda-structure . (variable-pitch 1.2))
+;;      (t . (1.1))))
+;;   :bind
+;;   ("<f9>" . #'ef-themes-toggle))
 
 (use-package auto-dark
   :after (:any modus-themes ef-themes)
